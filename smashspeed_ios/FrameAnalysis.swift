@@ -16,4 +16,5 @@ struct FrameAnalysis: Identifiable {
     let timestamp: CMTime
     var boundingBox: CGRect?
     var speedKPH: Double?
+    var trackedPoint: CGPoint? 
 }

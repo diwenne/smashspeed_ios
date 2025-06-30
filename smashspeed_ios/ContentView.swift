@@ -14,9 +14,9 @@ struct ContentView: View {
 
     var body: some View {
         switch viewModel.appState {
-        case .review(let videoURL, let results):
-            // The onFinish closure is now updated to pass back the edited results
-            ReviewView(videoURL: videoURL, analysisResults: results) { editedResults in
+        // Corrected case to pass the single 'result' object
+        case .review(let videoURL, let result):
+            ReviewView(videoURL: videoURL, initialResult: result) { editedResults in
                 viewModel.finishReview(andShowResultsFrom: editedResults)
             }
         
@@ -49,7 +49,6 @@ struct ContentView: View {
         }
     }
     
-    // getVideoURL helper and all subviews (MainView, etc.) remain the same
     private func getVideoURL(from item: PhotosPickerItem?) async -> URL? {
         guard let item = item else { return nil }
         do {

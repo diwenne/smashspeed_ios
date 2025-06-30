@@ -1,28 +1,17 @@
+// ShuttlecockTracker.swift
+// smashspeed
 //
-//  ShuttlecockTracker.swift
-//  smashspeed
-//
-//  Created by Diwen Huang on 2025-06-27.
-//
-
-
-//
-//  ShuttlecockTracker.swift
-//  smashspeed
-//
-//  Created by Diwen Huang on 2025-06-27.
+// Created by Diwen Huang on 2025-06-27.
 //
 
-import Vision
 import Foundation
 import CoreGraphics
 import CoreMedia
+import Vision
 
 class ShuttlecockTracker {
-    // Configuration
-    private let scaleFactor: Double // m/pixel
+    let scaleFactor: Double
     
-    // State
     private var previousPoint: CGPoint?
     private var previousTimestamp: CMTime?
     
@@ -30,52 +19,67 @@ class ShuttlecockTracker {
         self.scaleFactor = scaleFactor
     }
     
-    /// Tracks the object and returns the calculated speed in km/h.
-    func track(box: CGRect, timestamp: CMTime, frameSize: CGSize, fps: Float) -> Double? {
-        // The box from Vision is normalized (0.0 to 1.0). Convert to pixel coordinates.
-        let pixelBox = VNImageRectForNormalizedRect(box, Int(frameSize.width), Int(frameSize.height))
+    /// Tracks the shuttlecock and returns both the calculated speed and the point used for tracking.
+    /// - Returns: A tuple containing the speed in KPH (optional) and the tracking point (optional).
+    func track(box: CGRect?, timestamp: CMTime, frameSize: CGSize, fps: Float) -> (speedKPH: Double?, point: CGPoint?) {
+        guard let validBox = box else {
+            // If there's no box on this frame, reset the previous point
+            // to avoid calculating speed across a large gap of missed frames.
+            previousPoint = nil
+            return (nil, nil)
+        }
         
+        // Convert normalized box to pixel coordinates.
+        let pixelBox = VNImageRectForNormalizedRect(validBox, Int(frameSize.width), Int(frameSize.height))
+        
+        // Determine the leading point ("tip") of the shuttlecock.
         let currentPoint = getTip(of: pixelBox, previousCenter: self.previousPoint)
         var speedKPH: Double? = nil
 
+        // Calculate speed if there is a previous point to compare against.
         if let prevPoint = previousPoint, let prevTimestamp = previousTimestamp {
             let dx = currentPoint.x - prevPoint.x
             let dy = currentPoint.y - prevPoint.y
             let pixelDistance = sqrt(dx * dx + dy * dy)
-            
             let timeDifference = CMTimeGetSeconds(timestamp - prevTimestamp)
             
-            // Avoid division by zero if timestamps are identical
-            if timeDifference > 1e-6 {
+            // Ensure time difference is valid to prevent division by zero.
+            if timeDifference > 0.001 {
                 let pixelsPerSecond = pixelDistance / timeDifference
-                let metersPerSecond = pixelsPerSecond * scaleFactor
-                speedKPH = metersPerSecond * 3.6 // Convert m/s to km/h
+                let metersPerSecond = pixelsPerSecond * self.scaleFactor
+                print("\(timeDifference): time difference")
+                print("\(pixelDistance): pixel difference")
+                print("\(scaleFactor): scale factor")
+                speedKPH = metersPerSecond * 3.6
             }
         }
 
+        // Update state for the next frame.
         self.previousPoint = currentPoint
         self.previousTimestamp = timestamp
         
-        return speedKPH
+        // Return both the speed and the point used for this frame's calculation.
+        return (speedKPH, currentPoint)
     }
     
-    /// Replicates the 'tip' logic from the Python script to find the leading edge of the bounding box.
+    /// Determines the leading point of the bounding box based on its direction of movement.
     private func getTip(of box: CGRect, previousCenter: CGPoint?) -> CGPoint {
         let center = CGPoint(x: box.midX, y: box.midY)
         
+        // If there's no previous point, default to the center of the current box.
         guard let prevCenter = previousCenter else {
-            // If no previous point, just use the center
             return center
         }
         
         let dx = center.x - prevCenter.x
         let dy = center.y - prevCenter.y
         
+        // Choose the point on the leading edge of the box.
         if abs(dx) > abs(dy) {
-            // Horizontal movement is dominant
+            // Moving more horizontally
             return CGPoint(x: dx >= 0 ? box.maxX : box.minX, y: center.y)
         } else {
-            // Vertical movement is dominant
+            // Moving more vertically
             return CGPoint(x: center.x, y: dy >= 0 ? box.maxY : box.minY)
         }
     }

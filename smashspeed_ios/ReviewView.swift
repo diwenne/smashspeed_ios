@@ -9,19 +9,33 @@ import SwiftUI
 import AVFoundation
 import Vision
 
+// MARK: - Main Review View
 struct ReviewView: View {
     let videoURL: URL
-    @State private var analysisResults: [FrameAnalysis]
+    let initialResult: VideoAnalysisResult
     let onFinish: ([FrameAnalysis]) -> Void
     
+    enum EditMode { case move, resize }
+    
+    @State private var analysisResults: [FrameAnalysis]
     @State private var currentIndex = 0
     @State private var currentFrameImage: UIImage?
+    @State private var editMode: EditMode = .move
+    
+    // State for Pan and Zoom
+    @State private var scale: CGFloat = 1.0
+    @GestureState private var magnifyBy: CGFloat = 1.0
+    @State private var committedOffset: CGSize = .zero
+    @GestureState private var dragOffset: CGSize = .zero
+    
+    @State private var viewportSize: CGSize = .zero
     
     private let imageGenerator: AVAssetImageGenerator
     
-    init(videoURL: URL, analysisResults: [FrameAnalysis], onFinish: @escaping ([FrameAnalysis]) -> Void) {
+    init(videoURL: URL, initialResult: VideoAnalysisResult, onFinish: @escaping ([FrameAnalysis]) -> Void) {
         self.videoURL = videoURL
-        self._analysisResults = State(initialValue: analysisResults)
+        self.initialResult = initialResult
+        self._analysisResults = State(initialValue: initialResult.frameData)
         self.onFinish = onFinish
         
         let asset = AVURLAsset(url: videoURL)
@@ -30,203 +44,490 @@ struct ReviewView: View {
         self.imageGenerator.requestedTimeToleranceBefore = .zero
         self.imageGenerator.requestedTimeToleranceAfter = .zero
     }
+    
+    private var currentOffset: CGSize {
+        return CGSize(width: committedOffset.width + dragOffset.width, height: committedOffset.height + dragOffset.height)
+    }
+    private var currentScale: CGFloat {
+        return scale * magnifyBy
+    }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
-                .font(.headline)
-                .padding(.top)
-            
-            ZStack {
-                if let image = currentFrameImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .overlay(
-                            GeometryReader { geo in
-                                DraggableAndResizableBoxView(
-                                    analysis: $analysisResults[currentIndex],
-                                    containerSize: geo.size
-                                )
-                            }
-                        )
-                } else {
-                    Color.black; ProgressView().tint(.white)
-                }
-            }
+                .font(.headline).padding(.vertical, 10)
+                .frame(maxWidth: .infinity).background(.thinMaterial)
 
-            if let speed = currentFrameData?.speedKPH {
-                Text(String(format: "%.1f km/h", speed)).font(.largeTitle).bold()
-            } else {
-                Text("No Speed Detected").font(.largeTitle).foregroundColor(.secondary)
-            }
-            if let timestamp = currentFrameData?.timestamp {
-                Text("Timestamp: \(timestamp.seconds, specifier: "%.3f")s").font(.caption)
-            }
-            
-            HStack(spacing: 20) {
-                if currentFrameData?.boundingBox == nil {
-                    Button(action: addBox) { Label("Add Box", systemImage: "plus.square") }
-                } else {
-                    Button(role: .destructive, action: removeBox) { Label("Remove Box", systemImage: "trash") }
+            GeometryReader { geo in
+                ZStack {
+                    // This ZStack is the container for all pannable/zoomable content
+                    ZStack {
+                        if let image = currentFrameImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                        } else {
+                            Color.black
+                            ProgressView().tint(.white)
+                        }
+                    }
+                    .scaleEffect(currentScale)
+                    .offset(currentOffset)
+                    .gesture(panGesture().simultaneously(with: magnificationGesture()))
+                    
+                    // The overlay view sits on top and handles its own gestures
+                    OverlayView(
+                        analysis: $analysisResults[currentIndex],
+                        containerSize: geo.size,
+                        videoSize: initialResult.videoSize,
+                        currentScale: currentScale,
+                        onEditEnded: recalculateAllSpeeds
+                    )
+                    
+                    // UI Controls sit on top and are not affected by pan/zoom
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button { withAnimation { zoom(by: 1.5) } } label: { Image(systemName: "plus.magnifyingglass") }
+                            Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
+                            Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
+                        }
+                        .font(.title2).padding().background(.black.opacity(0.5))
+                        .foregroundColor(.white).cornerRadius(15).padding()
+                    }
                 }
-            }.padding(.top, 5)
-            
-            HStack(spacing: 20) {
-                Button(action: goToPreviousFrame) { Label("Previous", systemImage: "arrow.left") }.disabled(currentIndex == 0)
-                Button(action: goToNextFrame) { Label("Next", systemImage: "arrow.right") }.disabled(currentIndex >= analysisResults.count - 1)
-            }.padding()
-            
-            Button("Finish & See Max Speed") { onFinish(analysisResults) }
-                .buttonStyle(.borderedProminent)
-                .padding(.bottom)
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+                .onAppear { self.viewportSize = geo.size }
+            }
+            .frame(maxHeight: .infinity)
+
+            // Bottom control panel
+            VStack(spacing: 12) {
+                if let speed = currentFrameData?.speedKPH {
+                    Text(String(format: "%.1f km/h", speed)).font(.title3).bold()
+                } else { Text("No Speed Detected").font(.title3).foregroundColor(.secondary) }
+                
+                BoxAdjustmentControls(
+                    editMode: $editMode,
+                    hasBox: currentFrameData?.boundingBox != nil,
+                    addBoxAction: addBox,
+                    removeBoxAction: removeBox,
+                    adjustBoxAction: adjustBox
+                )
+                
+                HStack {
+                    Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
+                    Spacer()
+                    Button("Finish") { onFinish(analysisResults) }.buttonStyle(.borderedProminent).controlSize(.regular)
+                    Spacer()
+                    Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
+                }
+                .font(.largeTitle).buttonStyle(.plain)
+            }
+            .padding().padding(.bottom).background(.thinMaterial)
         }
         .task(id: currentIndex) {
-            await loadFrame(at: currentIndex)
+            await MainActor.run {
+                withAnimation { resetZoom() }
+                loadFrame(at: currentIndex)
+            }
         }
     }
     
+    // MARK: - Gesture Definitions
+    private func panGesture() -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .updating($dragOffset) { value, state, _ in
+                state = value.translation
+            }
+            .onEnded { value in
+                committedOffset.width += value.translation.width
+                committedOffset.height += value.translation.height
+            }
+    }
+    
+    private func magnificationGesture() -> some Gesture {
+        MagnificationGesture()
+            .updating($magnifyBy) { value, state, _ in
+                state = value
+            }
+            .onEnded { value in
+                scale *= value
+            }
+    }
+    
+    // MARK: - Helper Functions
+    private func zoom(by factor: CGFloat) { scale = max(1.0, scale * factor) }
+    private func resetZoom() { scale = 1.0; committedOffset = .zero }
+
     private var currentFrameData: FrameAnalysis? {
         guard analysisResults.indices.contains(currentIndex) else { return nil }
         return analysisResults[currentIndex]
     }
     
+    private func recalculateAllSpeeds() {
+        let freshTracker = ShuttlecockTracker(scaleFactor: initialResult.scaleFactor)
+        for i in 0..<analysisResults.count {
+            let result = freshTracker.track(
+                box: analysisResults[i].boundingBox,
+                timestamp: analysisResults[i].timestamp,
+                frameSize: initialResult.videoSize,
+                fps: initialResult.frameRate
+            )
+            analysisResults[i].speedKPH = result.speedKPH
+            analysisResults[i].trackedPoint = result.point
+        }
+    }
+    
     private func addBox() {
         guard analysisResults.indices.contains(currentIndex) else { return }
-        analysisResults[currentIndex].boundingBox = CGRect(x: 0.4, y: 0.4, width: 0.2, height: 0.2)
+        
+        let imageInfo = getScaledImageInfo(containerSize: viewportSize, videoSize: initialResult.videoSize)
+        let viewportCenter = CGPoint(x: viewportSize.width / 2, y: viewportSize.height / 2)
+        
+        // Reverse the transforms to find the normalized center
+        let containerCoord = CGPoint(
+            x: (viewportCenter.x - currentOffset.width) / currentScale,
+            y: (viewportCenter.y - currentOffset.height) / currentScale
+        )
+        let normalizedCenter = CGPoint(
+            x: (containerCoord.x - imageInfo.origin.x) / (initialResult.videoSize.width * imageInfo.scale),
+            y: (containerCoord.y - imageInfo.origin.y) / (initialResult.videoSize.height * imageInfo.scale)
+        )
+
+        let boxSize = CGSize(width: 0.1, height: 0.1)
+        analysisResults[currentIndex].boundingBox = CGRect(
+            x: normalizedCenter.x - (boxSize.width / 2),
+            y: normalizedCenter.y - (boxSize.height / 2),
+            width: boxSize.width,
+            height: boxSize.height
+        )
+        recalculateAllSpeeds()
     }
     
     private func removeBox() {
         analysisResults[currentIndex].boundingBox = nil
+        recalculateAllSpeeds()
+    }
+    
+    private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0) {
+        guard var box = analysisResults[currentIndex].boundingBox else { return }
+        let moveSensitivity: CGFloat = 0.002
+        let resizeSensitivity: CGFloat = 0.005
+        
+        box.origin.x += dx * moveSensitivity / scale
+        box.origin.y += dy * moveSensitivity / scale
+        box.size.width += dw * resizeSensitivity / scale
+        box.size.height += dh * resizeSensitivity / scale
+        
+        box.origin.x = max(0, min(box.origin.x, 1.0 - box.size.width))
+        box.origin.y = max(0, min(box.origin.y, 1.0 - box.size.height))
+        box.size.width = max(0.01, box.size.width)
+        box.size.height = max(0.01, box.size.height)
+        
+        analysisResults[currentIndex].boundingBox = box
+        recalculateAllSpeeds()
     }
     
     private func goToPreviousFrame() { if currentIndex > 0 { currentIndex -= 1 } }
     private func goToNextFrame() { if currentIndex < analysisResults.count - 1 { currentIndex += 1 } }
     
-    private func loadFrame(at index: Int) async {
+    private func loadFrame(at index: Int) {
         guard let timestamp = currentFrameData?.timestamp else { return }
-        do {
-            let cgImage = try await imageGenerator.image(at: timestamp).image
-            currentFrameImage = UIImage(cgImage: cgImage)
-        } catch {
-            print("Failed to load frame for timestamp \(timestamp): \(error)")
+        Task {
+            do {
+                let cgImage = try await imageGenerator.image(at: timestamp).image
+                await MainActor.run { currentFrameImage = UIImage(cgImage: cgImage) }
+            } catch { print("Failed to load frame for timestamp \(timestamp): \(error)") }
         }
     }
 }
 
-// MARK: - DraggableAndResizableBoxView
-struct DraggableAndResizableBoxView: View {
+// MARK: - Helper Views for ReviewView
+
+// This view contains all the overlays (box and dot) and handles their gestures.
+private struct OverlayView: View {
     @Binding var analysis: FrameAnalysis
+    let containerSize: CGSize
+    let videoSize: CGSize
+    let currentScale: CGFloat
+    let onEditEnded: () -> Void
+
+    var body: some View {
+        ZStack {
+            // The tracking dot is not interactive and just for display.
+            TrackingPointView(
+                analysis: analysis,
+                videoSize: videoSize,
+                containerSize: containerSize
+            )
+            .id(analysis.trackedPoint)
+            
+            // The draggable box handles its own gestures.
+            DraggableAndResizableBoxView(
+                analysis: $analysis,
+                containerSize: containerSize,
+                videoSize: videoSize,
+                currentScale: currentScale,
+                onEditEnded: onEditEnded
+            )
+        }
+        // The gestures for the box should have priority over the main view's pan/zoom.
+        .contentShape(Rectangle())
+    }
+}
+
+private func getScaledImageInfo(containerSize: CGSize, videoSize: CGSize) -> (origin: CGPoint, scale: CGFloat) {
+    let viewScale = min(containerSize.width / videoSize.width, containerSize.height / videoSize.height)
+    let scaledImageSize = CGSize(width: videoSize.width * viewScale, height: videoSize.height * viewScale)
+    let imageOrigin = CGPoint(
+        x: (containerSize.width - scaledImageSize.width) / 2,
+        y: (containerSize.height - scaledImageSize.height) / 2
+    )
+    return (imageOrigin, viewScale)
+}
+
+private struct TrackingPointView: View {
+    let analysis: FrameAnalysis
+    let videoSize: CGSize
     let containerSize: CGSize
 
     var body: some View {
-        // We only show the view if a bounding box exists
+        if let point = analysis.trackedPoint {
+            let imageInfo = getScaledImageInfo(containerSize: containerSize, videoSize: videoSize)
+            
+            let dotPosition = CGPoint(
+                x: imageInfo.origin.x + (point.x * imageInfo.scale),
+                y: imageInfo.origin.y + (point.y * imageInfo.scale)
+            )
+            
+            Circle()
+                .fill(Color.cyan)
+                .frame(width: 3, height: 3)
+                .overlay(Circle().stroke(Color.black, lineWidth: 1))
+                .position(dotPosition)
+                .allowsHitTesting(false)
+        }
+    }
+}
+
+private struct DraggableAndResizableBoxView: View {
+    @Binding var analysis: FrameAnalysis
+    let containerSize: CGSize
+    let videoSize: CGSize
+    let currentScale: CGFloat
+    let onEditEnded: () -> Void
+    
+    @GestureState private var liveDragOffset: CGSize = .zero
+    @GestureState private var liveResizeOffset: CGSize = .zero
+
+    var body: some View {
         if let box = analysis.boundingBox {
-            // Convert normalized box to pixel dimensions for drawing
-            let pixelFrame = CGRect(
-                x: box.origin.x * containerSize.width,
-                y: box.origin.y * containerSize.height,
-                width: box.size.width * containerSize.width,
-                height: box.size.height * containerSize.height
+            let imageInfo = getScaledImageInfo(containerSize: containerSize, videoSize: videoSize)
+            
+            let staticPixelFrame = CGRect(
+                x: imageInfo.origin.x + (box.origin.x * videoSize.width * imageInfo.scale),
+                y: imageInfo.origin.y + (box.origin.y * videoSize.height * imageInfo.scale),
+                width: box.size.width * videoSize.width * imageInfo.scale,
+                height: box.size.height * videoSize.height * imageInfo.scale
+            )
+            
+            let liveFrame = CGRect(
+                x: staticPixelFrame.origin.x + liveDragOffset.width,
+                y: staticPixelFrame.origin.y + liveDragOffset.height,
+                width: staticPixelFrame.width + liveResizeOffset.width,
+                height: staticPixelFrame.height + liveResizeOffset.height
             )
 
-            // A ZStack to layer the box, its move gesture, and resize handles
-            ZStack(alignment: .topLeading) {
-                // The main rectangle for the bounding box
+            ZStack {
                 Rectangle()
-                    .stroke(Color.red, lineWidth: 2)
-                    .contentShape(Rectangle()) // Make the whole area tappable for moving
-                    .gesture(moveGesture(initialFrame: pixelFrame))
+                    .stroke(Color.red, lineWidth: 2 / currentScale)
+                    .contentShape(Rectangle())
+                    .highPriorityGesture(moveGesture(initialNormalizedBox: box, imageInfo: imageInfo))
 
-                // Top-Left resize handle
-                ResizeHandle()
-                    .position(x: 0, y: 0) // Position at the top-left of the frame
-                    .gesture(resizeGesture(initialFrame: pixelFrame, corner: .topLeft))
-                
-                // Bottom-Right resize handle
-                ResizeHandle()
-                    .position(x: pixelFrame.width, y: pixelFrame.height) // Position at the bottom-right
-                    .gesture(resizeGesture(initialFrame: pixelFrame, corner: .bottomRight))
+                ResizeHandle(scale: currentScale)
+                    .position(x: liveFrame.width, y: liveFrame.height)
+                    .highPriorityGesture(resizeGesture(initialNormalizedBox: box, imageInfo: imageInfo))
             }
-            .frame(width: pixelFrame.width, height: pixelFrame.height)
-            .position(x: pixelFrame.midX, y: pixelFrame.midY) // Position the ZStack itself
+            .frame(width: liveFrame.width, height: liveFrame.height)
+            .position(x: liveFrame.midX, y: liveFrame.midY)
+            .scaleEffect(currentScale) // Apply the main zoom to the box itself
         }
     }
-
-    // A helper view for the circular resize handles
-    struct ResizeHandle: View {
+    
+    private struct ResizeHandle: View {
+        let scale: CGFloat
         var body: some View {
-            Circle()
-                .fill(Color.white)
-                .frame(width: 24, height: 24)
-                .overlay(Circle().stroke(Color.red, lineWidth: 2))
+            Rectangle()
+                .fill(Color.white.opacity(0.01))
+                .frame(width: 25, height: 25)
+                .overlay(
+                    Circle().fill(Color.white)
+                        .frame(width: 3, height: 3)
+                        .overlay(Circle().stroke(Color.red, lineWidth: 2 / scale))
+                )
+                .scaleEffect(1 / scale)
+        }
+    }
+    
+    private func moveGesture(initialNormalizedBox: CGRect, imageInfo: (origin: CGPoint, scale: CGFloat)) -> some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+            .updating($liveDragOffset) { value, state, _ in
+                state = value.translation
+            }
+            .onEnded { value in
+                var updatedBox = initialNormalizedBox
+                
+                // The drag delta is in global space, so we only need to divide by the total scale
+                let deltaX = value.translation.width / (videoSize.width * imageInfo.scale * currentScale)
+                let deltaY = value.translation.height / (videoSize.height * imageInfo.scale * currentScale)
+                
+                updatedBox.origin.x = max(0, min(initialNormalizedBox.origin.x + deltaX, 1.0 - updatedBox.width))
+                updatedBox.origin.y = max(0, min(initialNormalizedBox.origin.y + deltaY, 1.0 - updatedBox.height))
+                
+                analysis.boundingBox = updatedBox
+                onEditEnded()
+            }
+    }
+    
+    private func resizeGesture(initialNormalizedBox: CGRect, imageInfo: (origin: CGPoint, scale: CGFloat)) -> some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+            .updating($liveResizeOffset) { value, state, _ in
+                state = value.translation
+            }
+            .onEnded { value in
+                var updatedBox = initialNormalizedBox
+                
+                let normDeltaX = value.translation.width / (videoSize.width * imageInfo.scale * currentScale)
+                let normDeltaY = value.translation.height / (videoSize.height * imageInfo.scale * currentScale)
+                
+                let newWidth = max(0.01, updatedBox.width + normDeltaX)
+                let newHeight = max(0.01, updatedBox.height + normDeltaY)
+                
+                updatedBox.size.width = min(newWidth, 1.0 - updatedBox.origin.x)
+                updatedBox.size.height = min(newHeight, 1.0 - updatedBox.origin.y)
+                
+                analysis.boundingBox = updatedBox
+                onEditEnded()
+            }
+    }
+}
+
+
+private struct BoxAdjustmentControls: View {
+    @Binding var editMode: ReviewView.EditMode
+    let hasBox: Bool
+    let addBoxAction: () -> Void
+    let removeBoxAction: () -> Void
+    let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat) -> Void
+
+    var body: some View {
+        VStack(spacing: 8) {
+            if hasBox {
+                Picker("Edit Mode", selection: $editMode) {
+                    Text("Move").tag(ReviewView.EditMode.move)
+                    Text("Resize").tag(ReviewView.EditMode.resize)
+                }
+                .pickerStyle(.segmented)
+                
+                if editMode == .move {
+                    ReviewDirectionalPad { dx, dy in adjustBoxAction(dx, dy, 0, 0) }
+                } else {
+                    ReviewResizeControls { dw, dh in adjustBoxAction(0, 0, dw, dh) }
+                }
+            }
+            
+            HStack {
+                Spacer()
+                if !hasBox {
+                    Button(action: addBoxAction) { Label("Add Box", systemImage: "plus.square") }.tint(.blue)
+                } else {
+                    Button(role: .destructive, action: removeBoxAction) { Label("Remove Box", systemImage: "trash") }.tint(.red)
+                }
+                Spacer()
+            }
+            .buttonStyle(.bordered).controlSize(.regular)
+        }
+    }
+}
+
+private struct ReviewDirectionalPad: View {
+    let action: (CGFloat, CGFloat) -> Void
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            Spacer()
+            RepeatingFineTuneButton(icon: "arrow.left") { action(-1, 0) }
+            VStack(spacing: 10) {
+                RepeatingFineTuneButton(icon: "arrow.up") { action(0, -1) }
+                RepeatingFineTuneButton(icon: "arrow.down") { action(0, 1) }
+            }
+            RepeatingFineTuneButton(icon: "arrow.right") { action(1, 0) }
+            Spacer()
+        }
+    }
+}
+
+private struct ReviewResizeControls: View {
+    let action: (CGFloat, CGFloat) -> Void
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("Width").frame(width: 60)
+                RepeatingFineTuneButton(icon: "minus") { action(-1, 0) }
+                RepeatingFineTuneButton(icon: "plus") { action(1, 0) }
+            }
+            HStack {
+                Text("Height").frame(width: 60)
+                RepeatingFineTuneButton(icon: "minus") { action(0, -1) }
+                RepeatingFineTuneButton(icon: "plus") { action(0, 1) }
+            }
+        }
+    }
+}
+
+private struct RepeatingFineTuneButton: View {
+    let icon: String
+    let action: () -> Void
+    
+    @State private var timer: Timer?
+    @State private var isPressing = false
+
+    var body: some View {
+        Button(action: {
+            if self.timer == nil {
+                self.action()
+            }
+        }) {
+            Image(systemName: icon)
+                .font(.title3)
+                .frame(width: 50, height: 36)
+                .padding(4)
+                .background(isPressing ? Color.gray.opacity(0.5) : Color.gray.opacity(0.2))
+                .cornerRadius(8)
+        }
+        .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
+            self.isPressing = pressing
+            if pressing {
+                self.startTimer()
+            } else {
+                self.stopTimer()
+            }
+        }, perform: {})
+    }
+    
+    private func startTimer() {
+        stopTimer()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            self.action()
         }
     }
 
-    // Enum to identify which corner is being dragged
-    enum Corner {
-        case topLeft, bottomRight
-    }
-    
-    // A gesture for moving the entire box
-    private func moveGesture(initialFrame: CGRect) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onEnded { value in
-                let newOriginX = (initialFrame.origin.x + value.translation.width) / containerSize.width
-                let newOriginY = (initialFrame.origin.y + value.translation.height) / containerSize.height
-                
-                var updatedBox = analysis.boundingBox ?? .zero
-                updatedBox.origin.x = max(0, min(newOriginX, 1.0 - updatedBox.width))
-                updatedBox.origin.y = max(0, min(newOriginY, 1.0 - updatedBox.height))
-                
-                analysis.boundingBox = updatedBox
-            }
-    }
-    
-    // A gesture for resizing the box from a corner
-    private func resizeGesture(initialFrame: CGRect, corner: Corner) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onEnded { value in
-                var updatedBox = analysis.boundingBox ?? .zero
-                let dragTranslation = value.translation
-                
-                // Normalize the drag translation
-                let normDeltaX = dragTranslation.width / containerSize.width
-                let normDeltaY = dragTranslation.height / containerSize.height
-
-                switch corner {
-                case .topLeft:
-                    // Adjust origin and size, ensuring size doesn't become negative
-                    let newOriginX = updatedBox.origin.x + normDeltaX
-                    let newOriginY = updatedBox.origin.y + normDeltaY
-                    let newWidth = updatedBox.width - normDeltaX
-                    let newHeight = updatedBox.height - normDeltaY
-
-                    if newWidth > 0 && newHeight > 0 {
-                        updatedBox.origin.x = newOriginX
-                        updatedBox.origin.y = newOriginY
-                        updatedBox.size.width = newWidth
-                        updatedBox.size.height = newHeight
-                    }
-
-                case .bottomRight:
-                    // Adjust size, ensuring it doesn't become negative
-                    let newWidth = updatedBox.width + normDeltaX
-                    let newHeight = updatedBox.height + normDeltaY
-
-                    if newWidth > 0 && newHeight > 0 {
-                        updatedBox.size.width = newWidth
-                        updatedBox.size.height = newHeight
-                    }
-                }
-                
-                // Clamp the final rect to the 0.0-1.0 bounds
-                updatedBox.origin.x = max(0, updatedBox.origin.x)
-                updatedBox.origin.y = max(0, updatedBox.origin.y)
-                updatedBox.size.width = min(updatedBox.size.width, 1.0 - updatedBox.origin.x)
-                updatedBox.size.height = min(updatedBox.size.height, 1.0 - updatedBox.origin.y)
-                
-                analysis.boundingBox = updatedBox
-            }
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }

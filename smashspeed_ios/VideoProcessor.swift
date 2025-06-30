@@ -8,6 +8,14 @@
 import Foundation
 import AVFoundation
 import CoreImage
+import Vision
+
+struct VideoAnalysisResult {
+    let frameData: [FrameAnalysis]
+    let frameRate: Float
+    let videoSize: CGSize
+    let scaleFactor: Double
+}
 
 class VideoProcessor {
     let videoURL: URL
@@ -26,19 +34,17 @@ class VideoProcessor {
         isCancelled = true
     }
 
-    func processVideo(progressHandler: @escaping (Progress) -> Void) async throws -> [FrameAnalysis] {
+    func processVideo(progressHandler: @escaping (Progress) -> Void) async throws -> VideoAnalysisResult? {
         let asset = AVURLAsset(url: videoURL)
         
-        guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else {
-            throw NSError(domain: "VideoProcessor", code: 1, userInfo: [NSLocalizedDescriptionKey: "No video track found"])
-        }
+        guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else { return nil }
         
         let videoDuration = try await asset.load(.duration)
         let frameRate = try await videoTrack.load(.nominalFrameRate)
+        let videoSize = try await videoTrack.load(.naturalSize)
+        
         let assetReader = try AVAssetReader(asset: asset)
-        let outputSettings: [String: Any] = [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-        ]
+        let outputSettings: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
         
         let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: outputSettings)
         assetReader.add(readerOutput)
@@ -49,8 +55,6 @@ class VideoProcessor {
         let totalFrames = Int(CMTimeGetSeconds(videoDuration) * Double(frameRate))
         let progress = Progress(totalUnitCount: Int64(totalFrames))
         
-        print("--- Video Processing Started ---")
-
         while assetReader.status == .reading {
             if isCancelled { break }
             
@@ -58,35 +62,35 @@ class VideoProcessor {
                let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
                 
                 let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-                var detectedBox: CGRect? = nil
-                var calculatedSpeed: Double? = nil
                 
-                do {
-                    // --- THE FIX IS HERE ---
-                    // This line correctly separates the returned tuple into two distinct variables.
-                    let (box, confidence) = try modelHandler.performDetection(on: pixelBuffer)
-                    
-                    // Now we can use 'confidence' and 'box' separately.
-                    if let conf = confidence {
-                        print("Frame \(frameCount): Detected object with confidence \(String(format: "%.2f", conf))")
-                    } else {
-                        print("Frame \(frameCount): No object detected.")
-                    }
-                    
-                    if let box = box {
-                        detectedBox = box
-                        let frameSize = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
-                        
-                        if let speedKPH = tracker.track(box: box, timestamp: timestamp, frameSize: frameSize, fps: frameRate) {
-                            calculatedSpeed = speedKPH
+                // Perform object detection on the current frame's pixel buffer.
+                let (box, _) = await withCheckedContinuation { continuation in
+                    modelHandler.performDetection(on: pixelBuffer) { result in
+                        switch result {
+                        case .success(let detectionResult): continuation.resume(returning: detectionResult)
+                        case .failure: continuation.resume(returning: (nil, nil))
                         }
                     }
-                } catch {
-                    print("Frame \(frameCount): Detection failed with error: \(error)")
                 }
                 
-                let frameResult = FrameAnalysis(timestamp: timestamp, boundingBox: detectedBox, speedKPH: calculatedSpeed)
+                // --- MODIFIED SECTION ---
+                // Always call the tracker, passing the optional box. The tracker handles the nil case.
+                let trackingResult = tracker.track(
+                    box: box,
+                    timestamp: timestamp,
+                    frameSize: videoSize,
+                    fps: frameRate
+                )
+                
+                // Create the FrameAnalysis struct with all the results.
+                let frameResult = FrameAnalysis(
+                    timestamp: timestamp,
+                    boundingBox: box, // The box from the model
+                    speedKPH: trackingResult.speedKPH,
+                    trackedPoint: trackingResult.point
+                )
                 analysisResults.append(frameResult)
+                // --- END MODIFIED SECTION ---
 
                 frameCount += 1
                 progress.completedUnitCount = Int64(frameCount)
@@ -95,12 +99,9 @@ class VideoProcessor {
             }
         }
         
-        print("--- Video Processing Finished ---")
+        if assetReader.status == .failed { throw assetReader.error ?? NSError() }
         
-        if assetReader.status == .failed {
-            throw assetReader.error ?? NSError(domain: "VideoProcessor", code: 2, userInfo: [NSLocalizedDescriptionKey: "Asset reader failed"])
-        }
-        
-        return analysisResults
+        return VideoAnalysisResult(frameData: analysisResults, frameRate: frameRate, videoSize: videoSize, scaleFactor: tracker.scaleFactor)
     }
 }
+
