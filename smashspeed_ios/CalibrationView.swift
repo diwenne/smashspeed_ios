@@ -30,6 +30,10 @@ struct CalibrationView: View {
     
     // State to track which handle is currently selected for fine-tuning
     @State private var activeHandle: ActiveHandle = .point1
+    
+    // FIX: State to track the live offset of each handle during a drag
+    @State private var liveOffset1: CGSize = .zero
+    @State private var liveOffset2: CGSize = .zero
 
     var body: some View {
         VStack(spacing: 0) {
@@ -54,14 +58,16 @@ struct CalibrationView: View {
                         .scaledToFit()
                         .overlay(
                             ZStack {
+                                // FIX: The path now uses the live offsets to update in real-time
                                 Path { path in
-                                    path.move(to: point1)
-                                    path.addLine(to: point2)
+                                    path.move(to: CGPoint(x: point1.x + liveOffset1.width, y: point1.y + liveOffset1.height))
+                                    path.addLine(to: CGPoint(x: point2.x + liveOffset2.width, y: point2.y + liveOffset2.height))
                                 }
                                 .stroke(Color.red, style: StrokeStyle(lineWidth: 2, dash: [5]))
 
-                                CalibrationHandleView(position: $point1, viewSize: viewSize, isActive: activeHandle == .point1)
-                                CalibrationHandleView(position: $point2, viewSize: viewSize, isActive: activeHandle == .point2)
+                                // Pass bindings for the live offsets down to the handles
+                                CalibrationHandleView(position: $point1, liveOffset: $liveOffset1, viewSize: viewSize, isActive: activeHandle == .point1)
+                                CalibrationHandleView(position: $point2, liveOffset: $liveOffset2, viewSize: viewSize, isActive: activeHandle == .point2)
                             }
                         )
                         .background(
@@ -139,7 +145,6 @@ struct CalibrationView: View {
             let generator = AVAssetImageGenerator(asset: asset)
             generator.appliesPreferredTrackTransform = true
             
-            // Also load the video track to get its true pixel dimensions
             guard let videoTrack = try? await asset.loadTracks(withMediaType: .video).first else {
                 print("Failed to load video track.")
                 onCancel()
@@ -149,7 +154,6 @@ struct CalibrationView: View {
             
             do {
                 let cgImage = try await generator.image(at: .zero).image
-                // Update state on the main thread
                 await MainActor.run {
                     self.firstFrame = UIImage(cgImage: cgImage)
                     self.videoPixelSize = size
@@ -168,27 +172,15 @@ struct CalibrationView: View {
             return
         }
 
-        // 1. Calculate the distance between handles in POINTS (the on-screen coordinate system)
         let pointDistance = sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2))
-
-        // 2. Determine the scaling ratio that .scaledToFit() applied to the image.
-        // This gives us the relationship between the on-screen points and the video's original pixels.
         let scaleRatio = min(viewSize.width / videoPixelSize.width, viewSize.height / videoPixelSize.height)
-        
-        // 3. Convert the on-screen POINT distance to the equivalent PIXEL distance on the original video frame.
         let pixelDistance = pointDistance / scaleRatio
 
         print("On-screen distance: \(pointDistance) pts")
-        print("Video pixel size: \(videoPixelSize)")
-        print("On-screen view size: \(viewSize)")
-        print("UI Scale Ratio (pts/px): \(scaleRatio)")
         print("Calculated pixel distance: \(pixelDistance) px")
 
         guard pixelDistance > 0 else { return }
         
-        print("px difference: \(pixelDistance)")
-        
-        // 4. Calculate the final scaleFactor (meters per PIXEL)
         let scaleFactor = realLength / pixelDistance
         print("Final Scale factor (m/px): \(scaleFactor)")
         onComplete(scaleFactor)
@@ -200,31 +192,42 @@ struct CalibrationView: View {
 
 private struct CalibrationHandleView: View {
     @Binding var position: CGPoint
+    // FIX: Add a binding to the parent's live offset state
+    @Binding var liveOffset: CGSize
     let viewSize: CGSize
     let isActive: Bool
     
     var body: some View {
-        // A larger, invisible tappable area
         Rectangle()
             .fill(Color.white.opacity(0.01))
             .frame(width: 44, height: 44)
             .overlay(
-                // The small, visible circle drawn on top
                 Circle()
                     .fill(isActive ? Color.blue : Color.red)
                     .frame(width: 6, height: 6)
                     .overlay(Circle().stroke(Color.white, lineWidth: 2))
                     .shadow(radius: 3)
             )
-            .position(position)
+            .position(
+                x: position.x + liveOffset.width,
+                y: position.y + liveOffset.height
+            )
             .gesture(
+                // FIX: Use onChanged to update the live offset binding in real-time
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
-                        let newX = value.location.x
-                        let newY = value.location.y
-                        // Clamp the position to be within the view's bounds
-                        self.position.x = min(max(0, newX), viewSize.width)
-                        self.position.y = min(max(0, newY), viewSize.height)
+                        self.liveOffset = value.translation
+                    }
+                    .onEnded { value in
+                        // When the drag ends, update the persistent position
+                        let newX = position.x + value.translation.width
+                        let newY = position.y + value.translation.height
+                        
+                        position.x = min(max(0, newX), viewSize.width)
+                        position.y = min(max(0, newY), viewSize.height)
+                        
+                        // Reset the live offset so the handle returns to its new persistent position
+                        self.liveOffset = .zero
                     }
             )
     }
@@ -244,4 +247,3 @@ private struct CalibrationFineTuneButton: View {
         .controlSize(.large)
     }
 }
-

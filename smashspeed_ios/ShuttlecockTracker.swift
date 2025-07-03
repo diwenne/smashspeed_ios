@@ -1,9 +1,3 @@
-// ShuttlecockTracker.swift
-// smashspeed
-//
-// Created by Diwen Huang on 2025-06-27.
-//
-
 import Foundation
 import CoreGraphics
 import CoreMedia
@@ -13,6 +7,7 @@ class ShuttlecockTracker {
     let scaleFactor: Double
     
     private var previousPoint: CGPoint?
+    // Note: previousTimestamp is no longer used in the calculation but is kept for potential future use.
     private var previousTimestamp: CMTime?
     
     init(scaleFactor: Double) {
@@ -37,19 +32,20 @@ class ShuttlecockTracker {
         var speedKPH: Double? = nil
 
         // Calculate speed if there is a previous point to compare against.
-        if let prevPoint = previousPoint, let prevTimestamp = previousTimestamp {
+        if let prevPoint = previousPoint {
             let dx = currentPoint.x - prevPoint.x
             let dy = currentPoint.y - prevPoint.y
             let pixelDistance = sqrt(dx * dx + dy * dy)
-            let timeDifference = CMTimeGetSeconds(timestamp - prevTimestamp)
+            
+            // --- FIX: Calculate time difference based on FPS instead of timestamps ---
+            // This provides a constant time interval and avoids corrupt timestamp issues.
+            let timeDifference = 1.0 / Double(fps)
             
             // Ensure time difference is valid to prevent division by zero.
-            if timeDifference > 0.001 {
+            if timeDifference > 0.0001 {
                 let pixelsPerSecond = pixelDistance / timeDifference
                 let metersPerSecond = pixelsPerSecond * self.scaleFactor
-                print("\(timeDifference): time difference")
-                print("\(pixelDistance): pixel difference")
-                print("\(scaleFactor): scale factor")
+                print("time difference: \(timeDifference)")
                 speedKPH = metersPerSecond * 3.6
             }
         }
@@ -84,3 +80,4 @@ class ShuttlecockTracker {
         }
     }
 }
+

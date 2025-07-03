@@ -60,7 +60,6 @@ struct ReviewView: View {
 
             GeometryReader { geo in
                 ZStack {
-                    // This ZStack is the container for all pannable/zoomable content
                     ZStack {
                         if let image = currentFrameImage {
                             Image(uiImage: image)
@@ -75,16 +74,15 @@ struct ReviewView: View {
                     .offset(currentOffset)
                     .gesture(panGesture().simultaneously(with: magnificationGesture()))
                     
-                    // The overlay view sits on top and handles its own gestures
                     OverlayView(
                         analysis: $analysisResults[currentIndex],
                         containerSize: geo.size,
                         videoSize: initialResult.videoSize,
                         currentScale: currentScale,
+                        globalOffset: currentOffset,
                         onEditEnded: recalculateAllSpeeds
                     )
                     
-                    // UI Controls sit on top and are not affected by pan/zoom
                     VStack {
                         Spacer()
                         HStack {
@@ -103,7 +101,6 @@ struct ReviewView: View {
             }
             .frame(maxHeight: .infinity)
 
-            // Bottom control panel
             VStack(spacing: 12) {
                 if let speed = currentFrameData?.speedKPH {
                     Text(String(format: "%.1f km/h", speed)).font(.title3).bold()
@@ -136,12 +133,9 @@ struct ReviewView: View {
         }
     }
     
-    // MARK: - Gesture Definitions
     private func panGesture() -> some Gesture {
         DragGesture(minimumDistance: 0)
-            .updating($dragOffset) { value, state, _ in
-                state = value.translation
-            }
+            .updating($dragOffset) { value, state, _ in state = value.translation }
             .onEnded { value in
                 committedOffset.width += value.translation.width
                 committedOffset.height += value.translation.height
@@ -150,15 +144,10 @@ struct ReviewView: View {
     
     private func magnificationGesture() -> some Gesture {
         MagnificationGesture()
-            .updating($magnifyBy) { value, state, _ in
-                state = value
-            }
-            .onEnded { value in
-                scale *= value
-            }
+            .updating($magnifyBy) { value, state, _ in state = value }
+            .onEnded { value in scale *= value }
     }
     
-    // MARK: - Helper Functions
     private func zoom(by factor: CGFloat) { scale = max(1.0, scale * factor) }
     private func resetZoom() { scale = 1.0; committedOffset = .zero }
 
@@ -171,10 +160,8 @@ struct ReviewView: View {
         let freshTracker = ShuttlecockTracker(scaleFactor: initialResult.scaleFactor)
         for i in 0..<analysisResults.count {
             let result = freshTracker.track(
-                box: analysisResults[i].boundingBox,
-                timestamp: analysisResults[i].timestamp,
-                frameSize: initialResult.videoSize,
-                fps: initialResult.frameRate
+                box: analysisResults[i].boundingBox, timestamp: analysisResults[i].timestamp,
+                frameSize: initialResult.videoSize, fps: initialResult.frameRate
             )
             analysisResults[i].speedKPH = result.speedKPH
             analysisResults[i].trackedPoint = result.point
@@ -183,14 +170,12 @@ struct ReviewView: View {
     
     private func addBox() {
         guard analysisResults.indices.contains(currentIndex) else { return }
-        
         let imageInfo = getScaledImageInfo(containerSize: viewportSize, videoSize: initialResult.videoSize)
         let viewportCenter = CGPoint(x: viewportSize.width / 2, y: viewportSize.height / 2)
         
-        // Reverse the transforms to find the normalized center
         let containerCoord = CGPoint(
-            x: (viewportCenter.x - currentOffset.width) / currentScale,
-            y: (viewportCenter.y - currentOffset.height) / currentScale
+            x: (viewportCenter.x - committedOffset.width) / scale,
+            y: (viewportCenter.y - committedOffset.height) / scale
         )
         let normalizedCenter = CGPoint(
             x: (containerCoord.x - imageInfo.origin.x) / (initialResult.videoSize.width * imageInfo.scale),
@@ -201,8 +186,7 @@ struct ReviewView: View {
         analysisResults[currentIndex].boundingBox = CGRect(
             x: normalizedCenter.x - (boxSize.width / 2),
             y: normalizedCenter.y - (boxSize.height / 2),
-            width: boxSize.width,
-            height: boxSize.height
+            width: boxSize.width, height: boxSize.height
         )
         recalculateAllSpeeds()
     }
@@ -216,17 +200,14 @@ struct ReviewView: View {
         guard var box = analysisResults[currentIndex].boundingBox else { return }
         let moveSensitivity: CGFloat = 0.002
         let resizeSensitivity: CGFloat = 0.005
-        
         box.origin.x += dx * moveSensitivity / scale
         box.origin.y += dy * moveSensitivity / scale
         box.size.width += dw * resizeSensitivity / scale
         box.size.height += dh * resizeSensitivity / scale
-        
         box.origin.x = max(0, min(box.origin.x, 1.0 - box.size.width))
         box.origin.y = max(0, min(box.origin.y, 1.0 - box.size.height))
         box.size.width = max(0.01, box.size.width)
         box.size.height = max(0.01, box.size.height)
-        
         analysisResults[currentIndex].boundingBox = box
         recalculateAllSpeeds()
     }
@@ -247,35 +228,32 @@ struct ReviewView: View {
 
 // MARK: - Helper Views for ReviewView
 
-// This view contains all the overlays (box and dot) and handles their gestures.
 private struct OverlayView: View {
     @Binding var analysis: FrameAnalysis
     let containerSize: CGSize
     let videoSize: CGSize
     let currentScale: CGFloat
+    let globalOffset: CGSize
     let onEditEnded: () -> Void
 
     var body: some View {
         ZStack {
-            // The tracking dot is not interactive and just for display.
+            // --- PASS THE VALUES DOWN TO THE TRACKING POINT VIEW ---
             TrackingPointView(
                 analysis: analysis,
                 videoSize: videoSize,
-                containerSize: containerSize
-            )
-            .id(analysis.trackedPoint)
-            
-            // The draggable box handles its own gestures.
-            DraggableAndResizableBoxView(
-                analysis: $analysis,
                 containerSize: containerSize,
-                videoSize: videoSize,
                 currentScale: currentScale,
+                globalOffset: globalOffset
+            )
+            
+            DraggableAndResizableBoxView(
+                analysis: $analysis, containerSize: containerSize,
+                videoSize: videoSize, currentScale: currentScale,
+                globalOffset: globalOffset,
                 onEditEnded: onEditEnded
             )
         }
-        // The gestures for the box should have priority over the main view's pan/zoom.
-        .contentShape(Rectangle())
     }
 }
 
@@ -293,21 +271,26 @@ private struct TrackingPointView: View {
     let analysis: FrameAnalysis
     let videoSize: CGSize
     let containerSize: CGSize
+    // --- RECEIVE THE PAN/ZOOM STATE ---
+    let currentScale: CGFloat
+    let globalOffset: CGSize
 
     var body: some View {
         if let point = analysis.trackedPoint {
             let imageInfo = getScaledImageInfo(containerSize: containerSize, videoSize: videoSize)
             
+            // This position is correct relative to the un-scaled, un-panned image
             let dotPosition = CGPoint(
                 x: imageInfo.origin.x + (point.x * imageInfo.scale),
                 y: imageInfo.origin.y + (point.y * imageInfo.scale)
             )
             
-            Circle()
-                .fill(Color.cyan)
-                .frame(width: 3, height: 3)
+            Circle().fill(Color.cyan).frame(width: 3, height: 3)
                 .overlay(Circle().stroke(Color.black, lineWidth: 1))
                 .position(dotPosition)
+                // --- APPLY THE PAN/ZOOM TO THE DOT ---
+                .scaleEffect(currentScale)
+                .offset(globalOffset)
                 .allowsHitTesting(false)
         }
     }
@@ -318,6 +301,7 @@ private struct DraggableAndResizableBoxView: View {
     let containerSize: CGSize
     let videoSize: CGSize
     let currentScale: CGFloat
+    let globalOffset: CGSize
     let onEditEnded: () -> Void
     
     @GestureState private var liveDragOffset: CGSize = .zero
@@ -342,45 +326,40 @@ private struct DraggableAndResizableBoxView: View {
             )
 
             ZStack {
-                Rectangle()
-                    .stroke(Color.red, lineWidth: 2 / currentScale)
+                Rectangle().stroke(Color.red, lineWidth: 2 / currentScale)
                     .contentShape(Rectangle())
-                    .highPriorityGesture(moveGesture(initialNormalizedBox: box, imageInfo: imageInfo))
+                    .gesture(moveGesture(initialNormalizedBox: box, imageInfo: imageInfo))
 
                 ResizeHandle(scale: currentScale)
                     .position(x: liveFrame.width, y: liveFrame.height)
-                    .highPriorityGesture(resizeGesture(initialNormalizedBox: box, imageInfo: imageInfo))
+                    .gesture(resizeGesture(initialNormalizedBox: box, imageInfo: imageInfo))
             }
             .frame(width: liveFrame.width, height: liveFrame.height)
             .position(x: liveFrame.midX, y: liveFrame.midY)
-            .scaleEffect(currentScale) // Apply the main zoom to the box itself
+            .scaleEffect(currentScale)
+            .offset(globalOffset)
         }
     }
     
     private struct ResizeHandle: View {
         let scale: CGFloat
         var body: some View {
-            Rectangle()
-                .fill(Color.white.opacity(0.01))
-                .frame(width: 25, height: 25)
+            Rectangle().fill(Color.white.opacity(0.01)).frame(width: 25, height: 25)
                 .overlay(
-                    Circle().fill(Color.white)
-                        .frame(width: 3, height: 3)
+                    Circle().fill(Color.white).frame(width: 3, height: 3)
                         .overlay(Circle().stroke(Color.red, lineWidth: 2 / scale))
-                )
-                .scaleEffect(1 / scale)
+                ).scaleEffect(1 / scale)
         }
     }
     
     private func moveGesture(initialNormalizedBox: CGRect, imageInfo: (origin: CGPoint, scale: CGFloat)) -> some Gesture {
-        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+        DragGesture(minimumDistance: 0)
             .updating($liveDragOffset) { value, state, _ in
                 state = value.translation
             }
             .onEnded { value in
                 var updatedBox = initialNormalizedBox
                 
-                // The drag delta is in global space, so we only need to divide by the total scale
                 let deltaX = value.translation.width / (videoSize.width * imageInfo.scale * currentScale)
                 let deltaY = value.translation.height / (videoSize.height * imageInfo.scale * currentScale)
                 
@@ -393,7 +372,7 @@ private struct DraggableAndResizableBoxView: View {
     }
     
     private func resizeGesture(initialNormalizedBox: CGRect, imageInfo: (origin: CGPoint, scale: CGFloat)) -> some Gesture {
-        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+        DragGesture(minimumDistance: 0)
             .updating($liveResizeOffset) { value, state, _ in
                 state = value.translation
             }
@@ -422,23 +401,19 @@ private struct BoxAdjustmentControls: View {
     let addBoxAction: () -> Void
     let removeBoxAction: () -> Void
     let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat) -> Void
-
     var body: some View {
         VStack(spacing: 8) {
             if hasBox {
                 Picker("Edit Mode", selection: $editMode) {
                     Text("Move").tag(ReviewView.EditMode.move)
                     Text("Resize").tag(ReviewView.EditMode.resize)
-                }
-                .pickerStyle(.segmented)
-                
+                }.pickerStyle(.segmented)
                 if editMode == .move {
                     ReviewDirectionalPad { dx, dy in adjustBoxAction(dx, dy, 0, 0) }
                 } else {
                     ReviewResizeControls { dw, dh in adjustBoxAction(0, 0, dw, dh) }
                 }
             }
-            
             HStack {
                 Spacer()
                 if !hasBox {
@@ -447,15 +422,12 @@ private struct BoxAdjustmentControls: View {
                     Button(role: .destructive, action: removeBoxAction) { Label("Remove Box", systemImage: "trash") }.tint(.red)
                 }
                 Spacer()
-            }
-            .buttonStyle(.bordered).controlSize(.regular)
+            }.buttonStyle(.bordered).controlSize(.regular)
         }
     }
 }
-
 private struct ReviewDirectionalPad: View {
     let action: (CGFloat, CGFloat) -> Void
-    
     var body: some View {
         HStack(spacing: 20) {
             Spacer()
@@ -469,10 +441,8 @@ private struct ReviewDirectionalPad: View {
         }
     }
 }
-
 private struct ReviewResizeControls: View {
     let action: (CGFloat, CGFloat) -> Void
-    
     var body: some View {
         VStack(spacing: 8) {
             HStack {
@@ -488,44 +458,29 @@ private struct ReviewResizeControls: View {
         }
     }
 }
-
 private struct RepeatingFineTuneButton: View {
     let icon: String
     let action: () -> Void
-    
     @State private var timer: Timer?
     @State private var isPressing = false
-
     var body: some View {
         Button(action: {
-            if self.timer == nil {
-                self.action()
-            }
+            if !isPressing { self.action() }
         }) {
-            Image(systemName: icon)
-                .font(.title3)
-                .frame(width: 50, height: 36)
-                .padding(4)
+            Image(systemName: icon).font(.title3).frame(width: 50, height: 36).padding(4)
                 .background(isPressing ? Color.gray.opacity(0.5) : Color.gray.opacity(0.2))
                 .cornerRadius(8)
         }
         .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
             self.isPressing = pressing
-            if pressing {
-                self.startTimer()
-            } else {
-                self.stopTimer()
-            }
+            if pressing { self.startTimer() } else { self.stopTimer() }
         }, perform: {})
     }
-    
     private func startTimer() {
         stopTimer()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            self.action()
-        }
+        action()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in self.action() }
     }
-
     private func stopTimer() {
         timer?.invalidate()
         timer = nil

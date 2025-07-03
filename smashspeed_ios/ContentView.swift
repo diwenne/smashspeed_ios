@@ -73,7 +73,7 @@ struct MainView: View {
     var body: some View {
         VStack {
             HStack {
-                Image(systemName: "bolt.fill")
+                Image("AppIconPreview")
                     .resizable().frame(width: 24, height: 24).foregroundColor(.blue)
                 Text("SmashSpeed").font(.headline).fontWeight(.semibold)
                 Spacer()
