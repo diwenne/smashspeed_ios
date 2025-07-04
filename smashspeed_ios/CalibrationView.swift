@@ -200,7 +200,7 @@ private struct CalibrationHandleView: View {
     var body: some View {
         Rectangle()
             .fill(Color.white.opacity(0.01))
-            .frame(width: 44, height: 44)
+            .frame(width: 64, height: 64)
             .overlay(
                 Circle()
                     .fill(isActive ? Color.blue : Color.red)
