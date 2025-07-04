@@ -33,7 +33,7 @@ struct ContentView: View {
 struct LoadingView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "bolt.circle")
+            Image(systemName: "bolt.fill")
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
             Text("SmashSpeed")
