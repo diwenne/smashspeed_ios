@@ -6,151 +6,83 @@
 //
 
 import SwiftUI
-import PhotosUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = SmashSpeedViewModel()
-    @State private var selectedItem: PhotosPickerItem?
-
-    var body: some View {
-        switch viewModel.appState {
-        // Corrected case to pass the single 'result' object
-        case .review(let videoURL, let result):
-            ReviewView(videoURL: videoURL, initialResult: result) { editedResults in
-                viewModel.finishReview(andShowResultsFrom: editedResults)
-            }
-        
-        // All other cases remain the same
-        case .idle:
-            MainView(selectedItem: $selectedItem)
-                .onChange(of: selectedItem) { newItem in
-                    Task {
-                        if let url = await getVideoURL(from: newItem) {
-                            viewModel.videoSelected(url: url)
-                            selectedItem = nil
-                        }
-                    }
-                }
-        case .awaitingCalibration(let url):
-            CalibrationView(videoURL: url, onComplete: { scaleFactor in
-                viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
-            }, onCancel: {
-                viewModel.cancelCalibration()
-            })
-            
-        case .processing(let progress):
-            ProcessingView(progress: progress) { viewModel.reset() }
-            
-        case .completed(let speed):
-            ResultView(speed: speed, onReset: viewModel.reset)
-            
-        case .error(let message):
-            ErrorView(message: message, onReset: viewModel.reset)
-        }
-    }
+    @StateObject private var authViewModel = AuthenticationViewModel()
     
-    private func getVideoURL(from item: PhotosPickerItem?) async -> URL? {
-        guard let item = item else { return nil }
-        do {
-            guard let videoData = try await item.loadTransferable(type: Data.self) else { return nil }
-            let temporaryDirectory = FileManager.default.temporaryDirectory
-            let fileName = "\(UUID().uuidString).mov"
-            let temporaryURL = temporaryDirectory.appendingPathComponent(fileName)
-            try videoData.write(to: temporaryURL)
-            return temporaryURL
-        } catch {
-            print("An error occurred while getting the video URL: \(error)")
-            return nil
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    
+    var body: some View {
+        ZStack {
+            switch authViewModel.authState {
+            case .unknown:
+                LoadingView()
+            case .signedIn, .signedOut:
+                MainTabView()
+                    .environmentObject(authViewModel)
+            }
+        }
+        .sheet(isPresented: .constant(!hasCompletedOnboarding)) {
+            OnboardingView {
+                hasCompletedOnboarding = true
+            }
         }
     }
 }
 
-// MARK: - Subviews for each state
-
-struct MainView: View {
-    @Binding var selectedItem: PhotosPickerItem?
-    
-    var body: some View {
-        VStack {
-            HStack {
-                Image("AppIconPreview")
-                    .resizable().frame(width: 24, height: 24).foregroundColor(.blue)
-                Text("SmashSpeed").font(.headline).fontWeight(.semibold)
-                Spacer()
-            }
-            .padding([.top, .leading], 16)
-            
-            Spacer()
-            
-            PhotosPicker(
-                selection: $selectedItem,
-                matching: .videos, // We only want videos
-                photoLibrary: .shared()
-            ) {
-                ZStack {
-                    Circle().fill(Color.blue).frame(width: 120, height: 120)
-                    Image(systemName: "arrow.up.circle.fill")
-                        .foregroundColor(.white).font(.system(size: 50))
-                }
-            }
-            .padding()
-            
-            Text("Select a video to begin").font(.caption).padding(.top)
-            
-            Spacer()
-        }
-    }
-}
-
-struct ProcessingView: View {
-    let progress: Progress
-    let onCancel: () -> Void
-    
+struct LoadingView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Text("Analyzing Video...").font(.title2)
-            ProgressView(value: progress.fractionCompleted) {
-               Text("\(Int(progress.fractionCompleted * 100))%")
-            }
-            .padding(.horizontal, 40)
-            Button("Cancel", role: .destructive, action: onCancel)
-        }
-    }
-}
-
-struct ResultView: View {
-    let speed: Double
-    let onReset: () -> Void
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Maximum Speed").font(.title).foregroundColor(.secondary)
-            Text(String(format: "%.1f", speed))
-                .font(.system(size: 80, weight: .bold, design: .rounded))
+            Image(systemName: "bolt.circle")
+                .font(.system(size: 80))
                 .foregroundColor(.blue)
-            Text("km/h").font(.title2).foregroundColor(.secondary)
-            Button(action: onReset) {
-                Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle")
-            }
-            .buttonStyle(.bordered).padding(.top, 40)
+            Text("SmashSpeed")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            ProgressView()
         }
     }
 }
 
-struct ErrorView: View {
-    let message: String
-    let onReset: () -> Void
-    
+struct MainTabView: View {
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.largeTitle).foregroundColor(.red)
-            Text(message).multilineTextAlignment(.center).padding()
-            Button("Try Again", action: onReset).buttonStyle(.borderedProminent)
+        TabView {
+            // --- The NavigationStack has been removed from here ---
+            // It is now managed inside DetectView.swift
+            DetectView()
+                .tabItem {
+                    Label("Detect", systemImage: "camera.viewfinder")
+                }
+            
+            NavigationStack {
+                HistoryView()
+                    .navigationTitle("Results")
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) { AppLogoView() }
+                    }
+            }
+            .tabItem { Label("Results", systemImage: "chart.bar.xaxis") }
+
+            NavigationStack {
+                AccountView()
+                    .navigationTitle("Account")
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) { AppLogoView() }
+                    }
+            }
+            .tabItem { Label("Account", systemImage: "person.crop.circle") }
         }
     }
 }
 
-#Preview {
-    ContentView()
+struct AppLogoView: View {
+    var body: some View {
+        HStack {
+            Image(systemName: "bolt.fill")
+                .foregroundColor(.blue)
+            Text("SmashSpeed")
+                .font(.headline)
+                .fontWeight(.bold)
+        }
+    }
 }

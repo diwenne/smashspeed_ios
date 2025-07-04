@@ -10,12 +10,12 @@ import AVFoundation
 import CoreImage
 import Vision
 
-struct VideoAnalysisResult {
-    let frameData: [FrameAnalysis]
-    let frameRate: Float
-    let videoSize: CGSize
-    let scaleFactor: Double
-}
+//struct VideoAnalysisResult {
+//    let frameData: [FrameAnalysis]
+//    let frameRate: Float
+//    let videoSize: CGSize
+//    let scaleFactor: Double
+//}
 
 class VideoProcessor {
     let videoURL: URL
