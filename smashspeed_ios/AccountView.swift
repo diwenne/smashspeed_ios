@@ -5,105 +5,116 @@
 //  Created by Diwen Huang on 2025-07-04.
 //
 
-
 import SwiftUI
 import FirebaseAuth
+import Combine
 
-// MARK: - Account Tab
+// MARK: - Account Tab Main View
 
 struct AccountView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
     
     var body: some View {
         NavigationStack {
-            VStack {
-                // The view now directly checks if a user exists.
-                // The initial loading state is handled by ContentView.
-                if let user = viewModel.user {
-                    LoggedInView(user: user) {
-                        viewModel.signOut()
+            // Use a ZStack to place a background color
+            ZStack {
+                Color(.systemGroupedBackground).ignoresSafeArea()
+                
+                // Main content switcher
+                switch viewModel.authState {
+                case .unknown:
+                    ProgressView().scaleEffect(1.5)
+                case .signedIn:
+                    if let user = viewModel.user {
+                        LoggedInView(user: user) {
+                            viewModel.signOut()
+                        }
                     }
-                } else {
-                    LoggedOutView()
+                case .signedOut:
+                    // The new, cleaner authentication view
+                    AuthView()
                 }
             }
-            .navigationTitle("Account")
+            .navigationTitle(viewModel.authState == .signedIn ? "My Account" : "Welcome")
         }
     }
 }
 
-// A view to display when the user is logged in.
+// MARK: - Logged In View
+
 struct LoggedInView: View {
     let user: User
     let signOutAction: () -> Void
     
+    private var memberSince: String {
+        user.metadata.creationDate?.formatted(date: .long, time: .omitted) ?? "N/A"
+    }
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
+        // Use a List for a clean, standard iOS look.
+        List {
+            // Profile Header Section
+            Section {
+                HStack(spacing: 16) {
+                    Image(systemName: "person.crop.circle.fill.badge.checkmark")
+                        .font(.system(size: 60))
+                        .foregroundColor(.green)
+                    
+                    VStack(alignment: .leading) {
+                        Text(user.email ?? "No email found")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        Text("Member since \(memberSince)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.vertical, 8)
+            }
             
-            Image(systemName: "person.crop.circle.fill.badge.checkmark")
-                .font(.system(size: 100))
-                .foregroundColor(.green)
-            
-            Text("You are logged in as:")
-                .font(.headline)
-            
-            Text(user.email ?? "No email found")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            Spacer()
-            
-            Button("Sign Out", role: .destructive, action: signOutAction)
-                .buttonStyle(.bordered)
-                .padding()
+            // Account Actions Section
+            Section {
+                Button("Sign Out", role: .destructive, action: signOutAction)
+            }
         }
     }
 }
 
-// A view to display when the user is logged out.
-struct LoggedOutView: View {
-    @EnvironmentObject var viewModel: AuthenticationViewModel
-    @State private var email = ""
-    @State private var password = ""
-    
+
+// MARK: - Authentication Flow Views
+
+struct AuthView: View {
+    @State private var isSigningUp = false
+
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            
-            Image(systemName: "person.crop.circle.fill.badge.xmark")
-                .font(.system(size: 100))
-                .foregroundColor(.red)
-            
-            Text("Please sign in to continue")
-                .font(.headline)
-            
-            TextField("Email", text: $email)
-                .keyboardType(.emailAddress)
-                .autocapitalization(.none)
-                .textFieldStyle(.roundedBorder)
-            
-            SecureField("Password", text: $password)
-                .textFieldStyle(.roundedBorder)
-            
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .foregroundColor(.red)
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-            }
-            
+        VStack {
+            // App Logo
             VStack {
-                Button("Sign In") {
-                    viewModel.signIn(email: email, password: password)
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Create Account") {
-                    viewModel.signUp(email: email, password: password)
-                }
-                .buttonStyle(.bordered)
+                Image(systemName: "bolt.shield.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(.blue)
+                Text("SmashSpeed")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
             }
+            .padding(.vertical, 30)
+
+            // --- FIX: Use a ZStack to contain both forms for a smooth animation ---
+            ZStack {
+                // Sign In Form
+                SignInForm(isSigningUp: $isSigningUp)
+                    // Move off-screen to the left when signing up
+                    .offset(x: isSigningUp ? -UIScreen.main.bounds.width : 0)
+                    .opacity(isSigningUp ? 0 : 1)
+
+                // Create Account Form
+                CreateAccountForm(isSigningUp: $isSigningUp)
+                    // Start off-screen to the right and move in
+                    .offset(x: isSigningUp ? 0 : UIScreen.main.bounds.width)
+                    .opacity(isSigningUp ? 1 : 0)
+            }
+            // Apply a spring animation to the ZStack's contents when `isSigningUp` changes.
+            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSigningUp)
             
             Spacer()
         }
@@ -111,56 +122,93 @@ struct LoggedOutView: View {
     }
 }
 
-// This is the single source of truth for the AuthenticationViewModel.
-@MainActor
-class AuthenticationViewModel: ObservableObject {
+struct SignInForm: View {
+    @EnvironmentObject var viewModel: AuthenticationViewModel
+    @Binding var isSigningUp: Bool
+    @State private var email = ""
+    @State private var password = ""
     
-    // Enum to manage the different states of authentication.
-    enum AuthState {
-        case unknown, signedIn, signedOut
-    }
-    
-    @Published var authState: AuthState = .unknown
-    @Published var user: User?
-    @Published var errorMessage: String?
-    private var authStateHandle: AuthStateDidChangeListenerHandle?
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Sign In to Your Account")
+                .font(.title3)
+                .fontWeight(.bold)
+                .padding(.bottom)
 
-    init() {
-        // Listen for changes to the user's login state.
-        authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            guard let self = self else { return }
+            TextField("Email", text: $email)
+                .textContentType(.emailAddress)
+                .keyboardType(.emailAddress)
+                .autocapitalization(.none)
             
-            // --- MODIFICATION: Add an artificial delay to see the loading screen ---
-            // This Task ensures the loading screen is visible for at least 2 seconds.
-            // This is for demonstration purposes and can be removed for production.
-            Task {
-                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-                
-                self.user = user
-                // Update the authState after the delay.
-                self.authState = (user == nil) ? .signedOut : .signedIn
+            SecureField("Password", text: $password)
+                .textContentType(.password)
+            
+            if let error = viewModel.errorMessage {
+                Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center)
             }
+            
+            Button { viewModel.signIn(email: email, password: password) } label: {
+                Text("Sign In").fontWeight(.bold).frame(maxWidth: .infinity)
+            }.buttonStyle(.borderedProminent).controlSize(.large)
+            
+            Button("Don't have an account? Sign Up") {
+                isSigningUp = true
+            }
+            .font(.footnote)
+            .tint(.accentColor)
+            .padding(.top)
         }
-    }
-    
-    var isSignedIn: Bool { user != nil }
-
-    func signIn(email: String, password: String) {
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] _, error in
-            self?.errorMessage = error?.localizedDescription
-        }
-    }
-
-    func signUp(email: String, password: String) {
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] _, error in
-            self?.errorMessage = error?.localizedDescription
-        }
-    }
-
-    func signOut() {
-        // When signing out, immediately go back to the signed-out state
-        // without showing the loading screen again.
-        self.authState = .signedOut
-        try? Auth.auth().signOut()
+        .textFieldStyle(RoundedBorderTextFieldStyle())
     }
 }
+
+struct CreateAccountForm: View {
+    @EnvironmentObject var viewModel: AuthenticationViewModel
+    @Binding var isSigningUp: Bool
+    @State private var email = ""
+    @State private var password = ""
+    @State private var confirmPassword = ""
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Create a New Account")
+                .font(.title3)
+                .fontWeight(.bold)
+                .padding(.bottom)
+                
+            TextField("Email", text: $email)
+                .textContentType(.emailAddress)
+                .keyboardType(.emailAddress)
+                .autocapitalization(.none)
+            
+            SecureField("Password", text: $password)
+                .textContentType(.newPassword)
+            
+            SecureField("Confirm Password", text: $confirmPassword)
+                .textContentType(.newPassword)
+            
+            if let error = viewModel.errorMessage {
+                Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center)
+            }
+            
+            Button {
+                if password == confirmPassword {
+                    viewModel.signUp(email: email, password: password)
+                } else {
+                    viewModel.errorMessage = "Passwords do not match."
+                }
+            } label: {
+                Text("Create Account").fontWeight(.bold).frame(maxWidth: .infinity)
+            }.buttonStyle(.borderedProminent).controlSize(.large)
+            
+            Button("Already have an account? Sign In") {
+                isSigningUp = false
+            }
+            .font(.footnote)
+            .tint(.accentColor)
+            .padding(.top)
+        }
+        .textFieldStyle(RoundedBorderTextFieldStyle())
+    }
+}
+

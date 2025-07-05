@@ -11,6 +11,15 @@ struct OnboardingView: View {
     // The action to perform when the user taps the final button.
     let onComplete: () -> Void
     
+    // --- NEW: Custom initializer to style the page dots ---
+    // This code runs once when the view is created to set the colors
+    // for all page controls in the app.
+    init(onComplete: @escaping () -> Void) {
+        self.onComplete = onComplete
+        UIPageControl.appearance().currentPageIndicatorTintColor = .systemBlue
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor.systemBlue.withAlphaComponent(0.3)
+    }
+    
     var body: some View {
         // A TabView with a page style creates a swipeable carousel.
         TabView {
@@ -45,6 +54,7 @@ struct OnboardingView: View {
             )
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
+        .padding(.bottom, 40)
         .background(Color(.systemGroupedBackground))
         .ignoresSafeArea()
     }

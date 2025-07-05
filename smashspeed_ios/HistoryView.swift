@@ -5,10 +5,11 @@
 //  Created by Diwen Huang on 2025-07-04.
 //
 
-
 import SwiftUI
 import FirebaseFirestore
 import Combine
+import Charts
+import FirebaseAuth // This import is now correctly used.
 
 // MARK: - History Tab
 
@@ -19,6 +20,7 @@ struct HistoryView: View {
     var body: some View {
         NavigationStack {
             VStack {
+                // This 'if' statement will now compile correctly.
                 if authViewModel.isSignedIn, let user = authViewModel.user {
                     content(for: user.uid)
                 } else {
@@ -34,6 +36,7 @@ struct HistoryView: View {
             .onDisappear {
                 historyViewModel.unsubscribe()
             }
+            // This .onChange modifier will also now compile correctly.
             .onChange(of: authViewModel.user) { _, newUser in
                 if let userID = newUser?.uid {
                     historyViewModel.subscribe(to: userID)
@@ -47,14 +50,45 @@ struct HistoryView: View {
     @ViewBuilder
     private func content(for userID: String) -> some View {
         if historyViewModel.detectionResults.isEmpty {
-            ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard")
+            ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
         } else {
             List {
+                // Overall Stats Section
                 Section(header: Text("Overall Stats")) {
                     StatRow(label: "Top Speed", value: String(format: "%.1f km/h", historyViewModel.topSpeed))
                     StatRow(label: "Average Speed", value: String(format: "%.1f km/h", historyViewModel.averageSpeed))
+                    StatRow(label: "Total Smashes", value: "\(historyViewModel.detectionCount)")
                 }
                 
+                // Progress Chart Section
+                Section("Progress Over Time") {
+                    if historyViewModel.detectionResults.count > 1 {
+                        Chart {
+                            ForEach(historyViewModel.detectionResults.reversed()) { result in
+                                LineMark(
+                                    x: .value("Date", result.date.dateValue(), unit: .day),
+                                    y: .value("Speed", result.peakSpeedKph)
+                                )
+                                .interpolationMethod(.catmullRom)
+
+                                PointMark(
+                                    x: .value("Date", result.date.dateValue(), unit: .day),
+                                    y: .value("Speed", result.peakSpeedKph)
+                                )
+                                .foregroundStyle(.blue)
+                            }
+                        }
+                        .chartYScale(domain: 0...(historyViewModel.topSpeed * 1.2))
+                        .frame(height: 200)
+                        .padding(.vertical)
+                    } else {
+                        Text("Analyze at least two smashes to see your progress chart.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                // Detailed History Section
                 Section(header: Text("History")) {
                     ForEach(historyViewModel.detectionResults) { result in
                         HistoryRow(result: result)
@@ -105,6 +139,9 @@ class HistoryViewModel: ObservableObject {
     var averageSpeed: Double {
         let speeds = detectionResults.map { $0.peakSpeedKph }
         return speeds.isEmpty ? 0.0 : speeds.reduce(0, +) / Double(speeds.count)
+    }
+    var detectionCount: Int {
+        detectionResults.count
     }
     
     func subscribe(to userID: String) {
