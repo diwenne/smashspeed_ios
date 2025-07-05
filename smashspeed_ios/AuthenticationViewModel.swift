@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 import Combine
+import FirebaseStorage
 
 @MainActor
 class AuthenticationViewModel: ObservableObject {

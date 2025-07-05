@@ -5,9 +5,12 @@
 //  Created by Diwen Huang on 2025-06-27.
 //
 
+
+
 import Foundation
 import SwiftUI
 import Combine
+import FirebaseStorage
 
 @MainActor
 class SmashSpeedViewModel: ObservableObject {
@@ -69,14 +72,26 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
-    func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?) {
+    func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL) {
         let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         
         if let userID = userID {
-            do {
-                try HistoryViewModel.saveResult(peakSpeedKph: maxSpeed, for: userID)
-            } catch {
-                print("Error saving result: \(error.localizedDescription)")
+            Task {
+                do {
+                    let downloadURL = try await StorageManager.shared.uploadVideo(localURL: videoURL, for: userID)
+                    try HistoryViewModel.saveResult(peakSpeedKph: maxSpeed, for: userID, videoURL: downloadURL.absoluteString)
+                } catch {
+                    print("--- SMASH SPEED ERROR ---")
+                    print("Failed to upload video or save result. Error: \(error)")
+                    print("Localized Description: \(error.localizedDescription)")
+                    
+                    if let storageError = error as? NSError,
+                       let storageErrorCode = StorageErrorCode(rawValue: storageError.code) {
+                        print("Firebase Storage Error Code: \(storageErrorCode)")
+                    }
+                    print("-------------------------")
+                    appState = .error("Failed to save your result. Please try again.")
+                }
             }
         }
         

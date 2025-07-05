@@ -8,24 +8,16 @@
 import SwiftUI
 import PhotosUI
 
-// --- Make the AppState enum Equatable so it can be compared with `==` ---
 extension SmashSpeedViewModel.AppState: Equatable {
     static func == (lhs: SmashSpeedViewModel.AppState, rhs: SmashSpeedViewModel.AppState) -> Bool {
         switch (lhs, rhs) {
-        case (.idle, .idle):
-            return true
-        case (.review, .review):
-            return true
-        case (.awaitingCalibration, .awaitingCalibration):
-            return true
-        case (.processing, .processing):
-            return true
-        case (.completed, .completed):
-            return true
-        case (.error, .error):
-            return true
-        default:
-            return false
+        case (.idle, .idle): return true
+        case (.review, .review): return true
+        case (.awaitingCalibration, .awaitingCalibration): return true
+        case (.processing, .processing): return true
+        case (.completed, .completed): return true
+        case (.error, .error): return true
+        default: return false
         }
     }
 }
@@ -34,32 +26,35 @@ extension SmashSpeedViewModel.AppState: Equatable {
 struct DetectView: View {
     @StateObject private var viewModel = SmashSpeedViewModel()
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    
     @State private var selectedItem: PhotosPickerItem?
     
-    // State to control showing the onboarding instructions again.
     @State private var showOnboarding = false
 
     var body: some View {
-        // --- The NavigationStack is now back inside the DetectView ---
         NavigationStack {
-            // The main switch statement controlling the view's state
             switch viewModel.appState {
             
             case .idle:
                 MainView(selectedItem: $selectedItem)
-                    .onChange(of: selectedItem) {
+                    .onChange(of: selectedItem) { _, newItem in
                         Task {
-                            if let url = await getVideoURL(from: selectedItem) {
-                                viewModel.videoSelected(url: url)
-                                selectedItem = nil
+                            do {
+                                if let item = newItem,
+                                   let videoFile = try await item.loadTransferable(type: VideoFile.self) {
+                                    
+                                    viewModel.videoSelected(url: videoFile.url)
+                                    selectedItem = nil
+                                }
+                            } catch {
+                                print("Error loading video file: \(error)")
                             }
                         }
                     }
-                    // --- The toolbar and title are applied only to the .idle state's view ---
                     .navigationTitle("Detect")
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) {
-                            AppLogoView()
+                            AppLogoView() // Assuming this view exists
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button(action: { showOnboarding = true }) {
@@ -69,12 +64,12 @@ struct DetectView: View {
                         }
                     }
             
-            // Other cases for the state machine remain the same
             case .review(let videoURL, let result):
                 ReviewView(videoURL: videoURL, initialResult: result) { editedFrames in
                     viewModel.finishReview(
                         andShowResultsFrom: editedFrames,
-                        for: authViewModel.user?.uid
+                        for: authViewModel.user?.uid,
+                        videoURL: videoURL
                     )
                 }
             
@@ -95,33 +90,15 @@ struct DetectView: View {
                 ErrorView(message: message, onReset: viewModel.reset)
             }
         }
-        // This presents the onboarding view when the button is tapped.
         .sheet(isPresented: $showOnboarding) {
-            OnboardingView {
+            OnboardingView { // Assuming this view exists
                 showOnboarding = false
             }
         }
     }
-    
-    // Helper function to get the video URL from the selected item
-    private func getVideoURL(from item: PhotosPickerItem?) async -> URL? {
-        guard let item = item else { return nil }
-        do {
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).mov")
-            if let data = try await item.loadTransferable(type: Data.self) {
-                try data.write(to: tempURL)
-                return tempURL
-            }
-            return nil
-        } catch {
-            print("Error getting video URL: \(error)")
-            return nil
-        }
-    }
 }
 
-// MARK: - Subviews for each state
-
+// MARK: - Subviews for DetectView
 
 struct MainView: View {
     @Binding var selectedItem: PhotosPickerItem?
@@ -130,7 +107,6 @@ struct MainView: View {
         VStack {
             Spacer()
 
-            // The main circular upload button
             PhotosPicker(
                 selection: $selectedItem,
                 matching: .videos,

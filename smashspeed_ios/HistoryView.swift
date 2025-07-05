@@ -2,16 +2,17 @@
 //  HistoryView.swift
 //  smashspeed_ios
 //
-//  Created by Diwen Huang on 2025-07-04.
+//  Created by Diwen Huang on 2025-07-05.
 //
 
 import SwiftUI
 import FirebaseFirestore
 import Combine
 import Charts
-import FirebaseAuth // This import is now correctly used.
+import FirebaseAuth
+import AVKit
 
-// MARK: - History Tab
+// MARK: - Main History View
 
 struct HistoryView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
@@ -20,7 +21,6 @@ struct HistoryView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // This 'if' statement will now compile correctly.
                 if authViewModel.isSignedIn, let user = authViewModel.user {
                     content(for: user.uid)
                 } else {
@@ -33,17 +33,6 @@ struct HistoryView: View {
                     historyViewModel.subscribe(to: userID)
                 }
             }
-            .onDisappear {
-                historyViewModel.unsubscribe()
-            }
-            // This .onChange modifier will also now compile correctly.
-            .onChange(of: authViewModel.user) { _, newUser in
-                if let userID = newUser?.uid {
-                    historyViewModel.subscribe(to: userID)
-                } else {
-                    historyViewModel.unsubscribe()
-                }
-            }
         }
     }
     
@@ -53,14 +42,12 @@ struct HistoryView: View {
             ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
         } else {
             List {
-                // Overall Stats Section
                 Section(header: Text("Overall Stats")) {
                     StatRow(label: "Top Speed", value: String(format: "%.1f km/h", historyViewModel.topSpeed))
                     StatRow(label: "Average Speed", value: String(format: "%.1f km/h", historyViewModel.averageSpeed))
                     StatRow(label: "Total Smashes", value: "\(historyViewModel.detectionCount)")
                 }
                 
-                // Progress Chart Section
                 Section("Progress Over Time") {
                     if historyViewModel.detectionResults.count > 1 {
                         Chart {
@@ -68,14 +55,12 @@ struct HistoryView: View {
                                 LineMark(
                                     x: .value("Date", result.date.dateValue(), unit: .day),
                                     y: .value("Speed", result.peakSpeedKph)
-                                )
-                                .interpolationMethod(.catmullRom)
+                                ).interpolationMethod(.catmullRom)
 
                                 PointMark(
                                     x: .value("Date", result.date.dateValue(), unit: .day),
                                     y: .value("Speed", result.peakSpeedKph)
-                                )
-                                .foregroundStyle(.blue)
+                                ).foregroundStyle(.blue)
                             }
                         }
                         .chartYScale(domain: 0...(historyViewModel.topSpeed * 1.2))
@@ -88,10 +73,15 @@ struct HistoryView: View {
                     }
                 }
                 
-                // Detailed History Section
                 Section(header: Text("History")) {
                     ForEach(historyViewModel.detectionResults) { result in
-                        HistoryRow(result: result)
+                        if let videoURLString = result.videoURL, let videoURL = URL(string: videoURLString) {
+                            NavigationLink(destination: VideoPlayerView(videoURL: videoURL)) {
+                                HistoryRow(result: result)
+                            }
+                        } else {
+                            HistoryRow(result: result)
+                        }
                     }
                     .onDelete { indexSet in
                         historyViewModel.deleteResult(at: indexSet)
@@ -107,10 +97,17 @@ struct HistoryView: View {
     }
 }
 
+// MARK: - Subviews & Player
+
 struct HistoryRow: View {
     let result: DetectionResult
     var body: some View {
         HStack {
+            if result.videoURL != nil {
+                Image(systemName: "play.circle.fill")
+                    .foregroundColor(.accentColor)
+                    .font(.title2)
+            }
             VStack(alignment: .leading) {
                 Text(result.date.dateValue(), style: .date).font(.headline)
                 Text(result.date.dateValue(), style: .time).font(.caption).foregroundColor(.secondary)
@@ -118,6 +115,7 @@ struct HistoryRow: View {
             Spacer()
             Text(result.formattedSpeed).font(.title2).fontWeight(.semibold)
         }
+        .padding(.vertical, 4)
     }
 }
 
@@ -128,6 +126,54 @@ struct StatRow: View {
         HStack { Text(label); Spacer(); Text(value).fontWeight(.bold).foregroundColor(.secondary) }
     }
 }
+
+class PlayerViewModel: ObservableObject {
+    let player: AVPlayer
+    @Published var status: AVPlayer.Status = .unknown
+    private var statusObserver: NSKeyValueObservation?
+    init(url: URL) {
+        self.player = AVPlayer(url: url)
+        self.statusObserver = self.player.observe(\.status, options: [.new]) { player, change in
+            DispatchQueue.main.async {
+                self.status = player.status
+                if player.status == .readyToPlay {
+                    player.play()
+                }
+            }
+        }
+    }
+}
+
+struct VideoPlayerView: View {
+    @StateObject private var viewModel: PlayerViewModel
+    init(videoURL: URL) {
+        _viewModel = StateObject(wrappedValue: PlayerViewModel(url: videoURL))
+    }
+    var body: some View {
+        ZStack {
+            Color.black.edgesIgnoringSafeArea(.all)
+            switch viewModel.status {
+            case .readyToPlay:
+                VideoPlayer(player: viewModel.player).edgesIgnoringSafeArea(.all)
+            case .failed:
+                VStack {
+                    Image(systemName: "xmark.circle.fill").font(.largeTitle).foregroundColor(.red)
+                    Text("Video Failed to Load").foregroundColor(.white).padding(.top, 8)
+                }
+            case .unknown:
+                ProgressView().tint(.white)
+            @unknown default:
+                EmptyView()
+            }
+        }
+        .navigationTitle("Smash Replay")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: []) }
+        .onDisappear { viewModel.player.pause() }
+    }
+}
+
+// MARK: - History View Model
 
 @MainActor
 class HistoryViewModel: ObservableObject {
@@ -148,7 +194,10 @@ class HistoryViewModel: ObservableObject {
         if listenerRegistration != nil { unsubscribe() }
         let query = db.collection("detections").whereField("userID", isEqualTo: userID).order(by: "date", descending: true)
         listenerRegistration = query.addSnapshotListener { [weak self] (snapshot, error) in
-            guard let docs = snapshot?.documents else { return }
+            guard let docs = snapshot?.documents, error == nil else {
+                print("Error fetching snapshot: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
             self?.detectionResults = docs.compactMap { try? $0.data(as: DetectionResult.self) }
         }
     }
@@ -159,9 +208,14 @@ class HistoryViewModel: ObservableObject {
         detectionResults = []
     }
     
-    static func saveResult(peakSpeedKph: Double, for userID: String) throws {
+    static func saveResult(peakSpeedKph: Double, for userID: String, videoURL: String) throws {
         let db = Firestore.firestore()
-        let result = DetectionResult(userID: userID, date: Timestamp(date: Date()), peakSpeedKph: peakSpeedKph)
+        let result = DetectionResult(
+            userID: userID,
+            date: Timestamp(date: Date()),
+            peakSpeedKph: peakSpeedKph,
+            videoURL: videoURL
+        )
         try db.collection("detections").addDocument(from: result)
     }
     
@@ -174,10 +228,13 @@ class HistoryViewModel: ObservableObject {
     }
 }
 
+// --- MODIFIED ---: Add the videoURL property to your data model.
 struct DetectionResult: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
     let userID: String
     let date: Timestamp
     let peakSpeedKph: Double
+    var videoURL: String? // --- ADDED ---: The URL of the video in Firebase Storage.
+    
     var formattedSpeed: String { String(format: "%.1f km/h", peakSpeedKph) }
 }
