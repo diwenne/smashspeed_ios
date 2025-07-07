@@ -36,7 +36,7 @@ struct LoadingView: View {
             Image(systemName: "bolt.fill")
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
-            Text("SmashSpeed")
+            Text("Smashspeed")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             ProgressView()
@@ -80,7 +80,7 @@ struct AppLogoView: View {
         HStack {
             Image(systemName: "bolt.fill")
                 .foregroundColor(.blue)
-            Text("SmashSpeed")
+            Text("Smashspeed")
                 .font(.headline)
                 .fontWeight(.bold)
         }
