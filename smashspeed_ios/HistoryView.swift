@@ -11,6 +11,7 @@ import Combine
 import Charts
 import FirebaseAuth
 import AVKit
+import FirebaseStorage
 
 // MARK: - Main History View
 
@@ -220,12 +221,30 @@ class HistoryViewModel: ObservableObject {
     }
     
     func deleteResult(at offsets: IndexSet) {
-        let resultsToDelete = offsets.map { self.detectionResults[$0] }
-        for result in resultsToDelete {
-            guard let docID = result.id else { continue }
-            db.collection("detections").document(docID).delete()
+            let resultsToDelete = offsets.map { self.detectionResults[$0] }
+            
+            for result in resultsToDelete {
+                Task { // Use a Task to perform asynchronous operations
+                    do {
+                        // 1. Delete from Firebase Storage if a video URL exists
+                        if let videoURLString = result.videoURL {
+                            let storageRef = Storage.storage().reference(forURL: videoURLString)
+                            try await storageRef.delete()
+                            print("Successfully deleted video from Storage.")
+                        }
+                        
+                        // 2. Delete from Firestore after storage deletion is successful
+                        if let docID = result.id {
+                            try await db.collection("detections").document(docID).delete()
+                            print("Successfully deleted document from Firestore.")
+                        }
+                    } catch {
+                        print("Error deleting result: \(error.localizedDescription)")
+                        // Optionally, you could add a state to show an error to the user here.
+                    }
+                }
+            }
         }
-    }
 }
 
 // --- MODIFIED ---: Add the videoURL property to your data model.
