@@ -5,8 +5,6 @@
 //  Created by Diwen Huang on 2025-06-27.
 //
 
-
-
 import Foundation
 import SwiftUI
 import Combine
@@ -27,8 +25,7 @@ class SmashSpeedViewModel: ObservableObject {
     @Published var appState: AppState = .idle
     
     private var videoProcessor: VideoProcessor?
-    private var cancellables = Set<AnyCancellable>()
-
+    
     func videoSelected(url: URL) {
         appState = .awaitingCalibration(url)
     }
@@ -51,15 +48,14 @@ class SmashSpeedViewModel: ObservableObject {
                 let tracker = ShuttlecockTracker(scaleFactor: scaleFactor)
                 self.videoProcessor = VideoProcessor(videoURL: videoURL, modelHandler: modelHandler, tracker: tracker)
                 
-                if let processor = self.videoProcessor {
-                    if let result = try await processor.processVideo(progressHandler: { prog in
-                        DispatchQueue.main.async {
-                            progress.completedUnitCount = prog.completedUnitCount
-                            progress.totalUnitCount = prog.totalUnitCount
-                        }
-                    }) {
-                        appState = .review(videoURL: videoURL, result: result)
+                if let processor = self.videoProcessor,
+                   let result = try await processor.processVideo(progressHandler: { prog in
+                    DispatchQueue.main.async {
+                        progress.completedUnitCount = prog.completedUnitCount
+                        progress.totalUnitCount = prog.totalUnitCount
                     }
+                   }) {
+                    appState = .review(videoURL: videoURL, result: result)
                 }
             } catch {
                 appState = .error(error.localizedDescription)
@@ -76,31 +72,28 @@ class SmashSpeedViewModel: ObservableObject {
         let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         
         if let userID = userID {
+            // Re-use the .processing state to show a temporary "uploading" indicator
+            let uploadProgress = Progress(totalUnitCount: 100)
+            uploadProgress.completedUnitCount = 50 // You can adjust this to feel right
+            appState = .processing(uploadProgress)
+            
             Task {
                 do {
                     let downloadURL = try await StorageManager.shared.uploadVideo(localURL: videoURL, for: userID)
                     try HistoryViewModel.saveResult(peakSpeedKph: maxSpeed, for: userID, videoURL: downloadURL.absoluteString)
+                    appState = .completed(maxSpeed)
                 } catch {
-                    print("--- SMASH SPEED ERROR ---")
-                    print("Failed to upload video or save result. Error: \(error)")
-                    print("Localized Description: \(error.localizedDescription)")
-                    
-                    if let storageError = error as? NSError,
-                       let storageErrorCode = StorageErrorCode(rawValue: storageError.code) {
-                        print("Firebase Storage Error Code: \(storageErrorCode)")
-                    }
-                    print("-------------------------")
-                    appState = .error("Failed to save your result. Please try again.")
+                    let errorMessage = "Failed to upload video. Please try again.\nError: \(error.localizedDescription)"
+                    appState = .error(errorMessage)
                 }
             }
+        } else {
+            appState = .completed(maxSpeed)
         }
-        
-        appState = .completed(maxSpeed)
     }
 
     func reset() {
         videoProcessor = nil
-        cancellables.removeAll()
         appState = .idle
     }
 }
