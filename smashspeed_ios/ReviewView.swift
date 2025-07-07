@@ -36,6 +36,9 @@ struct ReviewView: View {
     @State private var wText: String = ""
     @State private var hText: String = ""
     
+    // --- NEW: FocusState to track keyboard visibility ---
+    @FocusState private var isInputActive: Bool
+    
     private let imageGenerator: AVAssetImageGenerator
     
     init(videoURL: URL, initialResult: VideoAnalysisResult, onFinish: @escaping ([FrameAnalysis]) -> Void) {
@@ -60,6 +63,7 @@ struct ReviewView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // --- Top Frame Display ---
             Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
                 .font(.headline).padding(.vertical, 10)
                 .frame(maxWidth: .infinity).background(.thinMaterial)
@@ -109,36 +113,80 @@ struct ReviewView: View {
             }
             .frame(maxHeight: .infinity)
 
-            // Bottom control panel
-            VStack(spacing: 12) {
-                if let speed = currentFrameData?.speedKPH {
-                    Text(String(format: "%.1f km/h", speed)).font(.title3).bold()
-                } else { Text("No Speed Detected").font(.title3).foregroundColor(.secondary) }
-                
-                // All controls, including text fields, are here.
-                BoxAdjustmentControls(
-                    editMode: $editMode,
-                    hasBox: currentFrameData?.boundingBox != nil,
-                    addBoxAction: addBox,
-                    removeBoxAction: removeBox,
-                    adjustBoxAction: adjustBox,
-                    xText: $xText,
-                    yText: $yText,
-                    wText: $wText,
-                    hText: $hText,
-                    onCoordinateCommit: updateBoxFromTextFields
-                )
-                
-                HStack {
-                    Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
-                    Spacer()
-                    Button("Finish") { onFinish(analysisResults) }.buttonStyle(.borderedProminent).controlSize(.regular)
-                    Spacer()
-                    Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
+            // --- Bottom control panel organized into a List ---
+            List {
+                // Section for explaining the view
+                Section {
+                    Text("Optionally review each frame to ensure the shuttlecock detection was correct. Make adjustments as needed.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .font(.largeTitle).buttonStyle(.plain)
+                
+                // Section for Frame Navigation
+                Section(header: Text("Frame Navigation")) {
+                    HStack {
+                        Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
+                        Spacer()
+                        VStack {
+                            Text("Speed at this frame:")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            if let speed = currentFrameData?.speedKPH {
+                                Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
+                            } else { Text("N/A").font(.headline).foregroundStyle(.secondary) }
+                        }
+                        Spacer()
+                        Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
+                    }
+                    .font(.largeTitle)
+                    .buttonStyle(.plain)
+                    .padding(.vertical, 5)
+                }
+
+                // Section for Bounding Box editing
+                Section(header: Text("Bounding Box Controls")) {
+                    BoxAdjustmentControls(
+                        editMode: $editMode,
+                        hasBox: currentFrameData?.boundingBox != nil,
+                        addBoxAction: addBox,
+                        removeBoxAction: removeBox,
+                        adjustBoxAction: adjustBox
+                    )
+                }
+                
+                // Section for manual coordinate input
+                Section(header: Text("Manual Coordinates")) {
+                    CoordinateInputView(
+                        xText: $xText, yText: $yText,
+                        wText: $wText, hText: $hText,
+                        isFocused: $isInputActive, // Pass the focus state down
+                        onCommit: updateBoxFromTextFields
+                    )
+                }
+                
+                // Section to finalize the review
+                Section {
+                    Button("Finish & Save Analysis") { onFinish(analysisResults) }
+                        .buttonStyle(.borderedProminent)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .tint(.blue)
+                        .controlSize(.large)
+                }
+                .listRowBackground(Color.clear)
             }
-            .padding().padding(.bottom).background(.thinMaterial)
+            .listStyle(.insetGrouped)
+            .frame(maxHeight: 400) // Constrain the height of the list
+            // --- Add a toolbar that appears with the keyboard ---
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer() // Pushes the button to the right
+                    // --- FIX: This button now commits the changes before dismissing ---
+                    Button("Done") {
+                        updateBoxFromTextFields() // Manually commit changes
+                        isInputActive = false // Then dismiss the keyboard
+                    }
+                }
+            }
         }
         .task(id: currentIndex) {
             await MainActor.run {
@@ -264,7 +312,6 @@ private struct OverlayView: View {
                 analysis: analysis, videoSize: videoSize, containerSize: containerSize,
                 currentScale: currentScale, globalOffset: globalOffset
             )
-            // --- FIX: Use the non-draggable StaticBoxView ---
             StaticBoxView(
                 analysis: analysis, containerSize: containerSize, videoSize: videoSize,
                 currentScale: currentScale, globalOffset: globalOffset
@@ -339,12 +386,6 @@ private struct BoxAdjustmentControls: View {
     let removeBoxAction: () -> Void
     let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat) -> Void
     
-    @Binding var xText: String
-    @Binding var yText: String
-    @Binding var wText: String
-    @Binding var hText: String
-    let onCoordinateCommit: () -> Void
-    
     var body: some View {
         VStack(spacing: 8) {
             if hasBox {
@@ -358,13 +399,6 @@ private struct BoxAdjustmentControls: View {
                 } else {
                     ReviewResizeControls { dw, dh in adjustBoxAction(0, 0, dw, dh) }
                 }
-                
-                CoordinateInputView(
-                    xText: $xText, yText: $yText,
-                    wText: $wText, hText: $hText,
-                    onCommit: onCoordinateCommit
-                )
-                .padding(.top, 5)
             }
             
             HStack {
@@ -375,7 +409,7 @@ private struct BoxAdjustmentControls: View {
                     Button(role: .destructive, action: removeBoxAction) { Label("Remove Box", systemImage: "trash") }.tint(.red)
                 }
                 Spacer()
-            }.buttonStyle(.bordered).controlSize(.regular)
+            }.buttonStyle(.bordered).controlSize(.small)
         }
     }
 }
@@ -385,17 +419,18 @@ private struct CoordinateInputView: View {
     @Binding var yText: String
     @Binding var wText: String
     @Binding var hText: String
+    var isFocused: FocusState<Bool>.Binding // Receive the focus state
     let onCommit: () -> Void
     
     var body: some View {
         Grid(alignment: .center, horizontalSpacing: 8, verticalSpacing: 8) {
             GridRow {
-                Text("x").frame(width: 20); TextField("x", text: $xText)
-                Text("y").frame(width: 20); TextField("y", text: $yText)
+                Text("x").frame(width: 20); TextField("x", text: $xText).focused(isFocused)
+                Text("y").frame(width: 20); TextField("y", text: $yText).focused(isFocused)
             }
             GridRow {
-                Text("w").frame(width: 20); TextField("w", text: $wText)
-                Text("h").frame(width: 20); TextField("h", text: $hText)
+                Text("w").frame(width: 20); TextField("w", text: $wText).focused(isFocused)
+                Text("h").frame(width: 20); TextField("h", text: $hText).focused(isFocused)
             }
         }
         .textFieldStyle(.roundedBorder)
