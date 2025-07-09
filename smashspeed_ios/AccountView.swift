@@ -90,11 +90,13 @@ struct AuthView: View {
         VStack {
             // App Logo
             VStack {
-                Image(systemName: "bolt.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.blue)
+                Image("AppIconPreview")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 128, height: 128) // Matches SF Symbol size
                     .shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
-                Text("SmashSpeed")
+
+                Text("Smashspeed")
                     .font(.largeTitle)
                     .fontWeight(.bold)
             }

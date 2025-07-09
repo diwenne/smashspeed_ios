@@ -33,12 +33,16 @@ struct ContentView: View {
 struct LoadingView: View {
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "bolt.fill")
-                .font(.system(size: 80))
-                .foregroundColor(.blue)
+            Image("AppIconTransparent")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 80, height: 80) // Matches .font(.system(size: 80))
+                .shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
+
             Text("Smashspeed")
                 .font(.largeTitle)
                 .fontWeight(.bold)
+
             ProgressView()
         }
     }
@@ -78,8 +82,12 @@ struct MainTabView: View {
 struct AppLogoView: View {
     var body: some View {
         HStack {
-            Image(systemName: "bolt.fill")
-                .foregroundColor(.blue)
+            Image("AppIconTransparent")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 30, height: 30) // Adjust to match symbol size
+                .shadow(color: .blue.opacity(0.3), radius: 4, y: 1)
+
             Text("Smashspeed")
                 .font(.headline)
                 .fontWeight(.bold)

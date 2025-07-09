@@ -101,28 +101,42 @@ struct OnboardingView: View {
 /// A dedicated view for the first, simple welcome slide.
 struct OnboardingWelcomeView: View {
     var body: some View {
-        VStack {
+        VStack(spacing: 30) {
             Spacer()
-            
-            VStack(spacing: 16) {
+
+            // App Icon
+            Image("AppIconTransparent")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 100, height: 100)
+                .shadow(color: .blue.opacity(0.3), radius: 10, y: 5)
+
+            // Title
+            VStack(spacing: 8) {
                 Text("Welcome to")
-                    .font(.largeTitle)
+                    .font(.title)
                     .foregroundColor(.secondary)
-                
+
                 Text("SmashSpeed")
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .foregroundColor(.blue)
             }
-            
-            Spacer()
-            
-            Text("Swipe to learn how to measure your smash speed.")
+
+            // Subtitle
+            Text("Turn your match videos into smash speed insights.\nNo radar gun needed.")
                 .font(.headline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding()
-            
+                .padding(.horizontal)
+
             Spacer()
+
+            // Instruction
+            Text("Swipe to learn how to get started.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 20)
         }
         .padding()
     }
