@@ -199,18 +199,50 @@ struct ProcessingView: View {
     }
 }
 
+
 struct ResultView: View {
+    @EnvironmentObject var viewModel: AuthenticationViewModel
+    
     let speed: Double
     let onReset: () -> Void
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Maximum Speed").font(.title).foregroundColor(.secondary)
-            Text(String(format: "%.1f", speed)).font(.system(size: 80, weight: .bold, design: .rounded)).foregroundColor(.blue)
-            Text("km/h").font(.title2).foregroundColor(.secondary)
-            Button(action: onReset) {
-                Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle")
-            }.buttonStyle(.bordered).padding(.top, 40)
+        // A NavigationView is required for NavigationLink to function.
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Maximum Speed")
+                    .font(.title)
+                    .foregroundColor(.secondary)
+                
+                Text(String(format: "%.1f", speed))
+                    .font(.system(size: 80, weight: .bold, design: .rounded))
+                    .foregroundColor(.blue)
+                
+                Text("km/h")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+                
+                // --- THIS IS THE MODIFIED SECTION ---
+                // Check if the user is signed out
+                if viewModel.authState != .signedIn {
+                    // A subtle, text-based link to the AccountView.
+                    // It will automatically use the app's accent/tint color (blue by default).
+                    NavigationLink(destination: AccountView()) {
+                        Text("Want to save your result? Sign In")
+                    }
+                    .padding(.top, 20) // Add some space above
+                }
+                
+                Button(action: onReset) {
+                    Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle")
+                }
+                .buttonStyle(.bordered)
+                .padding(.top, 40)
+            }
+            .padding()
+            .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
     }
 }
 

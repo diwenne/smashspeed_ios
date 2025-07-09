@@ -212,4 +212,3 @@ struct CreateAccountForm: View {
         .textFieldStyle(RoundedBorderTextFieldStyle())
     }
 }
-
