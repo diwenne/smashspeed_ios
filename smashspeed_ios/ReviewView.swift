@@ -36,7 +36,6 @@ struct ReviewView: View {
     @State private var wText: String = ""
     @State private var hText: String = ""
     
-    // --- NEW: FocusState to track keyboard visibility ---
     @FocusState private var isInputActive: Bool
     
     private let imageGenerator: AVAssetImageGenerator
@@ -62,128 +61,134 @@ struct ReviewView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // --- Top Frame Display ---
-            Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
-                .font(.headline).padding(.vertical, 10)
-                .frame(maxWidth: .infinity).background(.thinMaterial)
+        ZStack {
+            // 1. A monochromatic blue aurora background to match other views.
+            Color(.systemBackground).ignoresSafeArea()
+            
+            Circle()
+                .fill(Color.blue.opacity(0.8))
+                .blur(radius: 150)
+                .offset(x: -150, y: -200)
 
-            GeometryReader { geo in
-                ZStack {
-                    // Image container with pan/zoom gestures
+            Circle()
+                .fill(Color.blue.opacity(0.5))
+                .blur(radius: 180)
+                .offset(x: 150, y: 150)
+
+            VStack(spacing: 0) {
+                // --- Top Frame Display ---
+                Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
+                    .font(.headline).padding(.vertical, 10)
+                    .frame(maxWidth: .infinity).background(.ultraThinMaterial)
+
+                GeometryReader { geo in
                     ZStack {
-                        if let image = currentFrameImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                        } else {
-                            Color.black
-                            ProgressView().tint(.white)
+                        // Image container with pan/zoom gestures
+                        ZStack {
+                            if let image = currentFrameImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFit()
+                            } else {
+                                Color.black
+                                ProgressView().tint(.white)
+                            }
                         }
-                    }
-                    .scaleEffect(currentScale)
-                    .offset(currentOffset)
-                    .gesture(panGesture().simultaneously(with: magnificationGesture()))
-                    
-                    // The overlay now uses a static, non-draggable box.
-                    OverlayView(
-                        analysis: $analysisResults[currentIndex],
-                        containerSize: geo.size,
-                        videoSize: initialResult.videoSize,
-                        currentScale: self.currentScale,
-                        globalOffset: self.currentOffset
-                    )
-                    
-                    // UI Controls for zoom
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            Button { withAnimation { zoom(by: 1.5) } } label: { Image(systemName: "plus.magnifyingglass") }
-                            Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
-                            Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
-                        }
-                        .font(.title2).padding().background(.black.opacity(0.5))
-                        .foregroundColor(.white).cornerRadius(15).padding()
-                    }
-                }
-                .frame(width: geo.size.width, height: geo.size.height)
-                .clipped()
-                .onAppear { self.viewportSize = geo.size }
-            }
-            .frame(maxHeight: .infinity)
-
-            // --- Bottom control panel organized into a List ---
-            List {
-                // Section for explaining the view
-                Section {
-                    Text("Optionally review each frame to ensure the shuttlecock detection was correct. Make adjustments as needed.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                // Section for Frame Navigation
-                Section(header: Text("Frame Navigation")) {
-                    HStack {
-                        Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
-                        Spacer()
+                        .scaleEffect(currentScale)
+                        .offset(currentOffset)
+                        .gesture(panGesture().simultaneously(with: magnificationGesture()))
+                        
+                        // The overlay now uses a static, non-draggable box.
+                        OverlayView(
+                            analysis: $analysisResults[currentIndex],
+                            containerSize: geo.size,
+                            videoSize: initialResult.videoSize,
+                            currentScale: self.currentScale,
+                            globalOffset: self.currentOffset
+                        )
+                        
+                        // UI Controls for zoom
                         VStack {
-                            Text("Speed at this frame:")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            if let speed = currentFrameData?.speedKPH {
-                                Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
-                            } else { Text("N/A").font(.headline).foregroundStyle(.secondary) }
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                Button { withAnimation { zoom(by: 1.5) } } label: { Image(systemName: "plus.magnifyingglass") }
+                                Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
+                                Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
+                            }
+                            .font(.title2).padding().background(.black.opacity(0.5))
+                            .foregroundColor(.white).cornerRadius(15).padding()
                         }
-                        Spacer()
-                        Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
                     }
-                    .font(.largeTitle)
-                    .buttonStyle(.plain)
-                    .padding(.vertical, 5)
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .clipped()
+                    .onAppear { self.viewportSize = geo.size }
                 }
+                .frame(maxHeight: .infinity)
 
-                // Section for Bounding Box editing
-                Section(header: Text("Bounding Box Controls")) {
-                    BoxAdjustmentControls(
-                        editMode: $editMode,
-                        hasBox: currentFrameData?.boundingBox != nil,
-                        addBoxAction: addBox,
-                        removeBoxAction: removeBox,
-                        adjustBoxAction: adjustBox
-                    )
+                // --- Bottom control panel on a GlassPanel ---
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Frame Navigation
+                        HStack {
+                            Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
+                            Spacer()
+                            VStack {
+                                Text("Speed at this frame:")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                if let speed = currentFrameData?.speedKPH {
+                                    Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
+                                } else { Text("N/A").font(.headline).foregroundStyle(.secondary) }
+                            }
+                            Spacer()
+                            Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
+                        }
+                        .font(.largeTitle)
+                        .buttonStyle(.plain)
+                        .padding(.vertical, 5)
+                        
+                        Divider()
+
+                        // Bounding Box Controls
+                        BoxAdjustmentControls(
+                            editMode: $editMode,
+                            hasBox: currentFrameData?.boundingBox != nil,
+                            addBoxAction: addBox,
+                            removeBoxAction: removeBox,
+                            adjustBoxAction: adjustBox
+                        )
+                        
+                        Divider()
+                        
+                        // Manual Coordinates
+                        CoordinateInputView(
+                            xText: $xText, yText: $yText,
+                            wText: $wText, hText: $hText,
+                            isFocused: $isInputActive,
+                            onCommit: updateBoxFromTextFields
+                        )
+                        
+                        // Finalize Button
+                        Button("Finish & Save Analysis") { onFinish(analysisResults) }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .padding(30)
+                    .background(GlassPanel())
+                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                    .padding()
                 }
-                
-                // Section for manual coordinate input
-                Section(header: Text("Manual Coordinates")) {
-                    CoordinateInputView(
-                        xText: $xText, yText: $yText,
-                        wText: $wText, hText: $hText,
-                        isFocused: $isInputActive, // Pass the focus state down
-                        onCommit: updateBoxFromTextFields
-                    )
-                }
-                
-                // Section to finalize the review
-                Section {
-                    Button("Finish & Save Analysis") { onFinish(analysisResults) }
-                        .buttonStyle(.borderedProminent)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .tint(.blue)
-                        .controlSize(.large)
-                }
-                .listRowBackground(Color.clear)
+                .frame(maxHeight: isInputActive ? 450 : 350) // Adjust height based on keyboard
+                .animation(.spring(), value: isInputActive)
             }
-            .listStyle(.insetGrouped)
-            .frame(maxHeight: 400) // Constrain the height of the list
-            // --- Add a toolbar that appears with the keyboard ---
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
-                    Spacer() // Pushes the button to the right
-                    // --- FIX: This button now commits the changes before dismissing ---
+                    Spacer()
                     Button("Done") {
-                        updateBoxFromTextFields() // Manually commit changes
-                        isInputActive = false // Then dismiss the keyboard
+                        updateBoxFromTextFields()
+                        isInputActive = false
                     }
                 }
             }

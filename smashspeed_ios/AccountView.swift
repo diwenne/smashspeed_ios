@@ -1,10 +1,3 @@
-//
-//  AccountView.swift
-//  smashspeed_ios
-//
-//  Created by Diwen Huang on 2025-07-04.
-//
-
 import SwiftUI
 import FirebaseAuth
 import Combine
@@ -16,9 +9,20 @@ struct AccountView: View {
     
     var body: some View {
         NavigationStack {
-            // Use a ZStack to place a background color
+            // Use a ZStack to place the glassmorphism background.
             ZStack {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+                // 1. A monochromatic blue aurora background to match the onboarding.
+                Color(.systemBackground).ignoresSafeArea()
+                
+                Circle()
+                    .fill(Color.blue.opacity(0.8))
+                    .blur(radius: 150)
+                    .offset(x: -150, y: -200)
+
+                Circle()
+                    .fill(Color.blue.opacity(0.5))
+                    .blur(radius: 180)
+                    .offset(x: 150, y: 150)
                 
                 // Main content switcher
                 switch viewModel.authState {
@@ -31,7 +35,6 @@ struct AccountView: View {
                         }
                     }
                 case .signedOut:
-                    // The new, cleaner authentication view
                     AuthView()
                 }
             }
@@ -51,31 +54,33 @@ struct LoggedInView: View {
     }
     
     var body: some View {
-        // Use a List for a clean, standard iOS look.
-        List {
-            // Profile Header Section
-            Section {
-                HStack(spacing: 16) {
-                    Image(systemName: "person.crop.circle.fill.badge.checkmark")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    
-                    VStack(alignment: .leading) {
-                        Text(user.email ?? "No email found")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        Text("Member since \(memberSince)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+        ScrollView {
+            VStack(spacing: 30) {
+                // Profile Header Section on a Glass Panel
+                VStack(spacing: 20) {
+                    HStack(spacing: 16) {
+                        Image(systemName: "person.crop.circle.fill.badge.checkmark")
+                            .font(.system(size: 60))
+                            .foregroundColor(.green)
+                        
+                        VStack(alignment: .leading) {
+                            Text(user.email ?? "No email found")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                            Text("Member since \(memberSince)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    Divider()
+                    Button("Sign Out", role: .destructive, action: signOutAction)
                 }
-                .padding(.vertical, 8)
+                .padding(30)
+                .background(GlassPanel())
+                .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
             }
-            
-            // Account Actions Section
-            Section {
-                Button("Sign Out", role: .destructive, action: signOutAction)
-            }
+            .padding()
+            .padding(.top, 20)
         }
     }
 }
@@ -87,37 +92,36 @@ struct AuthView: View {
     @State private var isSigningUp = false
 
     var body: some View {
-        VStack {
+        VStack(spacing: 30) {
             // App Logo
             VStack {
                 Image("AppIconPreview")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 128, height: 128) // Matches SF Symbol size
+                    .frame(width: 100, height: 100)
                     .shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
 
                 Text("Smashspeed")
                     .font(.largeTitle)
                     .fontWeight(.bold)
             }
-            .padding(.vertical, 30)
 
-            // --- FIX: Use a ZStack to contain both forms for a smooth animation ---
-            ZStack {
-                // Sign In Form
-                SignInForm(isSigningUp: $isSigningUp)
-                    // Move off-screen to the left when signing up
-                    .offset(x: isSigningUp ? -UIScreen.main.bounds.width : 0)
-                    .opacity(isSigningUp ? 0 : 1)
+            // Authentication Forms on a Glass Panel
+            VStack {
+                ZStack {
+                    SignInForm(isSigningUp: $isSigningUp)
+                        .offset(x: isSigningUp ? -UIScreen.main.bounds.width : 0)
+                        .opacity(isSigningUp ? 0 : 1)
 
-                // Create Account Form
-                CreateAccountForm(isSigningUp: $isSigningUp)
-                    // Start off-screen to the right and move in
-                    .offset(x: isSigningUp ? 0 : UIScreen.main.bounds.width)
-                    .opacity(isSigningUp ? 1 : 0)
+                    CreateAccountForm(isSigningUp: $isSigningUp)
+                        .offset(x: isSigningUp ? 0 : UIScreen.main.bounds.width)
+                        .opacity(isSigningUp ? 1 : 0)
+                }
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSigningUp)
             }
-            // Apply a spring animation to the ZStack's contents when `isSigningUp` changes.
-            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSigningUp)
+            .padding(30)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
             
             Spacer()
         }
@@ -132,18 +136,16 @@ struct SignInForm: View {
     @State private var password = ""
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Text("Sign In to Your Account")
                 .font(.title3)
                 .fontWeight(.bold)
-                .padding(.bottom)
 
-            TextField("Email", text: $email)
+            ModernTextField(title: "Email", text: $email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
-                .autocapitalization(.none)
             
-            SecureField("Password", text: $password)
+            ModernTextField(title: "Password", text: $password, isSecure: true)
                 .textContentType(.password)
             
             if let error = viewModel.errorMessage {
@@ -161,7 +163,6 @@ struct SignInForm: View {
             .tint(.accentColor)
             .padding(.top)
         }
-        .textFieldStyle(RoundedBorderTextFieldStyle())
     }
 }
 
@@ -173,21 +174,19 @@ struct CreateAccountForm: View {
     @State private var confirmPassword = ""
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Text("Create a New Account")
                 .font(.title3)
                 .fontWeight(.bold)
-                .padding(.bottom)
                 
-            TextField("Email", text: $email)
+            ModernTextField(title: "Email", text: $email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
-                .autocapitalization(.none)
             
-            SecureField("Password", text: $password)
+            ModernTextField(title: "Password", text: $password, isSecure: true)
                 .textContentType(.newPassword)
             
-            SecureField("Confirm Password", text: $confirmPassword)
+            ModernTextField(title: "Confirm Password", text: $confirmPassword, isSecure: true)
                 .textContentType(.newPassword)
             
             if let error = viewModel.errorMessage {
@@ -211,6 +210,25 @@ struct CreateAccountForm: View {
             .tint(.accentColor)
             .padding(.top)
         }
-        .textFieldStyle(RoundedBorderTextFieldStyle())
+    }
+}
+
+// MARK: - Reusable Components
+
+struct ModernTextField: View {
+    let title: String
+    @Binding var text: String
+    var isSecure: Bool = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if isSecure {
+                SecureField(title, text: $text)
+            } else {
+                TextField(title, text: $text)
+            }
+            Divider()
+        }
+        .autocapitalization(.none)
     }
 }

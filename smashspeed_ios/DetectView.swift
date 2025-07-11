@@ -1,10 +1,3 @@
-//
-//  DetectView.swift
-//  smashspeed_ios
-//
-//  Created by Diwen Huang on 2025-07-04.
-//
-
 import SwiftUI
 import PhotosUI
 
@@ -39,49 +32,66 @@ struct DetectView: View {
 
     var body: some View {
         NavigationStack {
-            switch viewModel.appState {
-            
-            case .idle:
-                MainView(showInputSelector: $showInputSelector)
-                    .onChange(of: selectedItem) { _, newItem in
-                        Task {
-                            if let item = newItem,
-                               let videoFile = try? await item.loadTransferable(type: VideoFile.self) {
-                                viewModel.videoSelected(url: videoFile.url)
-                                selectedItem = nil
+            // ZStack to hold the glassmorphism background
+            ZStack {
+                // 1. A monochromatic blue aurora background to match other views.
+                Color(.systemBackground).ignoresSafeArea()
+                
+                Circle()
+                    .fill(Color.blue.opacity(0.8))
+                    .blur(radius: 150)
+                    .offset(x: -150, y: -200)
+
+                Circle()
+                    .fill(Color.blue.opacity(0.5))
+                    .blur(radius: 180)
+                    .offset(x: 150, y: 150)
+
+                // Main content switcher
+                switch viewModel.appState {
+                
+                case .idle:
+                    MainView(showInputSelector: $showInputSelector)
+                        .onChange(of: selectedItem) { _, newItem in
+                            Task {
+                                if let item = newItem,
+                                   let videoFile = try? await item.loadTransferable(type: VideoFile.self) {
+                                    viewModel.videoSelected(url: videoFile.url)
+                                    selectedItem = nil
+                                }
                             }
                         }
-                    }
-                    .onChange(of: recordedVideoURL) { _, newURL in
-                        if let url = newURL {
-                            viewModel.videoSelected(url: url)
-                            recordedVideoURL = nil
-                        }
-                    }
-                    .navigationTitle("Detect")
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) { AppLogoView() }
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: { showOnboarding = true }) {
-                                Image(systemName: "info.circle").foregroundColor(.accentColor)
+                        .onChange(of: recordedVideoURL) { _, newURL in
+                            if let url = newURL {
+                                viewModel.videoSelected(url: url)
+                                recordedVideoURL = nil
                             }
                         }
+                        .navigationTitle("Detect")
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) { AppLogoView() }
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: { showOnboarding = true }) {
+                                    Image(systemName: "info.circle").foregroundColor(.accentColor)
+                                }
+                            }
+                        }
+                
+                case .review(let videoURL, let result):
+                    ReviewView(videoURL: videoURL, initialResult: result) { editedFrames in
+                        viewModel.finishReview(andShowResultsFrom: editedFrames, for: authViewModel.user?.uid, videoURL: videoURL)
                     }
-            
-            case .review(let videoURL, let result):
-                ReviewView(videoURL: videoURL, initialResult: result) { editedFrames in
-                    viewModel.finishReview(andShowResultsFrom: editedFrames, for: authViewModel.user?.uid, videoURL: videoURL)
+                case .awaitingCalibration(let url):
+                    CalibrationView(videoURL: url, onComplete: { scaleFactor in
+                        viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
+                    }, onCancel: { viewModel.cancelCalibration() })
+                case .processing(let progress):
+                    ProcessingView(progress: progress) { viewModel.cancelProcessing() }
+                case .completed(let speed):
+                    ResultView(speed: speed, onReset: viewModel.reset)
+                case .error(let message):
+                    ErrorView(message: message, onReset: viewModel.reset)
                 }
-            case .awaitingCalibration(let url):
-                CalibrationView(videoURL: url, onComplete: { scaleFactor in
-                    viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
-                }, onCancel: { viewModel.cancelCalibration() })
-            case .processing(let progress):
-                ProcessingView(progress: progress) { viewModel.cancelProcessing() }
-            case .completed(let speed):
-                ResultView(speed: speed, onReset: viewModel.reset)
-            case .error(let message):
-                ErrorView(message: message, onReset: viewModel.reset)
             }
         }
         .sheet(isPresented: $showInputSelector) {
@@ -91,6 +101,8 @@ struct DetectView: View {
                 selectedItem: $selectedItem
             )
             .presentationDetents([.height(220)])
+            // Make the sheet background clear to see the aurora behind it
+            .background(ClearBackgroundView())
         }
         .sheet(isPresented: $showCamera) {
             CameraPicker(videoURL: $recordedVideoURL)
@@ -101,101 +113,126 @@ struct DetectView: View {
 
 // MARK: - Subviews for DetectView
 
-// MainView is now back to the simple, single button UI
 struct MainView: View {
     @Binding var showInputSelector: Bool
     
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
             Spacer()
-            Button {
+            
+            Button(action: {
                 showInputSelector = true
-            } label: {
+            }) {
                 ZStack {
+                    // The glass effect is created using a Circle shape directly.
                     Circle()
-                        .fill(Color.blue.gradient)
-                        .frame(width: 140, height: 140)
-                        .shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            LinearGradient(
+                                colors: [.white.opacity(0.15), .white.opacity(0.05), .clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(.white.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.1), radius: 20, y: 10)
+                        .frame(width: 160, height: 160)
                     
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 60, weight: .thin))
-                        .foregroundColor(.white)
+                        .font(.system(size: 70, weight: .thin))
+                        .foregroundColor(.white.opacity(0.8))
+                        .shadow(radius: 5)
                 }
             }
-            .padding()
+            .clipShape(Circle())
+            .buttonStyle(ScaleAndOpacityButtonStyle())
+            
             Text("Select a video to begin")
                 .font(.headline)
-                .padding(.top)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+                .shadow(color: .black.opacity(0.1), radius: 1, y: 1)
+
             Spacer()
         }
     }
 }
 
-// This is the custom pop-up sheet with the two choices
 struct InputSourceSelectorView: View {
     @Binding var isPresented: Bool
     @Binding var showCamera: Bool
     @Binding var selectedItem: PhotosPickerItem?
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Title for the pop-up
+        VStack(spacing: 20) {
             Text("Analyze a Smash")
                 .font(.headline)
                 .padding(.top)
-                .padding(.bottom, 8)
 
-            // Button to open the camera
-            Button {
-                isPresented = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    showCamera = true
+            // Buttons are now on a glass panel
+            VStack(spacing: 16) {
+                Button {
+                    isPresented = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        showCamera = true
+                    }
+                } label: {
+                    Label("Record New Video", systemImage: "camera.fill")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
                 }
-            } label: {
-                Label("Record New Video", systemImage: "camera.fill")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
+                .controlSize(.large)
+                .buttonStyle(.borderedProminent)
+                
+                PhotosPicker(
+                    selection: $selectedItem,
+                    matching: .videos,
+                    photoLibrary: .shared()
+                ) {
+                    Label("Choose from Library", systemImage: "photo.on.rectangle.angled")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+                .controlSize(.large)
+                .buttonStyle(.bordered)
+                .onChange(of: selectedItem) { _, _ in
+                    isPresented = false
+                }
             }
-            .controlSize(.large)
-            .buttonStyle(.borderedProminent)
-            
-            // Button to open the photo library
-            PhotosPicker(
-                selection: $selectedItem,
-                matching: .videos,
-                photoLibrary: .shared()
-            ) {
-                Label("Choose from Library", systemImage: "photo.on.rectangle.angled")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-            }
-            .controlSize(.large)
-            .buttonStyle(.bordered)
-            .onChange(of: selectedItem) { _, _ in
-                // When a video is picked, close the pop-up.
-                isPresented = false
-            }
-            Spacer()
+            .padding(30)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
         }
-        .padding(.horizontal)
+        .padding()
     }
 }
 
 
-// These subviews are unchanged
 struct ProcessingView: View {
     let progress: Progress
     let onCancel: () -> Void
     var body: some View {
         VStack(spacing: 20) {
-            Text("Analyzing Video...").font(.title2)
+            Text("Analyzing Video...")
+                .font(.title2)
+                .fontWeight(.bold)
+            
             ProgressView(value: progress.fractionCompleted) {
                 Text("\(Int(progress.fractionCompleted * 100))%")
-            }.padding(.horizontal, 40)
+            }
+            .padding(.horizontal, 40)
+            
             Button("Cancel", role: .destructive, action: onCancel)
         }
+        .padding(40)
+        .background(GlassPanel())
+        .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+        .padding()
     }
 }
 
@@ -207,42 +244,38 @@ struct ResultView: View {
     let onReset: () -> Void
     
     var body: some View {
-        // A NavigationView is required for NavigationLink to function.
-        NavigationView {
+        VStack(spacing: 30) {
             VStack(spacing: 20) {
                 Text("Maximum Speed")
                     .font(.title)
                     .foregroundColor(.secondary)
-                
+            
                 Text(String(format: "%.1f", speed))
                     .font(.system(size: 80, weight: .bold, design: .rounded))
-                    .foregroundColor(.blue)
-                
+                    .foregroundColor(.accentColor)
+            
                 Text("km/h")
                     .font(.title2)
                     .foregroundColor(.secondary)
                 
-                // --- THIS IS THE MODIFIED SECTION ---
-                // Check if the user is signed out
                 if viewModel.authState != .signedIn {
-                    // A subtle, text-based link to the AccountView.
-                    // It will automatically use the app's accent/tint color (blue by default).
                     NavigationLink(destination: AccountView()) {
                         Text("Want to save your result? Sign In")
                     }
-                    .padding(.top, 20) // Add some space above
+                    .padding(.top, 10)
                 }
-                
-                Button(action: onReset) {
-                    Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle")
-                }
-                .buttonStyle(.bordered)
-                .padding(.top, 40)
             }
-            .padding()
-            .navigationBarHidden(true)
+            .padding(40)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+            
+            Button(action: onReset) {
+                Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
-        .navigationViewStyle(.stack)
+        .padding()
     }
 }
 
@@ -251,9 +284,51 @@ struct ErrorView: View {
     let onReset: () -> Void
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle.fill").font(.largeTitle).foregroundColor(.red)
-            Text(message).multilineTextAlignment(.center).padding()
-            Button("Try Again", action: onReset).buttonStyle(.borderedProminent)
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.largeTitle)
+                .foregroundColor(.red)
+            
+            Text(message)
+                .multilineTextAlignment(.center)
+                .padding()
+            
+            Button("Try Again", action: onReset)
+                .buttonStyle(.borderedProminent)
+        }
+        .padding(40)
+        .background(GlassPanel())
+        .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+        .padding()
+    }
+}
+
+// MARK: - Reusable Helper Views
+// NOTE: These components should be in their own separate files for best practice.
+
+/// A custom button style that scales the content down and reduces opacity when pressed.
+struct ScaleAndOpacityButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+/// A helper view to make a sheet's background clear.
+struct ClearBackgroundView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        return ClearBackgroundUIView()
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+    private class ClearBackgroundUIView: UIView {
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            superview?.superview?.backgroundColor = .clear
         }
     }
 }
+
+

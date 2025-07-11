@@ -437,7 +437,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "smashspeed-ios-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Smashspeed;
+				INFOPLIST_KEY_CFBundleDisplayName = "Smash!!";
 				INFOPLIST_KEY_NSCameraUsageDescription = "SmashSpeed needs access to your camera to record your smashes.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SmashSpeed needs access to your microphone to record audio for your smash videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -469,7 +469,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "smashspeed-ios-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Smashspeed;
+				INFOPLIST_KEY_CFBundleDisplayName = "Smash!!";
 				INFOPLIST_KEY_NSCameraUsageDescription = "SmashSpeed needs access to your camera to record your smashes.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SmashSpeed needs access to your microphone to record audio for your smash videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

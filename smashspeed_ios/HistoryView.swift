@@ -19,19 +19,46 @@ struct HistoryView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @StateObject private var historyViewModel = HistoryViewModel()
     
+    // State for the delete confirmation alert
+    @State private var showDeleteConfirmation = false
+    @State private var resultToDelete: DetectionResult?
+    
     var body: some View {
         NavigationStack {
-            VStack {
-                if authViewModel.isSignedIn, let user = authViewModel.user {
-                    content(for: user.uid)
-                } else {
-                    loggedOutView
+            ZStack {
+                // 1. A monochromatic blue aurora background to match other views.
+                Color(.systemBackground).ignoresSafeArea()
+                
+                Circle()
+                    .fill(Color.blue.opacity(0.8))
+                    .blur(radius: 150)
+                    .offset(x: -150, y: -200)
+
+                Circle()
+                    .fill(Color.blue.opacity(0.5))
+                    .blur(radius: 180)
+                    .offset(x: 150, y: 150)
+                
+                VStack {
+                    if authViewModel.isSignedIn, let user = authViewModel.user {
+                        content(for: user.uid)
+                    } else {
+                        loggedOutView
+                    }
                 }
-            }
-            .navigationTitle("Results")
-            .onAppear {
-                if let userID = authViewModel.user?.uid {
-                    historyViewModel.subscribe(to: userID)
+                .navigationTitle("Results")
+                .onAppear {
+                    if let userID = authViewModel.user?.uid {
+                        historyViewModel.subscribe(to: userID)
+                    }
+                }
+                // Add the confirmation alert modifier here
+                .alert("Confirm Deletion", isPresented: $showDeleteConfirmation, presenting: resultToDelete) { result in
+                    Button("Delete", role: .destructive) {
+                        historyViewModel.deleteResult(result)
+                    }
+                } message: { result in
+                    Text("Are you sure you want to delete the result from \(result.date.dateValue().formatted(date: .abbreviated, time: .shortened))? This action cannot be undone.")
                 }
             }
         }
@@ -40,61 +67,111 @@ struct HistoryView: View {
     @ViewBuilder
     private func content(for userID: String) -> some View {
         if historyViewModel.detectionResults.isEmpty {
-            ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
+            VStack {
+                ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
+            }
+            .padding(40)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+            .padding()
         } else {
             List {
-                Section(header: Text("Overall Stats")) {
-                    StatRow(label: "Top Speed", value: String(format: "%.1f km/h", historyViewModel.topSpeed))
-                    StatRow(label: "Average Speed", value: String(format: "%.1f km/h", historyViewModel.averageSpeed))
-                    StatRow(label: "Total Smashes", value: "\(historyViewModel.detectionCount)")
+                // Overall Stats Panel
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Overall Stats").font(.headline).padding(.bottom, 5)
+                        StatRow(label: "Top Speed", value: String(format: "%.1f km/h", historyViewModel.topSpeed))
+                        Divider()
+                        StatRow(label: "Average Speed", value: String(format: "%.1f km/h", historyViewModel.averageSpeed))
+                        Divider()
+                        StatRow(label: "Total Smashes", value: "\(historyViewModel.detectionCount)")
+                    }
+                    .padding(20)
+                    .background(GlassPanel())
+                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
                 }
-                
-                Section("Progress Over Time") {
-                    if historyViewModel.detectionResults.count > 1 {
-                        Chart {
-                            ForEach(historyViewModel.detectionResults.reversed()) { result in
-                                LineMark(
-                                    x: .value("Date", result.date.dateValue(), unit: .day),
-                                    y: .value("Speed", result.peakSpeedKph)
-                                ).interpolationMethod(.catmullRom)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20))
 
-                                PointMark(
-                                    x: .value("Date", result.date.dateValue(), unit: .day),
-                                    y: .value("Speed", result.peakSpeedKph)
-                                ).foregroundStyle(.blue)
+                // Progress Chart Panel
+                Section {
+                    VStack(alignment: .leading) {
+                        Text("Progress Over Time").font(.headline).padding([.top, .leading], 5)
+                        if historyViewModel.detectionResults.count > 1 {
+                            Chart {
+                                ForEach(historyViewModel.detectionResults.reversed()) { result in
+                                    LineMark(
+                                        x: .value("Date", result.date.dateValue(), unit: .day),
+                                        y: .value("Speed", result.peakSpeedKph)
+                                    ).interpolationMethod(.catmullRom)
+                                    .foregroundStyle(Color.accentColor)
+
+                                    PointMark(
+                                        x: .value("Date", result.date.dateValue(), unit: .day),
+                                        y: .value("Speed", result.peakSpeedKph)
+                                    ).foregroundStyle(Color.accentColor)
+                                }
                             }
-                        }
-                        .chartYScale(domain: 0...(historyViewModel.topSpeed * 1.2))
-                        .frame(height: 200)
-                        .padding(.vertical)
-                    } else {
-                        Text("Analyze at least two smashes to see your progress chart.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Section(header: Text("History")) {
-                    ForEach(historyViewModel.detectionResults) { result in
-                        if let videoURLString = result.videoURL, let videoURL = URL(string: videoURLString) {
-                            NavigationLink(destination: VideoPlayerView(videoURL: videoURL)) {
-                                HistoryRow(result: result)
-                            }
+                            .chartYScale(domain: 0...(historyViewModel.topSpeed * 1.2))
+                            .frame(height: 200)
                         } else {
-                            HistoryRow(result: result)
+                            Text("Analyze at least two smashes to see your progress chart.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .padding()
                         }
                     }
-                    .onDelete { indexSet in
-                        historyViewModel.deleteResult(at: indexSet)
+                    .padding(25)
+                    .background(GlassPanel())
+                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20))
+                
+                // History List Section
+                Section(header: Text("History").padding(.leading)) {
+                    ForEach(historyViewModel.detectionResults) { result in
+                        HistoryRow(result: result)
+                            .padding()
+                            .listRowInsets(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
+                            .background(GlassPanel())
+                            .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    resultToDelete = result
+                                    showDeleteConfirmation = true
+                                } label: {
+                                    Label("Delete", systemImage: "trash.fill")
+                                }
+                                .tint(.red)
+                            }
                     }
+                    // FIX: Add the .onDelete modifier back to enable the EditButton functionality.
+                    .onDelete { indexSet in
+                        guard let index = indexSet.first else { return }
+                        resultToDelete = historyViewModel.detectionResults[index]
+                        showDeleteConfirmation = true
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .toolbar { EditButton() }
         }
     }
     
     private var loggedOutView: some View {
-        ContentUnavailableView("Log In Required", systemImage: "person.crop.circle.badge.questionmark", description: Text("Please sign in to view results."))
+        VStack {
+             ContentUnavailableView("Log In Required", systemImage: "person.crop.circle.badge.questionmark", description: Text("Please sign in to view results."))
+        }
+        .padding(40)
+        .background(GlassPanel())
+        .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+        .padding()
     }
 }
 
@@ -103,8 +180,10 @@ struct HistoryView: View {
 struct HistoryRow: View {
     let result: DetectionResult
     var body: some View {
-        HStack {
-            if result.videoURL != nil {
+        let destination = result.videoURL.flatMap(URL.init).map(VideoPlayerView.init)
+
+        let rowContent = HStack {
+            if destination != nil {
                 Image(systemName: "play.circle.fill")
                     .foregroundColor(.accentColor)
                     .font(.title2)
@@ -116,7 +195,14 @@ struct HistoryRow: View {
             Spacer()
             Text(result.formattedSpeed).font(.title2).fontWeight(.semibold)
         }
-        .padding(.vertical, 4)
+
+        if let destinationView = destination {
+            NavigationLink(destination: destinationView) {
+                rowContent
+            }
+        } else {
+            rowContent
+        }
     }
 }
 
@@ -220,31 +306,25 @@ class HistoryViewModel: ObservableObject {
         try db.collection("detections").addDocument(from: result)
     }
     
-    func deleteResult(at offsets: IndexSet) {
-            let resultsToDelete = offsets.map { self.detectionResults[$0] }
-            
-            for result in resultsToDelete {
-                Task { // Use a Task to perform asynchronous operations
-                    do {
-                        // 1. Delete from Firebase Storage if a video URL exists
-                        if let videoURLString = result.videoURL {
-                            let storageRef = Storage.storage().reference(forURL: videoURLString)
-                            try await storageRef.delete()
-                            print("Successfully deleted video from Storage.")
-                        }
-                        
-                        // 2. Delete from Firestore after storage deletion is successful
-                        if let docID = result.id {
-                            try await db.collection("detections").document(docID).delete()
-                            print("Successfully deleted document from Firestore.")
-                        }
-                    } catch {
-                        print("Error deleting result: \(error.localizedDescription)")
-                        // Optionally, you could add a state to show an error to the user here.
-                    }
+    // This method now takes a specific result to delete.
+    func deleteResult(_ result: DetectionResult) {
+        Task {
+            do {
+                if let videoURLString = result.videoURL {
+                    let storageRef = Storage.storage().reference(forURL: videoURLString)
+                    try await storageRef.delete()
+                    print("Successfully deleted video from Storage.")
                 }
+                
+                if let docID = result.id {
+                    try await db.collection("detections").document(docID).delete()
+                    print("Successfully deleted document from Firestore.")
+                }
+            } catch {
+                print("Error deleting result: \(error.localizedDescription)")
             }
         }
+    }
 }
 
 // --- MODIFIED ---: Add the videoURL property to your data model.

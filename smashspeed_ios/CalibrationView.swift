@@ -1,10 +1,3 @@
-//
-//  CalibrationView.swift
-//  smashspeed
-//
-//  Created by Diwen Huang on 2025-06-27.
-//
-
 import SwiftUI
 import AVFoundation
 
@@ -25,91 +18,97 @@ struct CalibrationView: View {
     @State private var liveOffset2: CGSize = .zero
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Top Bar
-            HStack {
-                Button("Cancel", action: onCancel).padding()
-                Spacer()
-                Text("Calibration").font(.headline)
-                Spacer()
-                Button("Cancel", action: {}).padding().opacity(0)
-            }
-            .background(Color(.systemGroupedBackground))
-
-            // The video frame
-            ZStack {
-                if let image = firstFrame {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .overlay(
-                            ZStack {
-                                Path { path in
-                                    path.move(to: CGPoint(x: point1.x + liveOffset1.width, y: point1.y + liveOffset1.height))
-                                    path.addLine(to: CGPoint(x: point2.x + liveOffset2.width, y: point2.y + liveOffset2.height))
-                                }
-                                .stroke(Color.red, style: StrokeStyle(lineWidth: 2, dash: [5]))
-
-                                // The handles no longer need an "isActive" state
-                                CalibrationHandleView(position: $point1, liveOffset: $liveOffset1, viewSize: viewSize)
-                                CalibrationHandleView(position: $point2, liveOffset: $liveOffset2, viewSize: viewSize)
-                            }
-                        )
-                        .background(
-                            GeometryReader { geo in
-                                Color.clear.onAppear {
-                                    self.viewSize = geo.size
-                                    self.point1 = CGPoint(x: geo.size.width * 0.4, y: geo.size.height * 0.4)
-                                    self.point2 = CGPoint(x: geo.size.width * 0.6, y: geo.size.height * 0.6)
-                                }
-                            }
-                        )
-                } else {
-                    ProgressView()
-                }
-            }
-            .frame(maxHeight: .infinity)
+        ZStack {
+            // 1. A monochromatic blue aurora background to match other views.
+            Color(.systemBackground).ignoresSafeArea()
             
-            // Control Panel
-            VStack(spacing: 16) {
-                // --- The Picker has been removed ---
-                
-                Section {
-                    HStack {
-                        Label("Reference Length", systemImage: "ruler")
-                        Spacer()
-                        TextField("3.87", text: $referenceLength)
-                            .keyboardType(.decimalPad)
-                            .textFieldStyle(.plain)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                        Text("meters")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                    .background(.background)
-                    .cornerRadius(12)
-                } header: {
-                    Text("Known Distance")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding([.horizontal, .top])
-                } footer: {
-                    Text("Enter the real-world distance between the two red points. ")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
+            Circle()
+                .fill(Color.blue.opacity(0.8))
+                .blur(radius: 150)
+                .offset(x: -150, y: -200)
+
+            Circle()
+                .fill(Color.blue.opacity(0.5))
+                .blur(radius: 180)
+                .offset(x: 150, y: 150)
+
+            // 2. Reverted to the original VStack structure to fix layout issues.
+            VStack(spacing: 0) {
+                // Top Bar with a subtle glass effect
+                HStack {
+                    Button("Cancel", action: onCancel).padding()
+                    Spacer()
+                    Text("Calibration").font(.headline)
+                    Spacer()
+                    Button("Cancel", action: {}).padding().opacity(0) // For spacing
                 }
+                .background(.ultraThinMaterial)
+
+                // The video frame
+                ZStack {
+                    if let image = firstFrame {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .overlay(
+                                ZStack {
+                                    Path { path in
+                                        path.move(to: CGPoint(x: point1.x + liveOffset1.width, y: point1.y + liveOffset1.height))
+                                        path.addLine(to: CGPoint(x: point2.x + liveOffset2.width, y: point2.y + liveOffset2.height))
+                                    }
+                                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 2, dash: [5]))
+
+                                    CalibrationHandleView(position: $point1, liveOffset: $liveOffset1, viewSize: viewSize)
+                                    CalibrationHandleView(position: $point2, liveOffset: $liveOffset2, viewSize: viewSize)
+                                }
+                            )
+                            .background(
+                                GeometryReader { geo in
+                                    Color.clear.onAppear {
+                                        self.viewSize = geo.size
+                                        self.point1 = CGPoint(x: geo.size.width * 0.4, y: geo.size.height * 0.4)
+                                        self.point2 = CGPoint(x: geo.size.width * 0.6, y: geo.size.height * 0.6)
+                                    }
+                                }
+                            )
+                    } else {
+                        ProgressView().scaleEffect(1.5)
+                    }
+                }
+                .frame(maxHeight: .infinity)
                 
-                Button("Start Analysis", action: calculateAndProceed)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-                    .disabled(firstFrame == nil)
+                // 3. Control Panel on a single, clean GlassPanel
+                VStack(spacing: 16) {
+                    VStack {
+                        HStack {
+                            Label("Reference Length", systemImage: "ruler")
+                            Spacer()
+                            TextField("3.87", text: $referenceLength)
+                                .keyboardType(.decimalPad)
+                                .textFieldStyle(.plain)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 80)
+                            Text("meters")
+                                .foregroundColor(.secondary)
+                        }
+                        Divider()
+                        Text("Enter the real-world distance between the two red points.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
+                    Button("Start Analysis", action: calculateAndProceed)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
+                        .disabled(firstFrame == nil)
+                }
+                .padding(30)
+                .background(GlassPanel())
+                .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                .padding()
             }
-            .padding(.vertical).background(Color(uiColor: .systemGroupedBackground))
         }
         .onAppear(perform: loadFirstFrame)
     }
@@ -164,32 +163,36 @@ private struct CalibrationHandleView: View {
     let viewSize: CGSize
     
     var body: some View {
-        Circle()
-            .fill(Color.red)
-            .frame(width: 14, height: 14)
-            .overlay(Circle().stroke(Color.white, lineWidth: 2))
-            .shadow(radius: 3)
-            // It creates an invisible tappable shape that is 30 points
-            // larger (15 on each side) than the visible circle.
-            .contentShape(Rectangle().inset(by: -32))
-            .position(
-                x: position.x + liveOffset.width,
-                y: position.y + liveOffset.height
-            )
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        self.liveOffset = value.translation
-                    }
-                    .onEnded { value in
-                        let newX = position.x + value.translation.width
-                        let newY = position.y + value.translation.height
-                        
-                        position.x = min(max(0, newX), viewSize.width)
-                        position.y = min(max(0, newY), viewSize.height)
-                        
-                        self.liveOffset = .zero
-                    }
-            )
+        // A sleeker, smaller, and more modern handle design.
+        ZStack {
+            Circle()
+                .fill(Color.accentColor.opacity(0.5))
+                .frame(width: 6, height: 6)
+            Circle()
+                .stroke(Color.white, lineWidth: 1)
+                .frame(width: 6, height: 6)
+        }
+        .shadow(color: .accentColor, radius: 5)
+        .contentShape(Rectangle().inset(by: -40)) // Keep a large tappable area
+        .position(
+            x: position.x + liveOffset.width,
+            y: position.y + liveOffset.height
+        )
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    self.liveOffset = value.translation
+                }
+                .onEnded { value in
+                    let newX = position.x + value.translation.width
+                    let newY = position.y + value.translation.height
+                    
+                    position.x = min(max(0, newX), viewSize.width)
+                    position.y = min(max(0, newY), viewSize.height)
+                    
+                    self.liveOffset = .zero
+                }
+        )
     }
 }
+
