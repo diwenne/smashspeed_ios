@@ -15,6 +15,7 @@
 		4E15708D2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 4E15708C2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion */; };
 		4E1570912E1736C200DAAE03 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4E1570902E1736C200DAAE03 /* FirebaseFirestore */; };
 		4E1570A12E17493300DAAE03 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 4E1570A02E17493300DAAE03 /* FirebaseStorage */; };
+		4EA4AEEE2E20D0940051BBB5 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4EA4AEEC2E20D08E0051BBB5 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +39,7 @@
 		4E439D672E106B1C0034BCBB /* smashspeed_ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = smashspeed_ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E439D742E106B1E0034BCBB /* smashspeed_iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = smashspeed_iosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E439D7E2E106B1E0034BCBB /* smashspeed_iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = smashspeed_iosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EA4AEEC2E20D08E0051BBB5 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -101,6 +103,7 @@
 		4E439D5E2E106B1C0034BCBB = {
 			isa = PBXGroup;
 			children = (
+				4EA4AEEC2E20D08E0051BBB5 /* .gitignore */,
 				4E439D692E106B1C0034BCBB /* smashspeed_ios */,
 				4E439D772E106B1E0034BCBB /* smashspeed_iosTests */,
 				4E439D812E106B1E0034BCBB /* smashspeed_iosUITests */,
@@ -250,6 +253,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4EA4AEEE2E20D0940051BBB5 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
