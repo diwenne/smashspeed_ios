@@ -16,7 +16,7 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            // 1. A monochromatic blue aurora background to reinforce the accent color.
+            // A monochromatic blue aurora background to reinforce the accent color.
             Color(.systemBackground).ignoresSafeArea()
             
             Circle()
@@ -47,7 +47,7 @@ struct OnboardingView: View {
                 
                 // --- Slide 3: How to put reference line ---
                 OnboardingInstructionView(
-                    imageNames: ["OnboardingSlide2"],
+                    imageNames: ["OnboardingSlide2.1","OnboardingSlide2.2","OnboardingSlide2.3"],
                     title: "2. Mark a Known Distance",
                     instructions: [
                         (icon: "scope", text: "Place one point on the front service line and one on the doubles flick line — 3.87 m apart."),
@@ -58,10 +58,10 @@ struct OnboardingView: View {
                 
                 // --- Slide 4: Reviewing the frames ---
                 OnboardingInstructionView(
-                    imageNames: ["OnboardingSlide3"],
+                    imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
                     title: "3. Review Detection",
                     instructions: [
-                        (icon: "arrow.left.and.right.circle.fill", text: "Use the arrow keys to move through each frame of the video."),
+                        (icon: "arrow.left.and.right.circle.fill", text: "Use the arrow keys to move through each frame of the video and view the shuttle speed at each frame."),
                         (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
                         (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the red box."),
                         (icon: "bolt.fill", text: "If you're only interested in the smash, skip ahead to those key frames.")
@@ -92,7 +92,7 @@ struct OnboardingWelcomeView: View {
                     .shadow(color: .black.opacity(0.1), radius: 5, y: 5)
                     .opacity(showContent ? 1 : 0)
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.4), value: showContent)
-                
+            
                 VStack(spacing: 15) {
                     Text("Welcome to")
                         .font(.title2)
@@ -119,7 +119,6 @@ struct OnboardingWelcomeView: View {
             .background(GlassPanel())
             .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
             .padding(.horizontal, 20)
-            // FIX: Simplified animation for a smoother effect. Removed rotation.
             .offset(y: showContent ? 0 : -30)
             .opacity(showContent ? 1 : 0)
             .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: showContent)
@@ -151,9 +150,11 @@ struct OnboardingInstructionView: View {
     var isLastSlide: Bool = false
     var onComplete: (() -> Void)? = nil
     
+    // State for animations and manual image selection
     @State private var showContent: Bool = false
     @State private var imageSelection = 0
-    private let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+    @State private var showLeftArrow = false
+    @State private var showRightArrow = true
     
     var body: some View {
         ScrollView {
@@ -169,26 +170,47 @@ struct OnboardingInstructionView: View {
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: showContent)
 
                 VStack(spacing: 25) {
-                    // FIX: Staggered animation for the content inside the panel
-                    TabView(selection: $imageSelection) {
-                        ForEach(0..<imageNames.count, id: \.self) { i in
-                            Image(imageNames[i])
-                                .resizable()
-                                .scaledToFit()
-                                .tag(i)
+                    // --- Image Carousel with Navigation Arrows ---
+                    ZStack {
+                        TabView(selection: $imageSelection) {
+                            ForEach(0..<imageNames.count, id: \.self) { i in
+                                Image(imageNames[i])
+                                    .resizable()
+                                    .scaledToFit()
+                                    .tag(i)
+                            }
                         }
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        .frame(height: 250)
+                        
+                        // --- Navigation Arrow Buttons ---
+                        HStack {
+                            // Left Arrow
+                            if showLeftArrow {
+                                ArrowButton(icon: "chevron.left") {
+                                    withAnimation {
+                                        imageSelection -= 1
+                                    }
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            // Right Arrow
+                            if showRightArrow {
+                                ArrowButton(icon: "chevron.right") {
+                                    withAnimation {
+                                        imageSelection += 1
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 15)
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .frame(height: 250)
                     .opacity(showContent ? 1 : 0)
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3), value: showContent)
-                    .onReceive(timer) { _ in
-                        guard imageNames.count > 1 else { return }
-                        withAnimation {
-                            imageSelection = (imageSelection + 1) % imageNames.count
-                        }
-                    }
                     
+                    // --- Instructions List ---
                     VStack(alignment: .leading, spacing: 25) {
                         ForEach(instructions, id: \.text) { item in
                             HStack(alignment: .top, spacing: 16) {
@@ -208,11 +230,11 @@ struct OnboardingInstructionView: View {
                 .padding(30)
                 .background(GlassPanel())
                 .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
-                // FIX: Simplified panel animation for a smoother effect.
                 .offset(y: showContent ? 0 : -30)
                 .opacity(showContent ? 1 : 0)
                 .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: showContent)
                 
+                // --- Completion Button ---
                 if isLastSlide {
                     Button("Get Started", action: { onComplete?() })
                         .buttonStyle(.borderedProminent)
@@ -228,6 +250,52 @@ struct OnboardingInstructionView: View {
         .onAppear {
             if !showContent {
                 showContent = true
+            }
+            // Set initial arrow visibility
+            updateArrowVisibility()
+        }
+        .onChange(of: imageSelection) {
+            // Update arrow visibility whenever the selection changes
+            updateArrowVisibility()
+        }
+    }
+    
+    /// Hides/shows the navigation arrows based on the current image index.
+    private func updateArrowVisibility() {
+        guard imageNames.count > 1 else {
+            showLeftArrow = false
+            showRightArrow = false
+            return
+        }
+        showLeftArrow = imageSelection > 0
+        showRightArrow = imageSelection < imageNames.count - 1
+    }
+}
+
+// MARK: - Reusable Arrow Button
+
+/// A reusable, animated button for carousel navigation.
+struct ArrowButton: View {
+    let icon: String
+    let action: () -> Void
+    
+    @State private var isAnimating = false
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.primary.opacity(0.8))
+                .padding(12)
+                .background(.thinMaterial)
+                .clipShape(Circle())
+                .shadow(radius: 5)
+        }
+        .scaleEffect(isAnimating ? 1.1 : 1.0)
+        .onAppear {
+            // Add a subtle, repeating "breathing" animation to draw attention
+            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                isAnimating = true
             }
         }
     }

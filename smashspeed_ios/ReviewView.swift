@@ -297,7 +297,11 @@ struct ReviewView: View {
             do {
                 let cgImage = try await imageGenerator.image(at: timestamp).image
                 await MainActor.run { currentFrameImage = UIImage(cgImage: cgImage) }
-            } catch { print("Failed to load frame for timestamp \(timestamp): \(error)") }
+            } catch {
+                #if DEBUG
+                print("Failed to load frame for timestamp \(timestamp): \(error)")
+                #endif
+            }
         }
     }
 }

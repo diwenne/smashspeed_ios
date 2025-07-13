@@ -282,7 +282,9 @@ class HistoryViewModel: ObservableObject {
         let query = db.collection("detections").whereField("userID", isEqualTo: userID).order(by: "date", descending: true)
         listenerRegistration = query.addSnapshotListener { [weak self] (snapshot, error) in
             guard let docs = snapshot?.documents, error == nil else {
+                #if DEBUG
                 print("Error fetching snapshot: \(error?.localizedDescription ?? "Unknown error")")
+                #endif
                 return
             }
             self?.detectionResults = docs.compactMap { try? $0.data(as: DetectionResult.self) }
@@ -313,15 +315,21 @@ class HistoryViewModel: ObservableObject {
                 if let videoURLString = result.videoURL {
                     let storageRef = Storage.storage().reference(forURL: videoURLString)
                     try await storageRef.delete()
+                    #if DEBUG
                     print("Successfully deleted video from Storage.")
+                    #endif
                 }
                 
                 if let docID = result.id {
                     try await db.collection("detections").document(docID).delete()
+                    #if DEBUG
                     print("Successfully deleted document from Firestore.")
+                    #endif
                 }
             } catch {
+                #if DEBUG
                 print("Error deleting result: \(error.localizedDescription)")
+                #endif
             }
         }
     }

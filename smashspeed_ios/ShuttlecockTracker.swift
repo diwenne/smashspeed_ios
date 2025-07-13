@@ -45,7 +45,9 @@ class ShuttlecockTracker {
             if timeDifference > 0.0001 {
                 let pixelsPerSecond = pixelDistance / timeDifference
                 let metersPerSecond = pixelsPerSecond * self.scaleFactor
+                #if DEBUG
                 print("time difference: \(timeDifference)")
+                #endif
                 speedKPH = metersPerSecond * 3.6
             }
         }

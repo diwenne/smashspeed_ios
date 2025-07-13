@@ -330,5 +330,3 @@ struct ClearBackgroundView: UIViewRepresentable {
         }
     }
 }
-
-

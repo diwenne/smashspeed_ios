@@ -27,10 +27,14 @@ class YOLOv5ModelHandler {
             configuration.computeUnits = .all
             let coreMLModel = try best(configuration: configuration).model
             self.model = try VNCoreMLModel(for: coreMLModel)
+            #if DEBUG
             print("✅ YOLOv5ModelHandler: Model loaded successfully.")
+            #endif
             
         } catch {
+            #if DEBUG
             print("❌ YOLOv5ModelHandler: CRITICAL ERROR - Failed to load CoreML model: \(error)")
+            #endif
             return nil
         }
     }
@@ -76,8 +80,9 @@ class YOLOv5ModelHandler {
                     width: pixelRect.size.width / originalSize.width,
                     height: pixelRect.size.height / originalSize.height
                 )
-
+                #if DEBUG
                 print("✅ HANDLER SENDING NORMALIZED RECT: \(normalizedRect)")
+                #endif
                 completion(.success((normalizedRect, bestResult.confidence)))
                 
             } else {
