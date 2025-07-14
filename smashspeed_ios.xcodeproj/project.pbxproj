@@ -42,9 +42,33 @@
 		4EA4AEEC2E20D08E0051BBB5 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4E472AF82E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "smashspeed_ios" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"View+Snapshot.swift",
+			);
+			target = 4E439D662E106B1C0034BCBB /* smashspeed_ios */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		4E472AF92E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "Copy Bundle Resources" phase from "smashspeed_ios" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 4E439D652E106B1C0034BCBB /* Resources */;
+			membershipExceptions = (
+				"View+Snapshot.swift",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4E439D692E106B1C0034BCBB /* smashspeed_ios */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4E472AF82E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "smashspeed_ios" target */,
+				4E472AF92E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "Copy Bundle Resources" phase from "smashspeed_ios" target */,
+			);
 			path = smashspeed_ios;
 			sourceTree = "<group>";
 		};
