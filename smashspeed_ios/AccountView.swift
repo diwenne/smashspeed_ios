@@ -1,6 +1,8 @@
 import SwiftUI
 import FirebaseAuth
 import Combine
+import CryptoKit
+import AuthenticationServices
 
 // MARK: - Account Tab Main View
 
@@ -156,6 +158,12 @@ struct SignInForm: View {
                 Text("Sign In").fontWeight(.bold).frame(maxWidth: .infinity)
             }.buttonStyle(.borderedProminent).controlSize(.large)
             
+            SignInWithAppleButton()
+                .frame(height: 50)
+                .onTapGesture {
+                    viewModel.signInWithApple()
+                }
+
             Button("Don't have an account? Sign Up") {
                 isSigningUp = true
             }
@@ -231,4 +239,24 @@ struct ModernTextField: View {
         }
         .autocapitalization(.none)
     }
+}
+
+// Helper extension for creating a SHA256 hash
+extension String {
+    func sha256() -> String {
+        let inputData = Data(self.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            return String(format: "%02x", $0)
+        }.joined()
+        return hashString
+    }
+}
+
+struct SignInWithAppleButton: UIViewRepresentable {
+    func makeUIView(context: Context) -> ASAuthorizationAppleIDButton {
+        return ASAuthorizationAppleIDButton(type: .signIn, style: .black)
+    }
+    
+    func updateUIView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {}
 }
