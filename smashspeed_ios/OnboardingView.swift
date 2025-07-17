@@ -36,12 +36,13 @@ struct OnboardingView: View {
                 
                 // --- Slide 2: How to Record ---
                 OnboardingInstructionView(
-                    imageNames: ["OnboardingSlide1.1", "OnboardingSlide1.2"],
+                    imageNames: ["OnboardingSlide1.2", "OnboardingSlide1.1"],
                     title: "1. Record Your Smash",
                     instructions: [
                         (icon: "arrow.left.and.right.square.fill", text: "Place the camera at the sideline, facing directly across the width of the court — not at an angle."),
                         (icon: "bird.fill", text: "Make sure the shuttle is clearly visible during the smash — avoid bright light or backgrounds that make it blend in."),
-                        (icon: "video.slash.fill", text: "Use regular video mode. Avoid Slo-Mo or cinematic filters.")
+                        (icon: "video.slash.fill", text: "Use regular video mode. Avoid Slo-Mo or cinematic filters."),
+                        (icon: "scissors", text: "Only include the moment of the smash — usually under 1 second (~10 frames). Longer clips may slow down analysis.")
                     ]
                 )
                 
