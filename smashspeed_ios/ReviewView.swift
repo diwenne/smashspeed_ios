@@ -200,6 +200,12 @@ struct ReviewView: View {
                 loadFrame(at: currentIndex)
             }
         }
+        // ===================================================================
+        // MODIFICATION: Run interpolation and calculation when the view first appears
+        // ===================================================================
+        .onAppear {
+            updateAndRecalculate()
+        }
     }
     
     // MARK: - Gesture and Zoom Logic
@@ -239,8 +245,53 @@ struct ReviewView: View {
         }
     }
     
+    private func interpolateMissingFrames() {
+        var i = 0
+        while i < analysisResults.count - 1 {
+            if analysisResults[i].boundingBox != nil && analysisResults[i+1].boundingBox == nil {
+                let startIndex = i
+                var endIndex = -1
+
+                for j in (startIndex + 2)..<analysisResults.count {
+                    if analysisResults[j].boundingBox != nil {
+                        endIndex = j
+                        break
+                    }
+                }
+
+                if endIndex != -1 {
+                    if let startBox = analysisResults[startIndex].boundingBox,
+                       let endBox = analysisResults[endIndex].boundingBox {
+                        
+                        let gapLength = endIndex - startIndex
+                        
+                        for k in (startIndex + 1)..<endIndex {
+                            let stepWithinGap = k - startIndex
+                            let t = CGFloat(stepWithinGap) / CGFloat(gapLength)
+
+                            let newX = startBox.origin.x + t * (endBox.origin.x - startBox.origin.x)
+                            let newY = startBox.origin.y + t * (endBox.origin.y - startBox.origin.y)
+                            let newW = startBox.size.width + t * (endBox.size.width - startBox.size.width)
+                            let newH = startBox.size.height + t * (endBox.size.height - startBox.size.height)
+                            
+                            let interpolatedBox = CGRect(x: newX, y: newY, width: newW, height: newH)
+                            
+                            analysisResults[k].boundingBox = interpolatedBox
+                        }
+                    }
+                    i = endIndex
+                } else {
+                    i += 1
+                }
+            } else {
+                i += 1
+            }
+        }
+    }
+    
     private func updateAndRecalculate() {
         updateTextFieldsFromBox()
+        interpolateMissingFrames()
         recalculateAllSpeeds()
     }
     
@@ -285,7 +336,10 @@ struct ReviewView: View {
     private func updateBoxFromTextFields() {
         guard let x = Double(xText), let y = Double(yText), let w = Double(wText), let h = Double(hText) else { return }
         analysisResults[currentIndex].boundingBox = CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(w), height: CGFloat(h))
-        recalculateAllSpeeds()
+        // ===================================================================
+        // MODIFICATION: Call the full update function for consistency
+        // ===================================================================
+        updateAndRecalculate()
     }
     
     private func goToPreviousFrame() { if currentIndex > 0 { currentIndex -= 1 } }
