@@ -180,6 +180,11 @@ struct CreateAccountForm: View {
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var hasAcceptedTerms = false
+
+    private var isFormValid: Bool {
+        !email.isEmpty && !password.isEmpty && password == confirmPassword && hasAcceptedTerms
+    }
     
     var body: some View {
         VStack(spacing: 20) {
@@ -196,30 +201,56 @@ struct CreateAccountForm: View {
             
             ModernTextField(title: "Confirm Password", text: $confirmPassword, isSecure: true)
                 .textContentType(.newPassword)
+
+            // --- Start of Corrected Code ---
+            HStack(alignment: .top, spacing: 12) { // 1. Use .top alignment
+                Button(action: {
+                    hasAcceptedTerms.toggle()
+                }) {
+                    Image(systemName: hasAcceptedTerms ? "checkmark.square.fill" : "square")
+                        .font(.headline) // Matched size to be closer to text
+                        .foregroundColor(hasAcceptedTerms ? .accentColor : .secondary)
+                }
+                .buttonStyle(.plain)
+
+                Text("I have read and agree to the [Terms of Service](https://smashspeed.ca/terms-of-service) and [Privacy Policy](https://smashspeed.ca/privacy-policy).")
+                    .font(.footnote)
+                    // 2. This modifier prevents the text from being cut off and allows it to wrap
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            // --- End of Corrected Code ---
             
             if let error = viewModel.errorMessage {
                 Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center)
             }
             
             Button {
-                if password == confirmPassword {
-                    viewModel.signUp(email: email, password: password)
-                } else {
+                guard password == confirmPassword else {
                     viewModel.errorMessage = "Passwords do not match."
+                    return
                 }
+                viewModel.signUp(email: email, password: password)
             } label: {
                 Text("Create Account").fontWeight(.bold).frame(maxWidth: .infinity)
-            }.buttonStyle(.borderedProminent).controlSize(.large)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!isFormValid)
             
             Button("Already have an account? Sign In") {
                 isSigningUp = false
+                viewModel.errorMessage = nil
             }
             .font(.footnote)
             .tint(.accentColor)
             .padding(.top)
         }
+        .onChange(of: email) { _ in viewModel.errorMessage = nil }
+        .onChange(of: password) { _ in viewModel.errorMessage = nil }
+        .onChange(of: confirmPassword) { _ in viewModel.errorMessage = nil }
     }
 }
+
 
 // MARK: - Reusable Components
 
