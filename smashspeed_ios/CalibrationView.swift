@@ -125,12 +125,15 @@ struct CalibrationView: View {
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
                 OnboardingInstructionView(
+                    slideIndex: 0,
+                    currentTab: .constant(0),
+                    
                     imageNames: ["OnboardingSlide2.1","OnboardingSlide2.2","OnboardingSlide2.3"],
                     title: "2. Mark a Known Distance",
                     instructions: [
-                        (icon: "scope", text: "Place one point on the front service line and one on the doubles flick line — 3.87 m apart."),
-                        (icon: "person.fill", text: "Points must be aligned with the player’s position — along the same depth from the camera."),
-                        (icon: "ruler.fill", text: "The default length is 3.87 m. Only change it if you used a different line — this may reduce accuracy.")
+                        (icon: "scope", text: "Mark the front service line and doubles service line — 3.87 m apart."),
+                        (icon: "person.fill", text: "Place the line directly under the player."),
+                        (icon: "ruler.fill", text: "Keep 3.87 m unless using different lines — changing it may reduce accuracy.")
                     ]
                 )
             }

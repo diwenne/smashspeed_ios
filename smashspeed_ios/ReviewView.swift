@@ -200,13 +200,17 @@ struct ReviewView: View {
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
                 OnboardingInstructionView(
+                    // Add these two lines
+                    slideIndex: 0,
+                    currentTab: .constant(0),
+                    
                     imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
                     title: "3. Review Detection",
                     instructions: [
-                        (icon: "arrow.left.and.right.circle.fill", text: "Use the arrow keys to move through each frame of the video and view the shuttle speed at each frame."),
-                        (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
-                        (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the red box."),
-                        (icon: "bolt.fill", text: "If you're only interested in the smash, skip ahead to those key frames.")
+                        (icon: "arrow.left.and.right.circle.fill", text: "Use ← and → keys to step through frames and see shuttle speed per frame."),
+                        (icon: "rectangle.dashed", text: "If detection is off, adjust the red box to fit the shuttle tightly."),
+                        (icon: "slider.horizontal.3", text: "Use the controls below to move, resize, or fine-tune the box."),
+                        (icon: "checkmark.circle.fill", text: "Most videos don’t need manual correction—just review and continue.")
                     ]
                 )
             }
@@ -324,13 +328,13 @@ struct ReviewView: View {
         // The pressCount is roughly 10 steps per second.
         let multiplier: CGFloat
         switch pressCount {
-        case 0..<5:       // First 0.5s: Normal speed for precision.
+        case 0..<5:      // First 0.5s: Normal speed for precision.
             multiplier = 1.0
-        case 5..<15:      // Next 1s: 4x speed.
+        case 5..<15:     // Next 1s: 4x speed.
             multiplier = 4.0
-        case 15..<30:     // Next 1.5s: 10x speed.
+        case 15..<30:    // Next 1.5s: 10x speed.
             multiplier = 10.0
-        default:          // After 3s: Max speed.
+        default:         // After 3s: Max speed.
             multiplier = 25.0
         }
         
@@ -493,6 +497,14 @@ private struct BoxAdjustmentControls: View {
     
     var body: some View {
         VStack(spacing: 8) {
+            // ADDED: Note about AI accuracy.
+            Text("Note: The AI detection is usually very accurate. Manual tuning is rarely needed.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+                .padding(.bottom, 5)
+
             if hasBox {
                 Picker("Edit Mode", selection: $editMode) {
                     Text("Nudge").tag(ReviewView.EditMode.move)

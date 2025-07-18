@@ -1,11 +1,21 @@
 import SwiftUI
 
-// MARK: - Main Onboarding Container
+// MARK: - View State Management
+/// This class holds the animation state. Using an ObservableObject ensures the
+/// state persists even if SwiftUI recreates the view struct, fixing animation glitches.
+fileprivate class ViewState: ObservableObject {
+    @Published var showContent = false
+}
 
+// MARK: - Main Onboarding Container
 /// A view that presents a swipeable, multi-page onboarding experience with a glassmorphism design.
 struct OnboardingView: View {
     /// The action to perform when the user taps the final "Get Started" button.
     let onComplete: () -> Void
+    
+    // Properties to track the current tab for showing the 'X' button.
+    @State private var currentTab = 0
+    private let lastSlideIndex = 3
     
     /// Custom initializer to style the page control dots for the TabView.
     init(onComplete: @escaping () -> Void) {
@@ -17,7 +27,8 @@ struct OnboardingView: View {
     var body: some View {
         ZStack {
             // A monochromatic blue aurora background to reinforce the accent color.
-            Color(.systemBackground).ignoresSafeArea()
+            Color(.systemBackground)
+                .ignoresSafeArea()
             
             Circle()
                 .fill(Color.blue.opacity(0.8))
@@ -30,56 +41,86 @@ struct OnboardingView: View {
                 .offset(x: 150, y: 150)
                 
             // A TabView with a page style creates the swipeable carousel interface.
-            TabView {
+            TabView(selection: $currentTab) {
                 // --- Slide 1: Welcome ---
-                OnboardingWelcomeView()
+                OnboardingWelcomeView(
+                    slideIndex: 0,
+                    currentTab: $currentTab
+                )
+                .tag(0)
                 
                 // --- Slide 2: How to Record ---
                 OnboardingInstructionView(
+                    slideIndex: 1,
+                    currentTab: $currentTab,
                     imageNames: ["OnboardingSlide1.2", "OnboardingSlide1.1"],
                     title: "1. Record Your Smash",
                     instructions: [
-                        (icon: "arrow.left.and.right.square.fill", text: "Place the camera at the sideline, facing directly across the width of the court — not at an angle."),
-                        (icon: "bird.fill", text: "Make sure the shuttle is clearly visible during the smash — avoid bright light or backgrounds that make it blend in."),
-                        (icon: "video.slash.fill", text: "Use regular video mode. Avoid Slo-Mo or cinematic filters."),
-                        (icon: "scissors", text: "Only include the moment of the smash — usually under 1 second (~10 frames). Longer clips may slow down analysis.")
+                        (icon: "arrow.left.and.right.square.fill", text: "Set the camera on the sideline, facing straight across. Court lines should look parallel to the frame."),
+                        (icon: "bird.fill", text: "Keep the shuttle visible — avoid glare or busy backgrounds."),
+                        (icon: "video.slash.fill", text: "Use regular video. Avoid Slo-Mo or filters."),
+                        (icon: "scissors", text: "Trim to just the smash — under 1 second (~10 frames).")
                     ]
                 )
+                .tag(1)
                 
-                // --- Slide 3: How to put reference line ---
+                // --- Slide 3: How to Put Reference Line ---
                 OnboardingInstructionView(
-                    imageNames: ["OnboardingSlide2.1","OnboardingSlide2.2","OnboardingSlide2.3"],
+                    slideIndex: 2,
+                    currentTab: $currentTab,
+                    imageNames: ["OnboardingSlide2.1", "OnboardingSlide2.2", "OnboardingSlide2.3"],
                     title: "2. Mark a Known Distance",
                     instructions: [
-                        (icon: "scope", text: "Place one point on the front service line and one on the doubles flick line — 3.87 m apart."),
-                        (icon: "person.fill", text: "Points must be aligned with the player’s position — along the same depth from the camera."),
-                        (icon: "ruler.fill", text: "The default length is 3.87 m. Only change it if you used a different line — this may reduce accuracy.")
+                        (icon: "scope", text: "Mark the front service line and doubles service line — 3.87 m apart."),
+                        (icon: "person.fill", text: "Place the line directly under the player."),
+                        (icon: "ruler.fill", text: "Keep 3.87 m unless using different lines — changing it may reduce accuracy.")
                     ]
                 )
+                .tag(2)
                 
                 // --- Slide 4: Reviewing the frames ---
                 OnboardingInstructionView(
-                    imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
+                    slideIndex: 3,
+                    currentTab: $currentTab,
+                    imageNames: ["OnboardingSlide3.1", "OnboardingSlide3.2"],
                     title: "3. Review Detection",
                     instructions: [
-                        (icon: "arrow.left.and.right.circle.fill", text: "Use the arrow keys to move through each frame of the video and view the shuttle speed at each frame."),
-                        (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
-                        (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the red box."),
-                        (icon: "bolt.fill", text: "If you're only interested in the smash, skip ahead to those key frames.")
+                        (icon: "arrow.left.and.right.circle.fill", text: "Use ← and → keys to step through frames and see shuttle speed per frame."),
+                        (icon: "rectangle.dashed", text: "If detection is off, adjust the red box to fit the shuttle tightly."),
+                        (icon: "slider.horizontal.3", text: "Use the controls below to move, resize, or fine-tune the box."),
+                        (icon: "checkmark.circle.fill", text: "Most videos don’t need manual correction—just review and continue.")
                     ],
-                    isLastSlide: true, // Mark this as the final slide
-                    onComplete: onComplete // Pass the completion handler
+                    isLastSlide: true,
+                    onComplete: onComplete
                 )
+                .tag(lastSlideIndex)
             }
-            .tabViewStyle(.page(indexDisplayMode: .always)) // Enables the paging dots
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            
+            // 'X' Button Overlay
+            .overlay(alignment: .topTrailing) {
+                if currentTab == lastSlideIndex {
+                    Button(action: onComplete) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(.gray.opacity(0.8), .thinMaterial)
+                            .shadow(radius: 5)
+                    }
+                    .padding()
+                    .transition(.opacity.animation(.easeIn))
+                }
+            }
         }
     }
 }
 
-// MARK: - Welcome Slide with Glassmorphism
-
+// MARK: - Welcome Slide
 struct OnboardingWelcomeView: View {
-    @State private var showContent: Bool = false
+    // Properties to track the active slide
+    let slideIndex: Int
+    @Binding var currentTab: Int
+    
+    @StateObject private var viewState = ViewState()
     
     var body: some View {
         VStack(spacing: 30) {
@@ -91,8 +132,8 @@ struct OnboardingWelcomeView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 100, height: 100)
                     .shadow(color: .black.opacity(0.1), radius: 5, y: 5)
-                    .opacity(showContent ? 1 : 0)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.4), value: showContent)
+                    .opacity(viewState.showContent ? 1 : 0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.4), value: viewState.showContent)
             
                 VStack(spacing: 15) {
                     Text("Welcome to")
@@ -104,25 +145,25 @@ struct OnboardingWelcomeView: View {
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                         .foregroundColor(.accentColor)
                 }
-                .opacity(showContent ? 1 : 0)
-                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.5), value: showContent)
+                .opacity(viewState.showContent ? 1 : 0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.5), value: viewState.showContent)
                 
                 Text("Wanna know how fast you really smash?")
                     .font(.headline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
-                    .opacity(showContent ? 1 : 0)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.6), value: showContent)
+                    .opacity(viewState.showContent ? 1 : 0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.6), value: viewState.showContent)
             }
             .padding(.vertical, 50)
             .padding(.horizontal, 20)
             .background(GlassPanel())
             .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
             .padding(.horizontal, 20)
-            .offset(y: showContent ? 0 : -30)
-            .opacity(showContent ? 1 : 0)
-            .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: showContent)
+            .offset(y: viewState.showContent ? 0 : -30)
+            .opacity(viewState.showContent ? 1 : 0)
+            .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: viewState.showContent)
             
             Spacer()
             
@@ -130,29 +171,42 @@ struct OnboardingWelcomeView: View {
                 .fontWeight(.semibold)
                 .foregroundColor(.secondary)
                 .symbolEffect(.bounce, options: .repeating.speed(0.8))
-                .opacity(showContent ? 1 : 0)
-                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.8), value: showContent)
+                .opacity(viewState.showContent ? 1 : 0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.8), value: viewState.showContent)
                 .padding(.bottom, 40)
         }
         .onAppear {
-            if !showContent {
-                showContent = true
+            if currentTab == slideIndex {
+                triggerAnimation()
+            }
+        }
+        .onChange(of: currentTab) {
+            if currentTab == slideIndex {
+                triggerAnimation()
             }
         }
     }
+    
+    private func triggerAnimation() {
+        guard !viewState.showContent else { return }
+        viewState.showContent = true
+    }
 }
 
-// MARK: - Instructional Slide with Glassmorphism
-
+// MARK: - Instructional Slide
 struct OnboardingInstructionView: View {
+    // Properties to track the active slide
+    let slideIndex: Int
+    @Binding var currentTab: Int
+    
+    // Content properties
     let imageNames: [String]
     let title: String
     let instructions: [(icon: String, text: String)]
     var isLastSlide: Bool = false
     var onComplete: (() -> Void)? = nil
     
-    // State for animations and manual image selection
-    @State private var showContent: Bool = false
+    @StateObject private var viewState = ViewState()
     @State private var imageSelection = 0
     @State private var showLeftArrow = false
     @State private var showRightArrow = true
@@ -166,12 +220,11 @@ struct OnboardingInstructionView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                     .padding(.top, 60)
-                    .opacity(showContent ? 1 : 0)
-                    .offset(y: showContent ? 0 : -20)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: showContent)
+                    .opacity(viewState.showContent ? 1 : 0)
+                    .offset(y: viewState.showContent ? 0 : -20)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: viewState.showContent)
 
                 VStack(spacing: 25) {
-                    // --- Image Carousel with Navigation Arrows ---
                     ZStack {
                         TabView(selection: $imageSelection) {
                             ForEach(0..<imageNames.count, id: \.self) { i in
@@ -184,34 +237,24 @@ struct OnboardingInstructionView: View {
                         .tabViewStyle(.page(indexDisplayMode: .never))
                         .frame(height: 250)
                         
-                        // --- Navigation Arrow Buttons ---
                         HStack {
-                            // Left Arrow
                             if showLeftArrow {
                                 ArrowButton(icon: "chevron.left") {
-                                    withAnimation {
-                                        imageSelection -= 1
-                                    }
+                                    withAnimation { imageSelection -= 1 }
                                 }
                             }
-                            
                             Spacer()
-                            
-                            // Right Arrow
                             if showRightArrow {
                                 ArrowButton(icon: "chevron.right") {
-                                    withAnimation {
-                                        imageSelection += 1
-                                    }
+                                    withAnimation { imageSelection += 1 }
                                 }
                             }
                         }
                         .padding(.horizontal, 15)
                     }
-                    .opacity(showContent ? 1 : 0)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3), value: showContent)
+                    .opacity(viewState.showContent ? 1 : 0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3), value: viewState.showContent)
                     
-                    // --- Instructions List ---
                     VStack(alignment: .leading, spacing: 25) {
                         ForEach(instructions, id: \.text) { item in
                             HStack(alignment: .top, spacing: 16) {
@@ -225,48 +268,53 @@ struct OnboardingInstructionView: View {
                             }
                         }
                     }
-                    .opacity(showContent ? 1 : 0)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.4), value: showContent)
+                    .opacity(viewState.showContent ? 1 : 0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.4), value: viewState.showContent)
                 }
-                .padding(30)
+                .padding([.horizontal, .bottom], 30)
+                .padding(.top, 10)
                 .background(GlassPanel())
                 .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
-                .offset(y: showContent ? 0 : -30)
-                .opacity(showContent ? 1 : 0)
-                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: showContent)
+                .offset(y: viewState.showContent ? 0 : -30)
+                .opacity(viewState.showContent ? 1 : 0)
+                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: viewState.showContent)
                 
-                // --- Completion Button ---
                 if isLastSlide {
                     Button("Get Started", action: { onComplete?() })
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .padding(.top, 10)
-                        .opacity(showContent ? 1 : 0)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.6), value: showContent)
+                        .opacity(viewState.showContent ? 1 : 0)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.6), value: viewState.showContent)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 60)
         }
         .onAppear {
-            if !showContent {
-                showContent = true
-            }
-            // Set initial arrow visibility
             updateArrowVisibility()
+            if currentTab == slideIndex {
+                triggerAnimation()
+            }
+        }
+        .onChange(of: currentTab) {
+            if currentTab == slideIndex {
+                triggerAnimation()
+            }
         }
         .onChange(of: imageSelection) {
-            // Update arrow visibility whenever the selection changes
             updateArrowVisibility()
         }
     }
     
-    /// Hides/shows the navigation arrows based on the current image index.
+    private func triggerAnimation() {
+        guard !viewState.showContent else { return }
+        viewState.showContent = true
+    }
+    
     private func updateArrowVisibility() {
         guard imageNames.count > 1 else {
-            showLeftArrow = false
-            showRightArrow = false
-            return
+            showLeftArrow = false; showRightArrow = false; return
         }
         showLeftArrow = imageSelection > 0
         showRightArrow = imageSelection < imageNames.count - 1
@@ -274,14 +322,9 @@ struct OnboardingInstructionView: View {
 }
 
 // MARK: - Reusable Arrow Button
-
-/// A reusable, animated button for carousel navigation.
 struct ArrowButton: View {
     let icon: String
     let action: () -> Void
-    
-    @State private var isAnimating = false
-    
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
@@ -292,13 +335,5 @@ struct ArrowButton: View {
                 .clipShape(Circle())
                 .shadow(radius: 5)
         }
-        .scaleEffect(isAnimating ? 1.1 : 1.0)
-        .onAppear {
-            // Add a subtle, repeating "breathing" animation to draw attention
-            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
-                isAnimating = true
-            }
-        }
     }
 }
-
