@@ -17,6 +17,9 @@ struct CalibrationView: View {
     @State private var liveOffset1: CGSize = .zero
     @State private var liveOffset2: CGSize = .zero
 
+    // 1. New state to control the info sheet's visibility
+    @State private var showInfoSheet: Bool = false
+
     var body: some View {
         ZStack {
             // A monochromatic blue aurora background to match other views.
@@ -40,7 +43,14 @@ struct CalibrationView: View {
                     Spacer()
                     Text("Calibration").font(.headline)
                     Spacer()
-                    Button("Cancel", action: {}).padding().opacity(0) // For spacing
+                    // 2. Replaced the old spacing button with a new info button
+                    Button {
+                        showInfoSheet = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.title3) // A slightly larger, more tappable size
+                    }
+                    .padding()
                 }
                 .background(.ultraThinMaterial)
 
@@ -69,8 +79,8 @@ struct CalibrationView: View {
                                     Color.clear.onAppear {
                                         // Initialize the positions of the handles when the view appears
                                         self.viewSize = geo.size
-                                        self.point1 = CGPoint(x: geo.size.width * 0.4, y: geo.size.height * 0.4)
-                                        self.point2 = CGPoint(x: geo.size.width * 0.6, y: geo.size.height * 0.6)
+                                        self.point1 = CGPoint(x: geo.size.width * 0.3, y: geo.size.height * 0.8)
+                                        self.point2 = CGPoint(x: geo.size.width * 0.7, y: geo.size.height * 0.8)
                                     }
                                 }
                             )
@@ -114,6 +124,21 @@ struct CalibrationView: View {
             }
         }
         .onAppear(perform: loadFirstFrame)
+        // 3. Add the .sheet modifier to present the onboarding slide
+        .sheet(isPresented: $showInfoSheet) {
+            OnboardingSheetContainerView {
+                // 4. This is the specific onboarding slide you wanted to show
+                OnboardingInstructionView(
+                    imageNames: ["OnboardingSlide2.1","OnboardingSlide2.2","OnboardingSlide2.3"],
+                    title: "2. Mark a Known Distance",
+                    instructions: [
+                        (icon: "scope", text: "Place one point on the front service line and one on the doubles flick line — 3.87 m apart."),
+                        (icon: "person.fill", text: "Points must be aligned with the player’s position — along the same depth from the camera."),
+                        (icon: "ruler.fill", text: "The default length is 3.87 m. Only change it if you used a different line — this may reduce accuracy.")
+                    ]
+                )
+            }
+        }
     }
     
     /// Asynchronously loads the first frame of the selected video to be used as a still image.
@@ -163,6 +188,47 @@ struct CalibrationView: View {
         // The final scale factor is the ratio of real-world length to pixel distance
         let scaleFactor = realLength / pixelDistance
         onComplete(scaleFactor)
+    }
+}
+
+// MARK: - Onboarding Sheet Container
+// A generic container to display any onboarding content in a sheet with a dismiss button.
+private struct OnboardingSheetContainerView<Content: View>: View {
+    @Environment(\.dismiss) var dismiss
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        // Use a NavigationStack to get a toolbar for the dismiss button
+        NavigationStack {
+            // The background styling from the main OnboardingView
+            ZStack {
+                Color(.systemBackground).ignoresSafeArea()
+                
+                Circle()
+                    .fill(Color.blue.opacity(0.8))
+                    .blur(radius: 150)
+                    .offset(x: -150, y: -200)
+
+                Circle()
+                    .fill(Color.blue.opacity(0.5))
+                    .blur(radius: 180)
+                    .offset(x: 150, y: 150)
+                
+                // Your provided content
+                content
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -216,7 +282,7 @@ private struct CalibrationHandleView: View {
                 .frame(width: 8, height: 8)
                 // Position the dot within the upper part of the teardrop.
                 .offset(y: -4)
-                
+            
             // ADDED: A small white circle at the very bottom to make the tip obvious.
             Circle()
                 .fill(Color.white)

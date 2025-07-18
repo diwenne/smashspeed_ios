@@ -22,6 +22,9 @@ struct ReviewView: View {
     @State private var currentFrameImage: UIImage?
     @State private var editMode: EditMode = .move
     
+    // 1. New state to control the info sheet's visibility
+    @State private var showInfoSheet: Bool = false
+    
     // State for Pan and Zoom of the entire image
     @State private var scale: CGFloat = 1.0
     @GestureState private var magnifyBy: CGFloat = 1.0
@@ -62,7 +65,7 @@ struct ReviewView: View {
 
     var body: some View {
         ZStack {
-            // 1. A monochromatic blue aurora background to match other views.
+            // Background aurora
             Color(.systemBackground).ignoresSafeArea()
             
             Circle()
@@ -77,9 +80,30 @@ struct ReviewView: View {
 
             VStack(spacing: 0) {
                 // --- Top Frame Display ---
-                Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
-                    .font(.headline).padding(.vertical, 10)
-                    .frame(maxWidth: .infinity).background(.ultraThinMaterial)
+                // 2. Replaced the Text view with an HStack to add the info button
+                HStack {
+                    // Invisible placeholder to balance the button on the right and keep title centered
+                    Image(systemName: "info.circle")
+                        .font(.title3)
+                        .padding()
+                        .opacity(0)
+                    
+                    Spacer()
+                    
+                    Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
+                        .font(.headline)
+                        
+                    Spacer()
+                        
+                    Button {
+                        showInfoSheet = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.title3)
+                    }
+                    .padding()
+                }
+                .frame(maxWidth: .infinity).background(.ultraThinMaterial)
 
                 GeometryReader { geo in
                     ZStack {
@@ -200,11 +224,24 @@ struct ReviewView: View {
                 loadFrame(at: currentIndex)
             }
         }
-        // ===================================================================
-        // MODIFICATION: Run interpolation and calculation when the view first appears
-        // ===================================================================
         .onAppear {
             updateAndRecalculate()
+        }
+        // 3. Add the .sheet modifier to present the onboarding slide
+        .sheet(isPresented: $showInfoSheet) {
+            OnboardingSheetContainerView {
+                // 4. This is Onboarding Slide 4
+                OnboardingInstructionView(
+                    imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
+                    title: "3. Review Detection",
+                    instructions: [
+                        (icon: "arrow.left.and.right.circle.fill", text: "Use the arrow keys to move through each frame of the video and view the shuttle speed at each frame."),
+                        (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
+                        (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the red box."),
+                        (icon: "bolt.fill", text: "If you're only interested in the smash, skip ahead to those key frames.")
+                    ]
+                )
+            }
         }
     }
     
@@ -336,9 +373,6 @@ struct ReviewView: View {
     private func updateBoxFromTextFields() {
         guard let x = Double(xText), let y = Double(yText), let w = Double(wText), let h = Double(hText) else { return }
         analysisResults[currentIndex].boundingBox = CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(w), height: CGFloat(h))
-        // ===================================================================
-        // MODIFICATION: Call the full update function for consistency
-        // ===================================================================
         updateAndRecalculate()
     }
     
@@ -359,6 +393,48 @@ struct ReviewView: View {
         }
     }
 }
+
+// MARK: - Onboarding Sheet Container
+// A generic container to display any onboarding content in a sheet with a dismiss button.
+private struct OnboardingSheetContainerView<Content: View>: View {
+    @Environment(\.dismiss) var dismiss
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        // Use a NavigationStack to get a toolbar for the dismiss button
+        NavigationStack {
+            // The background styling from the main OnboardingView
+            ZStack {
+                Color(.systemBackground).ignoresSafeArea()
+                
+                Circle()
+                    .fill(Color.blue.opacity(0.8))
+                    .blur(radius: 150)
+                    .offset(x: -150, y: -200)
+
+                Circle()
+                    .fill(Color.blue.opacity(0.5))
+                    .blur(radius: 180)
+                    .offset(x: 150, y: 150)
+                
+                // Your provided content
+                content
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 // MARK: - Helper Views for ReviewView
 

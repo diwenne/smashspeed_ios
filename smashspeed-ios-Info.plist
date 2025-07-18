@@ -7,5 +7,12 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<string>YES</string>
 	</dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>AppLabel</string>
+		<key>UILaunchScreen</key>
+		<dict/>
+	</dict>
 </dict>
 </plist>
