@@ -22,7 +22,6 @@ struct ReviewView: View {
     @State private var currentFrameImage: UIImage?
     @State private var editMode: EditMode = .move
     
-    // 1. New state to control the info sheet's visibility
     @State private var showInfoSheet: Bool = false
     
     // State for Pan and Zoom of the entire image
@@ -32,14 +31,6 @@ struct ReviewView: View {
     @GestureState private var dragOffset: CGSize = .zero
     
     @State private var viewportSize: CGSize = .zero
-    
-    // State for the coordinate text fields
-    @State private var xText: String = ""
-    @State private var yText: String = ""
-    @State private var wText: String = ""
-    @State private var hText: String = ""
-    
-    @FocusState private var isInputActive: Bool
     
     private let imageGenerator: AVAssetImageGenerator
     
@@ -80,9 +71,7 @@ struct ReviewView: View {
 
             VStack(spacing: 0) {
                 // --- Top Frame Display ---
-                // 2. Replaced the Text view with an HStack to add the info button
                 HStack {
-                    // Invisible placeholder to balance the button on the right and keep title centered
                     Image(systemName: "info.circle")
                         .font(.title3)
                         .padding()
@@ -185,14 +174,6 @@ struct ReviewView: View {
                         
                         Divider()
                         
-                        // Manual Coordinates
-                        CoordinateInputView(
-                            xText: $xText, yText: $yText,
-                            wText: $wText, hText: $hText,
-                            isFocused: $isInputActive,
-                            onCommit: updateBoxFromTextFields
-                        )
-                        
                         // Finalize Button
                         Button("Finish & Save Analysis") { onFinish(analysisResults) }
                             .buttonStyle(.borderedProminent)
@@ -204,22 +185,11 @@ struct ReviewView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
                     .padding()
                 }
-                .frame(maxHeight: isInputActive ? 450 : 350) // Adjust height based on keyboard
-                .animation(.spring(), value: isInputActive)
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        updateBoxFromTextFields()
-                        isInputActive = false
-                    }
-                }
+                .frame(maxHeight: 350)
             }
         }
         .task(id: currentIndex) {
             await MainActor.run {
-                updateTextFieldsFromBox()
                 withAnimation { resetZoom() }
                 loadFrame(at: currentIndex)
             }
@@ -227,10 +197,8 @@ struct ReviewView: View {
         .onAppear {
             updateAndRecalculate()
         }
-        // 3. Add the .sheet modifier to present the onboarding slide
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
-                // 4. This is Onboarding Slide 4
                 OnboardingInstructionView(
                     imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
                     title: "3. Review Detection",
@@ -327,7 +295,6 @@ struct ReviewView: View {
     }
     
     private func updateAndRecalculate() {
-        updateTextFieldsFromBox()
         interpolateMissingFrames()
         recalculateAllSpeeds()
     }
@@ -347,32 +314,35 @@ struct ReviewView: View {
         updateAndRecalculate()
     }
     
-    private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0) {
+    // ===================================================================
+    // MODIFICATION: The multiplier logic is now a tiered system for true acceleration.
+    // ===================================================================
+    private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0, pressCount: Int) {
         guard var box = analysisResults[currentIndex].boundingBox else { return }
-        let moveSensitivity: CGFloat = 0.002
-        let resizeSensitivity: CGFloat = 0.005
+        
+        // Tiered multiplier system for exponential feel.
+        // The pressCount is roughly 10 steps per second.
+        let multiplier: CGFloat
+        switch pressCount {
+        case 0..<5:       // First 0.5s: Normal speed for precision.
+            multiplier = 1.0
+        case 5..<15:      // Next 1s: 4x speed.
+            multiplier = 4.0
+        case 15..<30:     // Next 1.5s: 10x speed.
+            multiplier = 10.0
+        default:          // After 3s: Max speed.
+            multiplier = 25.0
+        }
+        
+        let moveSensitivity: CGFloat = 0.002 * multiplier
+        let resizeSensitivity: CGFloat = 0.005 * multiplier
+        
         box.origin.x = max(0, min(box.origin.x + (dx * moveSensitivity / scale), 1.0 - box.size.width))
         box.origin.y = max(0, min(box.origin.y + (dy * moveSensitivity / scale), 1.0 - box.size.height))
         box.size.width = max(0.01, box.size.width + (dw * resizeSensitivity / scale))
         box.size.height = max(0.01, box.size.height + (dh * resizeSensitivity / scale))
+        
         analysisResults[currentIndex].boundingBox = box
-        updateAndRecalculate()
-    }
-    
-    private func updateTextFieldsFromBox() {
-        if let box = currentFrameData?.boundingBox {
-            xText = String(format: "%.3f", box.origin.x)
-            yText = String(format: "%.3f", box.origin.y)
-            wText = String(format: "%.3f", box.size.width)
-            hText = String(format: "%.3f", box.size.height)
-        } else {
-            xText = ""; yText = ""; wText = ""; hText = ""
-        }
-    }
-    
-    private func updateBoxFromTextFields() {
-        guard let x = Double(xText), let y = Double(yText), let w = Double(wText), let h = Double(hText) else { return }
-        analysisResults[currentIndex].boundingBox = CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(w), height: CGFloat(h))
         updateAndRecalculate()
     }
     
@@ -395,7 +365,6 @@ struct ReviewView: View {
 }
 
 // MARK: - Onboarding Sheet Container
-// A generic container to display any onboarding content in a sheet with a dismiss button.
 private struct OnboardingSheetContainerView<Content: View>: View {
     @Environment(\.dismiss) var dismiss
     let content: Content
@@ -405,9 +374,7 @@ private struct OnboardingSheetContainerView<Content: View>: View {
     }
 
     var body: some View {
-        // Use a NavigationStack to get a toolbar for the dismiss button
         NavigationStack {
-            // The background styling from the main OnboardingView
             ZStack {
                 Color(.systemBackground).ignoresSafeArea()
                 
@@ -421,7 +388,6 @@ private struct OnboardingSheetContainerView<Content: View>: View {
                     .blur(radius: 180)
                     .offset(x: 150, y: 150)
                 
-                // Your provided content
                 content
             }
             .toolbar {
@@ -523,7 +489,7 @@ private struct BoxAdjustmentControls: View {
     let hasBox: Bool
     let addBoxAction: () -> Void
     let removeBoxAction: () -> Void
-    let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat) -> Void
+    let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat, Int) -> Void
     
     var body: some View {
         VStack(spacing: 8) {
@@ -534,9 +500,9 @@ private struct BoxAdjustmentControls: View {
                 }.pickerStyle(.segmented)
                 
                 if editMode == .move {
-                    ReviewDirectionalPad { dx, dy in adjustBoxAction(dx, dy, 0, 0) }
+                    ReviewDirectionalPad { dx, dy, pressCount in adjustBoxAction(dx, dy, 0, 0, pressCount) }
                 } else {
-                    ReviewResizeControls { dw, dh in adjustBoxAction(0, 0, dw, dh) }
+                    ReviewResizeControls { dw, dh, pressCount in adjustBoxAction(0, 0, dw, dh, pressCount) }
                 }
             }
             
@@ -553,60 +519,35 @@ private struct BoxAdjustmentControls: View {
     }
 }
 
-private struct CoordinateInputView: View {
-    @Binding var xText: String
-    @Binding var yText: String
-    @Binding var wText: String
-    @Binding var hText: String
-    var isFocused: FocusState<Bool>.Binding // Receive the focus state
-    let onCommit: () -> Void
-    
-    var body: some View {
-        Grid(alignment: .center, horizontalSpacing: 8, verticalSpacing: 8) {
-            GridRow {
-                Text("x").frame(width: 20); TextField("x", text: $xText).focused(isFocused)
-                Text("y").frame(width: 20); TextField("y", text: $yText).focused(isFocused)
-            }
-            GridRow {
-                Text("w").frame(width: 20); TextField("w", text: $wText).focused(isFocused)
-                Text("h").frame(width: 20); TextField("h", text: $hText).focused(isFocused)
-            }
-        }
-        .textFieldStyle(.roundedBorder)
-        .keyboardType(.decimalPad)
-        .onSubmit(onCommit)
-    }
-}
-
 private struct ReviewDirectionalPad: View {
-    let action: (CGFloat, CGFloat) -> Void
+    let action: (CGFloat, CGFloat, Int) -> Void
     var body: some View {
         HStack(spacing: 20) {
             Spacer()
-            RepeatingFineTuneButton(icon: "arrow.left") { action(-1, 0) }
+            RepeatingFineTuneButton(icon: "arrow.left") { pressCount in action(-1, 0, pressCount) }
             VStack(spacing: 10) {
-                RepeatingFineTuneButton(icon: "arrow.up") { action(0, -1) }
-                RepeatingFineTuneButton(icon: "arrow.down") { action(0, 1) }
+                RepeatingFineTuneButton(icon: "arrow.up") { pressCount in action(0, -1, pressCount) }
+                RepeatingFineTuneButton(icon: "arrow.down") { pressCount in action(0, 1, pressCount) }
             }
-            RepeatingFineTuneButton(icon: "arrow.right") { action(1, 0) }
+            RepeatingFineTuneButton(icon: "arrow.right") { pressCount in action(1, 0, pressCount) }
             Spacer()
         }
     }
 }
 
 private struct ReviewResizeControls: View {
-    let action: (CGFloat, CGFloat) -> Void
+    let action: (CGFloat, CGFloat, Int) -> Void
     var body: some View {
         VStack(spacing: 8) {
             HStack {
                 Text("Width").frame(width: 60)
-                RepeatingFineTuneButton(icon: "minus") { action(-1, 0) }
-                RepeatingFineTuneButton(icon: "plus") { action(1, 0) }
+                RepeatingFineTuneButton(icon: "minus") { pressCount in action(-1, 0, pressCount) }
+                RepeatingFineTuneButton(icon: "plus") { pressCount in action(1, 0, pressCount) }
             }
             HStack {
                 Text("Height").frame(width: 60)
-                RepeatingFineTuneButton(icon: "minus") { action(0, -1) }
-                RepeatingFineTuneButton(icon: "plus") { action(0, 1) }
+                RepeatingFineTuneButton(icon: "minus") { pressCount in action(0, -1, pressCount) }
+                RepeatingFineTuneButton(icon: "plus") { pressCount in action(0, 1, pressCount) }
             }
         }
     }
@@ -614,12 +555,15 @@ private struct ReviewResizeControls: View {
 
 private struct RepeatingFineTuneButton: View {
     let icon: String
-    let action: () -> Void
+    let action: (Int) -> Void
+    
     @State private var timer: Timer?
+    @State private var pressCount = 0
     @State private var isPressing = false
+    
     var body: some View {
         Button(action: {
-            if !isPressing { self.action() }
+            if !isPressing { self.action(0) }
         }) {
             Image(systemName: icon).font(.title3).frame(width: 50, height: 36).padding(4)
                 .background(isPressing ? Color.gray.opacity(0.5) : Color.gray.opacity(0.2))
@@ -627,16 +571,30 @@ private struct RepeatingFineTuneButton: View {
         }
         .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
             self.isPressing = pressing
-            if pressing { self.startTimer() } else { self.stopTimer() }
+            if pressing {
+                self.startTimer()
+            } else {
+                self.stopTimer()
+            }
         }, perform: {})
     }
+    
     private func startTimer() {
         stopTimer()
-        action()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in self.action() }
+        pressCount = 0
+        
+        action(pressCount)
+        pressCount += 1
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            self.action(pressCount)
+            pressCount += 1
+        }
     }
+    
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+        pressCount = 0
     }
 }
