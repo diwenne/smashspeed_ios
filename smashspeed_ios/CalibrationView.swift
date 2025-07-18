@@ -17,7 +17,6 @@ struct CalibrationView: View {
     @State private var liveOffset1: CGSize = .zero
     @State private var liveOffset2: CGSize = .zero
 
-    // 1. New state to control the info sheet's visibility
     @State private var showInfoSheet: Bool = false
 
     var body: some View {
@@ -43,7 +42,6 @@ struct CalibrationView: View {
                     Spacer()
                     Text("Calibration").font(.headline)
                     Spacer()
-                    // 2. Replaced the old spacing button with a new info button
                     Button {
                         showInfoSheet = true
                     } label: {
@@ -124,10 +122,8 @@ struct CalibrationView: View {
             }
         }
         .onAppear(perform: loadFirstFrame)
-        // 3. Add the .sheet modifier to present the onboarding slide
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
-                // 4. This is the specific onboarding slide you wanted to show
                 OnboardingInstructionView(
                     imageNames: ["OnboardingSlide2.1","OnboardingSlide2.2","OnboardingSlide2.3"],
                     title: "2. Mark a Known Distance",
@@ -241,61 +237,67 @@ private struct CalibrationHandleView: View {
     @Binding var liveOffset: CGSize
     let viewSize: CGSize
     
+    @State private var isDragging: Bool = false
+    
     var body: some View {
-        // A custom pin-style handle, which is larger and more precise than a circle.
-        // The logical position of this view is the very bottom tip of the pin.
+        // 1. MODIFIED: A parent ZStack to layer the feedback circle and the pin marker.
+        // This ensures the feedback circle is centered on the actual position, not the marker's frame.
         ZStack {
-            // The main pin body, drawn as a custom teardrop shape.
-            Path { path in
-                let width: CGFloat = 24
-                let height: CGFloat = 32
-                // Start at the bottom tip
-                path.move(to: CGPoint(x: width / 2, y: height))
-                // Add curves to create the rounded sides
-                path.addCurve(to: CGPoint(x: 0, y: height / 2.5),
-                              control1: CGPoint(x: width / 2, y: height * 0.8),
-                              control2: CGPoint(x: 0, y: height * 0.65))
-                // Add the top arc
-                path.addArc(center: CGPoint(x: width / 2, y: height / 2.5),
-                            radius: width / 2,
-                            startAngle: .degrees(180),
-                            endAngle: .degrees(0),
-                            clockwise: false)
-                // Add the other side's curve back to the tip
-                path.addCurve(to: CGPoint(x: width / 2, y: height),
-                              control1: CGPoint(x: width, y: height * 0.65),
-                              control2: CGPoint(x: width / 2, y: height * 0.8))
-            }
-            .fill(
-                // MODIFIED: Changed to a more intuitive red color for marking points.
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.red.opacity(0.8), Color.red]),
-                    startPoint: .top,
-                    endPoint: .bottom
+            // 2. ADDED: The feedback circle is now the first item in the parent ZStack.
+            // It is centered on the view's logical position and is not affected by the marker's offset.
+            Circle()
+                .fill(Color.blue.opacity(0.2))
+                .frame(width: 80, height: 80) // Diameter of 80 visually represents the -40 inset.
+                .opacity(isDragging ? 1 : 0)
+                .animation(.easeOut(duration: 0.2), value: isDragging)
+            
+            // This ZStack now *only* contains the visual pin marker.
+            ZStack {
+                // The main pin body, drawn as a custom teardrop shape.
+                Path { path in
+                    let width: CGFloat = 24
+                    let height: CGFloat = 32
+                    path.move(to: CGPoint(x: width / 2, y: height))
+                    path.addCurve(to: CGPoint(x: 0, y: height / 2.5),
+                                  control1: CGPoint(x: width / 2, y: height * 0.8),
+                                  control2: CGPoint(x: 0, y: height * 0.65))
+                    path.addArc(center: CGPoint(x: width / 2, y: height / 2.5),
+                                radius: width / 2,
+                                startAngle: .degrees(180),
+                                endAngle: .degrees(0),
+                                clockwise: false)
+                    path.addCurve(to: CGPoint(x: width / 2, y: height),
+                                  control1: CGPoint(x: width, y: height * 0.65),
+                                  control2: CGPoint(x: width / 2, y: height * 0.8))
+                }
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.red.opacity(0.8), Color.red]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
                 )
-            )
-            .frame(width: 24, height: 32)
-            
-            // An inner white dot for contrast, acting as the "head" of the pin.
-            Circle()
-                .fill(Color.white)
-                .frame(width: 8, height: 8)
-                // Position the dot within the upper part of the teardrop.
-                .offset(y: -4)
-            
-            // ADDED: A small white circle at the very bottom to make the tip obvious.
-            Circle()
-                .fill(Color.white)
-                .frame(width: 5, height: 5)
-                .overlay(Circle().stroke(Color.black.opacity(0.5), lineWidth: 1))
-                // Position the circle at the bottom of the ZStack's frame.
-                .offset(y: 16)
+                .frame(width: 24, height: 32)
+                
+                // An inner white dot for contrast.
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 8, height: 8)
+                    .offset(y: -4)
+                
+                // A small white circle at the very bottom to make the tip obvious.
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 5, height: 5)
+                    .overlay(Circle().stroke(Color.black.opacity(0.5), lineWidth: 1))
+                    .offset(y: 16)
+            }
+            // 3. MODIFIED: This offset now only applies to the pin marker, not the feedback circle.
+            // It shifts the marker up so its tip aligns with the view's center.
+            .offset(y: -16)
+            .shadow(color: .black.opacity(0.3), radius: 5, y: 4)
         }
-        // The entire ZStack is offset upwards. This makes the bottom tip of the pin
-        // align with the view's logical center, ensuring precise placement.
-        .offset(y: -16)
-        .shadow(color: .black.opacity(0.3), radius: 5, y: 4) // A more realistic shadow for depth
-        .contentShape(Rectangle().inset(by: -40)) // Keep a large, invisible tappable area
+        .contentShape(Rectangle().inset(by: -40))
         .position(
             x: position.x + liveOffset.width,
             y: position.y + liveOffset.height
@@ -303,17 +305,18 @@ private struct CalibrationHandleView: View {
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
+                    self.isDragging = true
                     self.liveOffset = value.translation
                 }
                 .onEnded { value in
                     let newX = position.x + value.translation.width
                     let newY = position.y + value.translation.height
                     
-                    // Clamp the position to the bounds of the view
                     position.x = min(max(0, newX), viewSize.width)
                     position.y = min(max(0, newY), viewSize.height)
                     
                     self.liveOffset = .zero
+                    self.isDragging = false
                 }
         )
     }
