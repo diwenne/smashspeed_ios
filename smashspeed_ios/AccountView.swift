@@ -5,12 +5,10 @@ import CryptoKit
 import AuthenticationServices
 
 // MARK: - App Settings Enums
-// ✅ REMOVED: The SpeedUnit enum is no longer needed.
 enum AppearanceMode: String, CaseIterable, Identifiable {
     case system = "System", light = "Light", dark = "Dark"
     var id: Self { self }
 }
-
 
 // MARK: - Account Tab Main View
 struct AccountView: View {
@@ -58,7 +56,6 @@ struct LoggedInView: View {
     let signOutAction: () -> Void
     let deleteAccountAction: () -> Void
 
-    // ✅ REMOVED: The AppStorage for speedUnit is no longer needed.
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     
     @State private var showOnboarding = false
@@ -88,19 +85,14 @@ struct LoggedInView: View {
                     Picker("Appearance", selection: $appearanceMode) {
                         ForEach(AppearanceMode.allCases) { mode in Text(mode.rawValue).tag(mode) }
                     }.pickerStyle(.segmented)
-                    
-                    
                     Divider()
-                    
                     Button { showOnboarding = true } label: { Label("View Tutorial", systemImage: "questionmark.circle.fill") }
                 }.glassPanelStyle()
 
-                // --- Account Actions (Danger Zone) ---
+                // --- Account Actions ---
                 VStack(alignment: .leading, spacing: 15) {
                     Text("Account Actions").font(.title2.bold()).padding(.bottom, 5)
-
                     Button("Change Password", action: { showChangePasswordSheet = true })
-                    
                     Divider()
                     Button("Sign Out", role: .destructive, action: signOutAction)
                     Divider()
@@ -137,10 +129,7 @@ struct ChangePasswordView: View {
                 ModernTextField(title: "Confirm New Password", text: $confirmPassword, isSecure: true)
                 
                 if let feedbackMessage = feedbackMessage {
-                    Text(feedbackMessage)
-                        .font(.caption)
-                        .foregroundColor(isSuccess ? .green : .red)
-                        .multilineTextAlignment(.center)
+                    Text(feedbackMessage).font(.caption).foregroundColor(isSuccess ? .green : .red).multilineTextAlignment(.center)
                 }
 
                 Button("Update Password") {
@@ -153,25 +142,16 @@ struct ChangePasswordView: View {
                         self.isSuccess = success
                         self.feedbackMessage = message
                         if success {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                dismiss()
-                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { dismiss() }
                         }
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(!canSubmit)
-                
+                .buttonStyle(.borderedProminent).controlSize(.large).disabled(!canSubmit)
                 Spacer()
             }
             .padding(30)
             .navigationTitle("Change Password")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: { dismiss() })
-                }
-            }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: { dismiss() }) } }
         }
     }
 }
@@ -190,17 +170,26 @@ struct AuthView: View {
     var body: some View {
         VStack(spacing: 30) {
             VStack {
-                Image("AppIconPreview").resizable().aspectRatio(contentMode: .fit).frame(width: 100, height: 100).shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
-                Text("Smashspeed").font(.largeTitle).fontWeight(.bold)
-            }
-            VStack {
                 ZStack {
                     SignInForm(isSigningUp: $isSigningUp).offset(x: isSigningUp ? -UIScreen.main.bounds.width : 0).opacity(isSigningUp ? 0 : 1)
                     CreateAccountForm(isSigningUp: $isSigningUp).offset(x: isSigningUp ? 0 : UIScreen.main.bounds.width).opacity(isSigningUp ? 1 : 0)
                 }.animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSigningUp)
-            }.padding(30).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+            }
+            .padding(30)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+            
+            Text("Sign in to access more features, customize settings, and track your progress over time.")
+                .font(.headline)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            
             Spacer()
-        }.padding()
+        }
+        .padding()
+        .padding(.top, 40)
     }
 }
 
@@ -212,7 +201,7 @@ struct SignInForm: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Sign In to Your Account").font(.title3).fontWeight(.bold)
+            Text("Sign In").font(.title2).fontWeight(.bold)
             ModernTextField(title: "Email", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress)
             ModernTextField(title: "Password", text: $password, isSecure: true).textContentType(.password)
             HStack {
@@ -240,7 +229,7 @@ struct CreateAccountForm: View {
     private var isFormValid: Bool { !email.isEmpty && !password.isEmpty && password == confirmPassword && hasAcceptedTerms }
     var body: some View {
         VStack(spacing: 20) {
-            Text("Create a New Account").font(.title3).fontWeight(.bold)
+            Text("Create an Account").font(.title2).fontWeight(.bold)
             ModernTextField(title: "Email", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress)
             ModernTextField(title: "Password", text: $password, isSecure: true).textContentType(.newPassword)
             ModernTextField(title: "Confirm Password", text: $confirmPassword, isSecure: true).textContentType(.newPassword)
@@ -253,7 +242,11 @@ struct CreateAccountForm: View {
                 guard password == confirmPassword else { viewModel.errorMessage = "Passwords do not match."; return }
                 viewModel.signUp(email: email, password: password)
             } label: { Text("Create Account").fontWeight(.bold).frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent).controlSize(.large).disabled(!isFormValid)
-            Button("Already have an account? Sign In") { isSigningUp = false; viewModel.errorMessage = nil; viewModel.infoMessage = nil }.font(.footnote).tint(.accentColor).padding(.top)
+            Button("Already have an account? Sign In") {
+                isSigningUp = false
+                viewModel.errorMessage = nil
+                viewModel.infoMessage = nil
+            }.font(.footnote).tint(.accentColor).padding(.top)
         }
         .onChange(of: email) { _ in viewModel.errorMessage = nil }
         .onChange(of: password) { _ in viewModel.errorMessage = nil }
