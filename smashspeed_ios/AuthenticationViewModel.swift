@@ -103,4 +103,47 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
         self.authState = .signedOut
         try? Auth.auth().signOut()
     }
+
+
+    func deleteAccount() {
+        Auth.auth().currentUser?.delete { error in
+            if let error = error {
+                // Handle the error (e.g., user needs to re-authenticate)
+                self.errorMessage = error.localizedDescription
+                print("Error deleting account: \(error.localizedDescription)")
+            } else {
+                // The account was deleted successfully. The authState will update automatically.
+                print("Account successfully deleted.")
+            }
+        }
+    }
+
+    @Published var infoMessage: String?
+    
+    func sendPasswordReset(for email: String) {
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                } else {
+                    self.infoMessage = "If an account exists for this email, a reset link has been sent."
+                }
+            }
+        }
+    }
+    
+    func updatePassword(to newPassword: String, completion: @escaping (Bool, String) -> Void) {
+        Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    // Handle errors, like needing a recent sign-in
+                    completion(false, error.localizedDescription)
+                } else {
+                    completion(true, "Password successfully updated!")
+                }
+            }
+        }
+    }
+
 }
+
