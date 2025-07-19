@@ -41,6 +41,43 @@ struct AccountView: View {
                 }
             }
             .navigationTitle(viewModel.authState == .signedIn ? "My Account" : "Welcome")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        // ✅ MODIFIED: URLs updated for Contact and FAQ.
+                        if let contactURL = URL(string: "https://smashspeed.ca/#contact") {
+                            Link(destination: contactURL) {
+                                Label("Contact Us", systemImage: "person.fill.questionmark")
+                            }
+                        }
+
+                        if let faqURL = URL(string: "https://smashspeed.ca/#faq") {
+                            Link(destination: faqURL) {
+                                Label("FAQ", systemImage: "questionmark.circle.fill")
+                            }
+                        }
+
+                        Divider()
+
+                        if let termsURL = URL(string: "https://smashspeed.ca/terms-of-service") {
+                            Link(destination: termsURL) {
+                                Label("Terms of Service", systemImage: "doc.text.fill")
+                            }
+                        }
+
+                        if let privacyURL = URL(string: "https://smashspeed.ca/privacy-policy") {
+                            Link(destination: privacyURL) {
+                                Label("Privacy Policy", systemImage: "shield.lefthalf.filled")
+                            }
+                        }
+
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
         }
     }
 }
@@ -202,23 +239,20 @@ struct CreateAccountForm: View {
             ModernTextField(title: "Confirm Password", text: $confirmPassword, isSecure: true)
                 .textContentType(.newPassword)
 
-            // --- Start of Corrected Code ---
-            HStack(alignment: .top, spacing: 12) { // 1. Use .top alignment
+            HStack(alignment: .top, spacing: 12) {
                 Button(action: {
                     hasAcceptedTerms.toggle()
                 }) {
                     Image(systemName: hasAcceptedTerms ? "checkmark.square.fill" : "square")
-                        .font(.headline) // Matched size to be closer to text
+                        .font(.headline)
                         .foregroundColor(hasAcceptedTerms ? .accentColor : .secondary)
                 }
                 .buttonStyle(.plain)
 
                 Text("I have read and agree to the [Terms of Service](https://smashspeed.ca/terms-of-service) and [Privacy Policy](https://smashspeed.ca/privacy-policy).")
                     .font(.footnote)
-                    // 2. This modifier prevents the text from being cut off and allows it to wrap
                     .fixedSize(horizontal: false, vertical: true)
             }
-            // --- End of Corrected Code ---
             
             if let error = viewModel.errorMessage {
                 Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center)
@@ -245,9 +279,9 @@ struct CreateAccountForm: View {
             .tint(.accentColor)
             .padding(.top)
         }
-        .onChange(of: email) { _ in viewModel.errorMessage = nil }
-        .onChange(of: password) { _ in viewModel.errorMessage = nil }
-        .onChange(of: confirmPassword) { _ in viewModel.errorMessage = nil }
+        .onChange(of: email) { viewModel.errorMessage = nil }
+        .onChange(of: password) { viewModel.errorMessage = nil }
+        .onChange(of: confirmPassword) { viewModel.errorMessage = nil }
     }
 }
 
