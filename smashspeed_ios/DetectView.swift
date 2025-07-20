@@ -326,7 +326,7 @@ struct ShareableView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary.opacity(0.8))
 
-                    Text("@smashspeed_app")
+                    Text("@smashspeedai")
                         .font(.caption2)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary.opacity(0.6))
