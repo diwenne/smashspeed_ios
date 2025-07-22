@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import AVFoundation
+import AVKit
 import UIKit
 
 // This Equatable extension matches the simplified AppState
@@ -8,6 +9,7 @@ extension SmashSpeedViewModel.AppState: Equatable {
     static func == (lhs: SmashSpeedViewModel.AppState, rhs: SmashSpeedViewModel.AppState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle): return true
+        case (.trimming, .trimming): return true
         case (.review, .review): return true
         case (.awaitingCalibration, .awaitingCalibration): return true
         case (.processing, .processing): return true
@@ -17,7 +19,6 @@ extension SmashSpeedViewModel.AppState: Equatable {
         }
     }
 }
-
 
 
 struct DetectView: View {
@@ -44,11 +45,10 @@ struct DetectView: View {
                 
                 case .idle:
                     MainView(showInputSelector: $showInputSelector)
-                        // ✅ MODIFIED: This logic now directly imports the video without trimming.
                         .onChange(of: selectedItem) {
                             Task {
                                 guard let item = selectedItem else { return }
-                                selectedItem = nil // Clear selection
+                                selectedItem = nil
                                 
                                 do {
                                     guard let videoFile = try await item.loadTransferable(type: VideoFile.self) else {
@@ -88,6 +88,13 @@ struct DetectView: View {
                             }
                         }
                 
+                case .trimming(let videoURL):
+                    TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
+                        viewModel.videoTrimmed(url: trimmedURL)
+                    }, onCancel: {
+                        viewModel.reset()
+                    })
+
                 case .review(let videoURL, let result):
                     ReviewView(videoURL: videoURL, initialResult: result) { editedFrames in
                         viewModel.finishReview(andShowResultsFrom: editedFrames, for: authViewModel.user?.uid, videoURL: videoURL)
@@ -122,6 +129,220 @@ struct DetectView: View {
     }
 }
 
+// MARK: - Trimming View
+struct TrimmingView: View {
+    let videoURL: URL
+    let onComplete: (URL) -> Void
+    let onCancel: () -> Void
+    
+    @State private var player: AVPlayer
+    @State private var videoDuration: Double = 0.0
+    @State private var startTime: Double = 0.0
+    @State private var endTime: Double = 0.0
+    @State private var isExporting = false
+
+    init(videoURL: URL, onComplete: @escaping (URL) -> Void, onCancel: @escaping () -> Void) {
+        self.videoURL = videoURL
+        self.onComplete = onComplete
+        self.onCancel = onCancel
+        _player = State(initialValue: AVPlayer(url: videoURL))
+    }
+    
+    var body: some View {
+        ZStack {
+            Color(.systemBackground).ignoresSafeArea()
+            
+            if isExporting {
+                ProgressView("Trimming Video...")
+                    .scaleEffect(1.5)
+            } else {
+                VStack(spacing: 20) {
+                    Text("Trim to the Smash")
+                        .font(.largeTitle.bold())
+                    
+                    Text("Isolate the moment of impact. The final clip should be **very short** (~ 0.5 seconds, ~ 15 frames).")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    VideoPlayer(player: player)
+                        .frame(height: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(radius: 8)
+                        .padding(.horizontal)
+                        .onAppear { player.play() }
+
+                    VStack {
+                        RangeSliderView(
+                            startTime: $startTime,
+                            endTime: $endTime,
+                            videoDuration: videoDuration,
+                            player: player
+                        )
+                        .frame(height: 60)
+                        
+                        HStack {
+                            Text(String(format: "%.2fs", startTime))
+                            Spacer()
+                            Text("Selected Duration: \(max(0, endTime - startTime), specifier: "%.2f")s")
+                            Spacer()
+                            Text(String(format: "%.2fs", endTime))
+                        }
+                        .font(.caption.monospaced())
+                        .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal,30)
+                    
+                    Spacer()
+                    
+                    HStack {
+                        Button("Cancel", role: .cancel, action: onCancel)
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                        
+                        Button("Confirm Trim") {
+                            trimVideo()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .disabled(endTime <= startTime)
+                    }
+                    .padding()
+                }
+                .padding(.top, 40)
+                .onAppear(perform: loadVideoDetails)
+            }
+        }
+    }
+
+    private func loadVideoDetails() {
+        Task {
+            let asset = AVURLAsset(url: videoURL)
+            do {
+                let duration = try await asset.load(.duration)
+                let durationInSeconds = CMTimeGetSeconds(duration)
+                self.videoDuration = durationInSeconds
+                self.endTime = durationInSeconds
+            } catch {
+                print("Error loading video duration: \(error)")
+                onCancel()
+            }
+        }
+    }
+    
+    private func trimVideo() {
+        player.pause()
+        isExporting = true
+        
+        let asset = AVURLAsset(url: videoURL)
+        guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) else {
+            isExporting = false; return
+        }
+        
+        let tempDirectory = FileManager.default.temporaryDirectory
+        let outputURL = tempDirectory.appendingPathComponent(UUID().uuidString + ".mp4")
+        
+        let startTime = CMTime(seconds: self.startTime, preferredTimescale: 600)
+        let endTime = CMTime(seconds: self.endTime, preferredTimescale: 600)
+        let timeRange = CMTimeRange(start: startTime, end: endTime)
+        
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = .mp4
+        exportSession.timeRange = timeRange
+        
+        exportSession.exportAsynchronously {
+            DispatchQueue.main.async {
+                if exportSession.status == .completed, let url = exportSession.outputURL {
+                    onComplete(url)
+                } else {
+                    print("Export failed: \(exportSession.error?.localizedDescription ?? "Unknown error")")
+                    onCancel()
+                }
+                isExporting = false
+            }
+        }
+    }
+}
+
+// ✅ REBUILT: This custom range slider is now more robust and uses absolute positions.
+private struct RangeSliderView: View {
+    @Binding var startTime: Double
+    @Binding var endTime: Double
+    let videoDuration: Double
+    let player: AVPlayer
+
+    var body: some View {
+        GeometryReader { geometry in
+            // Guard against videoDuration being zero to prevent division errors
+            if videoDuration > 0 {
+                let totalWidth = geometry.size.width
+                
+                // Calculate the absolute X position for start and end handles
+                let startX = CGFloat(startTime / videoDuration) * totalWidth
+                let endX = CGFloat(endTime / videoDuration) * totalWidth
+
+                ZStack(alignment: .leading) {
+                    // Background Track
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.3))
+                        .frame(height: 8)
+                    
+                    // Selected Range Track
+                    Capsule()
+                        .fill(Color.accentColor)
+                        .frame(width: max(0, endX - startX), height: 8)
+                        .offset(x: startX)
+
+                    // Start Handle
+                    HandleView()
+                        .position(x: startX, y: geometry.size.height / 2)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    // Use the drag gesture's direct location
+                                    let newX = value.location.x
+                                    let calculatedTime = (newX / totalWidth) * videoDuration
+                                    // Clamp the value to prevent errors
+                                    self.startTime = max(0, min(calculatedTime, self.endTime))
+                                    // Seek the player for live preview
+                                    player.seek(to: CMTime(seconds: self.startTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+                                }
+                        )
+                    
+                    // End Handle
+                    HandleView()
+                        .position(x: endX, y: geometry.size.height / 2)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    let newX = value.location.x
+                                    let calculatedTime = (newX / totalWidth) * videoDuration
+                                    self.endTime = min(videoDuration, max(calculatedTime, self.startTime))
+                                    player.seek(to: CMTime(seconds: self.endTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+                                }
+                        )
+                }
+            } else {
+                // Show a placeholder while the duration is loading
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+    
+    // Helper view for the draggable circles
+    private struct HandleView: View {
+        var body: some View {
+            Circle()
+                .fill(Color.white)
+                .frame(width: 24, height: 24)
+                .shadow(radius: 3)
+                .overlay(
+                    Circle().stroke(Color.secondary.opacity(0.5), lineWidth: 1)
+                )
+        }
+    }
+}
 
 // MARK: - Video Orientation Helper
 private func isVideoLandscape(url: URL) async -> Bool {

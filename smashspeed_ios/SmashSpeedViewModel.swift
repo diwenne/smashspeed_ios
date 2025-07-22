@@ -15,6 +15,7 @@ class SmashSpeedViewModel: ObservableObject {
     
     enum AppState {
         case idle
+        case trimming(URL)
         case awaitingCalibration(URL)
         case processing(Progress)
         case review(videoURL: URL, result: VideoAnalysisResult)
@@ -27,6 +28,10 @@ class SmashSpeedViewModel: ObservableObject {
     private var videoProcessor: VideoProcessor?
     
     func videoSelected(url: URL) {
+        appState = .trimming(url)
+    }
+    
+    func videoTrimmed(url: URL) {
         appState = .awaitingCalibration(url)
     }
     
