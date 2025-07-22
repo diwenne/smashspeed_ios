@@ -103,8 +103,12 @@ struct DetectView: View {
                     CalibrationView(videoURL: url, onComplete: { scaleFactor in
                         viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
                     }, onCancel: { viewModel.cancelCalibration() })
-                case .processing(let progress):
-                    ProcessingView(progress: progress) { viewModel.cancelProcessing() }
+                
+                // --- MODIFIED ---
+                // The `processing` case no longer receives a `Progress` object.
+                case .processing:
+                    ProcessingView { viewModel.cancelProcessing() }
+                    
                 case .completed(let speed):
                     ResultView(speed: speed, onReset: viewModel.reset)
                 case .error(let message):
@@ -150,11 +154,21 @@ struct TrimmingView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
             
+            // --- MODIFIED ---
+            // This now shows a loading view consistent with the ProcessingView.
             if isExporting {
-                ProgressView("Trimming Video...")
-                    .scaleEffect(1.5)
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("Trimming Video...")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                }
+                .padding(40)
+                .background(GlassPanel())
+                .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                .padding()
             } else {
                 VStack(spacing: 20) {
                     Text("Trim to the Smash")
@@ -408,17 +422,26 @@ struct InputSourceSelectorView: View {
     }
 }
 
+// --- MODIFIED ---
+// This view no longer uses a percentage-based progress bar.
 struct ProcessingView: View {
-    let progress: Progress
     let onCancel: () -> Void
     var body: some View {
         VStack(spacing: 20) {
-            Text("Analyzing Video...").font(.title2).fontWeight(.bold)
-            ProgressView(value: progress.fractionCompleted) { Text("\(Int(progress.fractionCompleted * 100))%") }.padding(.horizontal, 40)
+            ProgressView() // Use a simple, indeterminate progress view
+                .scaleEffect(1.5)
+            Text("Analyzing Video...")
+                .font(.title2)
+                .fontWeight(.bold)
             Button("Cancel", role: .destructive, action: onCancel)
-        }.padding(40).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous)).padding()
+        }
+        .padding(40)
+        .background(GlassPanel())
+        .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+        .padding()
     }
 }
+
 
 struct ErrorView: View {
     let message: String
