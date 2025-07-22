@@ -1,10 +1,3 @@
-//
-//  ReviewView.swift
-//  smashspeed
-//
-//  Created by Diwen Huang on 2025-06-27.
-//
-
 import SwiftUI
 import AVFoundation
 import Vision
@@ -23,8 +16,9 @@ struct ReviewView: View {
     @State private var editMode: EditMode = .move
     
     @State private var showInfoSheet: Bool = false
+    @State private var showTuningControls = false
     
-    // State for Pan and Zoom of the entire image
+    // State for Pan and Zoom
     @State private var scale: CGFloat = 1.0
     @GestureState private var magnifyBy: CGFloat = 1.0
     @State private var committedOffset: CGSize = .zero
@@ -47,6 +41,13 @@ struct ReviewView: View {
         self.imageGenerator.requestedTimeToleranceAfter = .zero
     }
     
+    private var frameIndexBinding: Binding<Double> {
+        Binding<Double>(
+            get: { Double(self.currentIndex) },
+            set: { self.currentIndex = Int($0) }
+        )
+    }
+    
     private var currentOffset: CGSize {
         return CGSize(width: committedOffset.width + dragOffset.width, height: committedOffset.height + dragOffset.height)
     }
@@ -58,50 +59,27 @@ struct ReviewView: View {
         ZStack {
             // Background aurora
             Color(.systemBackground).ignoresSafeArea()
-            
-            Circle()
-                .fill(Color.blue.opacity(0.8))
-                .blur(radius: 150)
-                .offset(x: -150, y: -200)
-
-            Circle()
-                .fill(Color.blue.opacity(0.5))
-                .blur(radius: 180)
-                .offset(x: 150, y: 150)
+            Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
+            Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
 
             VStack(spacing: 0) {
                 // --- Top Frame Display ---
                 HStack {
-                    Image(systemName: "info.circle")
-                        .font(.title3)
-                        .padding()
-                        .opacity(0)
-                    
+                    Image(systemName: "info.circle").font(.title3).padding().opacity(0)
                     Spacer()
-                    
                     Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
                         .font(.headline)
-                        
                     Spacer()
-                        
-                    Button {
-                        showInfoSheet = true
-                    } label: {
-                        Image(systemName: "info.circle")
-                            .font(.title3)
-                    }
-                    .padding()
+                    Button { showInfoSheet = true } label: { Image(systemName: "info.circle").font(.title3) }.padding()
                 }
                 .frame(maxWidth: .infinity).background(.ultraThinMaterial)
 
                 GeometryReader { geo in
                     ZStack {
-                        // Image container with pan/zoom gestures
+                        // Image container
                         ZStack {
                             if let image = currentFrameImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFit()
+                                Image(uiImage: image).resizable().scaledToFit()
                             } else {
                                 Color.black
                                 ProgressView().tint(.white)
@@ -111,7 +89,7 @@ struct ReviewView: View {
                         .offset(currentOffset)
                         .gesture(panGesture().simultaneously(with: magnificationGesture()))
                         
-                        // The overlay now uses a static, non-draggable box.
+                        // Overlay for bounding box
                         OverlayView(
                             analysis: $analysisResults[currentIndex],
                             containerSize: geo.size,
@@ -120,7 +98,7 @@ struct ReviewView: View {
                             globalOffset: self.currentOffset
                         )
                         
-                        // UI Controls for zoom
+                        // Zoom controls
                         VStack {
                             Spacer()
                             HStack {
@@ -129,8 +107,7 @@ struct ReviewView: View {
                                 Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
                                 Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
                             }
-                            .font(.title2).padding().background(.black.opacity(0.5))
-                            .foregroundColor(.white).cornerRadius(15).padding()
+                            .font(.title2).padding().background(.black.opacity(0.5)).foregroundColor(.white).cornerRadius(15).padding()
                         }
                     }
                     .frame(width: geo.size.width, height: geo.size.height)
@@ -139,53 +116,100 @@ struct ReviewView: View {
                 }
                 .frame(maxHeight: .infinity)
 
-                // --- Bottom control panel on a GlassPanel ---
+                // --- Bottom control panel ---
                 ScrollView {
-                    VStack(spacing: 20) {
-                        // Frame Navigation
-                        HStack {
-                            Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
-                            Spacer()
-                            VStack {
-                                Text("Speed at this frame:")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                if let speed = currentFrameData?.speedKPH {
-                                    Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
-                                } else { Text("N/A").font(.headline).foregroundStyle(.secondary) }
+                    VStack(spacing: 25) {
+                        // --- Section 1: Frame Navigation ---
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("FRAME NAVIGATION")
+                                .sectionHeaderStyle()
+                            
+                            VStack(spacing: 15) {
+                                VStack {
+                                    Text("Speed at this frame:").font(.caption).foregroundStyle(.secondary)
+                                    if let speed = currentFrameData?.speedKPH {
+                                        Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
+                                    } else {
+                                        Text("N/A").font(.headline).foregroundStyle(.secondary)
+                                    }
+                                }
+                                
+                                HStack {
+                                    Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
+                                    Slider(value: frameIndexBinding, in: 0...Double(analysisResults.count - 1), step: 1)
+                                    Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
+                                }
+                                .font(.largeTitle)
+                                .buttonStyle(.plain)
+                                
+                                Divider()
+                                
+                                // ✅ MODIFIED: Grouped the button and the new note together.
+                                VStack(spacing: 8) {
+                                    Button {
+                                        withAnimation(.spring()) {
+                                            showTuningControls.toggle()
+                                        }
+                                    } label: {
+                                        Label(showTuningControls ? "Hide Box Controls" : "Manually Adjust Box",
+                                              systemImage: showTuningControls ? "chevron.up" : "slider.horizontal.3")
+                                    }
+                                    .font(.callout)
+                                    .tint(.secondary)
+                                    
+                                    // Note is only visible when controls are hidden
+                                    if !showTuningControls {
+                                        Text("Note: The AI detection is usually very accurate. Manual tuning is rarely needed.")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal)
+                                            .transition(.opacity)
+                                    }
+                                }
                             }
-                            Spacer()
-                            Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(currentIndex >= analysisResults.count - 1)
+                            .glassPanelStyle()
                         }
-                        .font(.largeTitle)
-                        .buttonStyle(.plain)
-                        .padding(.vertical, 5)
                         
-                        Divider()
-
-                        // Bounding Box Controls
-                        BoxAdjustmentControls(
-                            editMode: $editMode,
-                            hasBox: currentFrameData?.boundingBox != nil,
-                            addBoxAction: addBox,
-                            removeBoxAction: removeBox,
-                            adjustBoxAction: adjustBox
-                        )
+                        // --- Section 2: Bounding Box Adjustment (Conditional) ---
+                        if showTuningControls {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("BOUNDING BOX ADJUSTMENT")
+                                    .sectionHeaderStyle()
+                                
+                                VStack(spacing: 15) {
+                                    Text("Use these controls if the red box is not accurately tracking the shuttlecock.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    
+                                    Divider()
+                                    
+                                    BoxAdjustmentControls(
+                                        editMode: $editMode,
+                                        hasBox: currentFrameData?.boundingBox != nil,
+                                        addBoxAction: addBox,
+                                        removeBoxAction: removeBox,
+                                        adjustBoxAction: adjustBox
+                                    )
+                                }
+                                .glassPanelStyle()
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
+                                    removal: .opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
+                                )
+                            }
+                        }
                         
-                        Divider()
-                        
-                        // Finalize Button
+                        // --- Finalize Button ---
                         Button("Finish & Save Analysis") { onFinish(analysisResults) }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.large)
                             .frame(maxWidth: .infinity)
                     }
-                    .padding(30)
-                    .background(GlassPanel())
-                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
                     .padding()
                 }
-                .frame(maxHeight: 350)
+                .frame(maxHeight: .infinity)
             }
         }
         .task(id: currentIndex) {
@@ -200,16 +224,14 @@ struct ReviewView: View {
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
                 OnboardingInstructionView(
-                    // Add these two lines
                     slideIndex: 0,
                     currentTab: .constant(0),
-                    
                     imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
                     title: "3. Review Detection",
                     instructions: [
-                        (icon: "arrow.left.and.right.circle.fill", text: "Use ← and → keys to step through frames and see shuttle speed per frame."),
-                        (icon: "rectangle.dashed", text: "If detection is off, adjust the red box to fit the shuttle tightly."),
-                        (icon: "slider.horizontal.3", text: "Use the controls below to move, resize, or fine-tune the box."),
+                        (icon: "arrow.left.and.right.circle.fill", text: "Use the slider or arrow keys to move through each frame and view the shuttle speed."),
+                        (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
+                        (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the box."),
                         (icon: "checkmark.circle.fill", text: "Most videos don’t need manual correction—just review and continue.")
                     ]
                 )
@@ -260,41 +282,30 @@ struct ReviewView: View {
             if analysisResults[i].boundingBox != nil && analysisResults[i+1].boundingBox == nil {
                 let startIndex = i
                 var endIndex = -1
-
                 for j in (startIndex + 2)..<analysisResults.count {
                     if analysisResults[j].boundingBox != nil {
                         endIndex = j
                         break
                     }
                 }
-
                 if endIndex != -1 {
                     if let startBox = analysisResults[startIndex].boundingBox,
                        let endBox = analysisResults[endIndex].boundingBox {
-                        
                         let gapLength = endIndex - startIndex
-                        
                         for k in (startIndex + 1)..<endIndex {
                             let stepWithinGap = k - startIndex
                             let t = CGFloat(stepWithinGap) / CGFloat(gapLength)
-
                             let newX = startBox.origin.x + t * (endBox.origin.x - startBox.origin.x)
                             let newY = startBox.origin.y + t * (endBox.origin.y - startBox.origin.y)
                             let newW = startBox.size.width + t * (endBox.size.width - startBox.size.width)
                             let newH = startBox.size.height + t * (endBox.size.height - startBox.size.height)
-                            
                             let interpolatedBox = CGRect(x: newX, y: newY, width: newW, height: newH)
-                            
                             analysisResults[k].boundingBox = interpolatedBox
                         }
                     }
                     i = endIndex
-                } else {
-                    i += 1
-                }
-            } else {
-                i += 1
-            }
+                } else { i += 1 }
+            } else { i += 1 }
         }
     }
     
@@ -307,9 +318,7 @@ struct ReviewView: View {
     private func addBox() {
         guard analysisResults.indices.contains(currentIndex) else { return }
         let boxSize = CGSize(width: 0.1, height: 0.1)
-        analysisResults[currentIndex].boundingBox = CGRect(
-            x: 0.45, y: 0.45, width: boxSize.width, height: boxSize.height
-        )
+        analysisResults[currentIndex].boundingBox = CGRect(x: 0.45, y: 0.45, width: boxSize.width, height: boxSize.height)
         updateAndRecalculate()
     }
     
@@ -318,24 +327,15 @@ struct ReviewView: View {
         updateAndRecalculate()
     }
     
-    // ===================================================================
-    // MODIFICATION: The multiplier logic is now a tiered system for true acceleration.
-    // ===================================================================
     private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0, pressCount: Int) {
         guard var box = analysisResults[currentIndex].boundingBox else { return }
         
-        // Tiered multiplier system for exponential feel.
-        // The pressCount is roughly 10 steps per second.
         let multiplier: CGFloat
         switch pressCount {
-        case 0..<5:      // First 0.5s: Normal speed for precision.
-            multiplier = 1.0
-        case 5..<15:     // Next 1s: 4x speed.
-            multiplier = 4.0
-        case 15..<30:    // Next 1.5s: 10x speed.
-            multiplier = 10.0
-        default:         // After 3s: Max speed.
-            multiplier = 25.0
+        case 0..<5: multiplier = 1.0
+        case 5..<15: multiplier = 4.0
+        case 15..<30: multiplier = 10.0
+        default: multiplier = 25.0
         }
         
         let moveSensitivity: CGFloat = 0.002 * multiplier
@@ -368,6 +368,20 @@ struct ReviewView: View {
     }
 }
 
+// MARK: - Reusable View Styles
+struct SectionHeaderStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.footnote)
+            .fontWeight(.semibold)
+            .foregroundColor(.secondary)
+            .padding(.leading, 8)
+    }
+}
+extension View {
+    func sectionHeaderStyle() -> some View { self.modifier(SectionHeaderStyle()) }
+}
+
 // MARK: - Onboarding Sheet Container
 private struct OnboardingSheetContainerView<Content: View>: View {
     @Environment(\.dismiss) var dismiss
@@ -381,24 +395,13 @@ private struct OnboardingSheetContainerView<Content: View>: View {
         NavigationStack {
             ZStack {
                 Color(.systemBackground).ignoresSafeArea()
-                
-                Circle()
-                    .fill(Color.blue.opacity(0.8))
-                    .blur(radius: 150)
-                    .offset(x: -150, y: -200)
-
-                Circle()
-                    .fill(Color.blue.opacity(0.5))
-                    .blur(radius: 180)
-                    .offset(x: 150, y: 150)
-                
+                Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
+                Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
                 content
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -407,7 +410,6 @@ private struct OnboardingSheetContainerView<Content: View>: View {
 
 
 // MARK: - Helper Views for ReviewView
-
 private struct OverlayView: View {
     @Binding var analysis: FrameAnalysis
     let containerSize: CGSize
@@ -497,14 +499,6 @@ private struct BoxAdjustmentControls: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            // ADDED: Note about AI accuracy.
-            Text("Note: The AI detection is usually very accurate. Manual tuning is rarely needed.")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .padding(.bottom, 5)
-
             if hasBox {
                 Picker("Edit Mode", selection: $editMode) {
                     Text("Nudge").tag(ReviewView.EditMode.move)
@@ -594,10 +588,8 @@ private struct RepeatingFineTuneButton: View {
     private func startTimer() {
         stopTimer()
         pressCount = 0
-        
         action(pressCount)
         pressCount += 1
-        
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
             self.action(pressCount)
             pressCount += 1
