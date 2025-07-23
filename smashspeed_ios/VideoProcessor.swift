@@ -53,7 +53,8 @@ class VideoProcessor {
             
             guard let sampleBuffer = readerOutput.copyNextSampleBuffer(),
                   let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-                continue
+                // When the reader is finished, this will be nil. Break the loop.
+                break
             }
             
             let presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
@@ -68,30 +69,24 @@ class VideoProcessor {
                 }
             }
             
-            // --- FIXED ---
-            // Safely unwrap the bounding box. If the model returns nil, we cannot
-            // create a FrameAnalysis object, so we skip to the next frame.
-            guard let detectedBox = box else {
-                frameCount += 1
-                progress.completedUnitCount = Int64(frameCount)
-                if let handler = progressHandler {
-                    await MainActor.run { handler(progress) }
-                }
-                continue // Skip this frame if no box was detected
-            }
+            // --- CHANGED ---
+            // The guard statement that skipped frames has been removed.
+            // The logic below now runs for EVERY frame.
             
-            // Pass the unwrapped box to the tracker.
+            // Pass the (optional) box to the tracker.
+            // The tracker is already designed to handle a nil box.
             let trackingResult = tracker.track(
-                box: detectedBox,
+                box: box, // Pass the optional box directly
                 timestamp: presentationTime,
                 frameSize: videoSize,
                 fps: frameRate
             )
             
-            // Create the FrameAnalysis struct with the corrected data types.
+            // Create the FrameAnalysis struct for every frame.
+            // The `boundingBox` will be nil if nothing was detected.
             let frameResult = FrameAnalysis(
-                timestamp: presentationTime.seconds, // Use .seconds to convert CMTime to Double
-                boundingBox: detectedBox,           // Use the non-optional unwrapped box
+                timestamp: presentationTime.seconds,
+                boundingBox: box, // Use the optional box
                 speedKPH: trackingResult.speedKPH,
                 trackedPoint: trackingResult.point
             )

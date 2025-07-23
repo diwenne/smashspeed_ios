@@ -67,7 +67,6 @@ struct ReviewView: View {
                 HStack {
                     Image(systemName: "info.circle").font(.title3).padding().opacity(0)
                     Spacer()
-                    // Handle case where all frames might be deleted
                     if !analysisResults.isEmpty {
                         Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
                             .font(.headline)
@@ -196,11 +195,13 @@ struct ReviewView: View {
                                     
                                     Divider()
                                     
-                                    // --- FIXED --- Added the missing adjustBoxAction parameter.
                                     BoxAdjustmentControls(
                                         editMode: $editMode,
-                                        removeFrameAction: removeCurrentFrame,
-                                        adjustBoxAction: adjustBox
+                                        hasBox: currentFrameData?.boundingBox != nil,
+                                        addBoxAction: addBox,
+                                        removeBoxAction: removeBox,
+                                        adjustBoxAction: adjustBox,
+                                        removeFrameAction: removeFrame
                                     )
                                 }
                                 .glassPanelStyle()
@@ -230,7 +231,7 @@ struct ReviewView: View {
             }
         }
         .onAppear {
-            recalculateAllSpeeds()
+            updateAndRecalculate()
         }
         .sheet(isPresented: $showInfoSheet) {
              OnboardingSheetContainerView {
@@ -276,6 +277,55 @@ struct ReviewView: View {
         return analysisResults[currentIndex]
     }
     
+    private func updateAndRecalculate() {
+        interpolateMissingFrames()
+        recalculateAllSpeeds()
+    }
+    
+    private func interpolateMissingFrames() {
+        var i = 0
+        while i < analysisResults.count - 1 {
+            if analysisResults[i].boundingBox != nil && analysisResults[i+1].boundingBox == nil {
+                let startIndex = i
+                var endIndex = -1
+
+                for j in (startIndex + 2)..<analysisResults.count {
+                    if analysisResults[j].boundingBox != nil {
+                        endIndex = j
+                        break
+                    }
+                }
+
+                if endIndex != -1 {
+                    if let startBox = analysisResults[startIndex].boundingBox,
+                       let endBox = analysisResults[endIndex].boundingBox {
+                        
+                        let gapLength = endIndex - startIndex
+                        
+                        for k in (startIndex + 1)..<endIndex {
+                            let stepWithinGap = k - startIndex
+                            let t = CGFloat(stepWithinGap) / CGFloat(gapLength)
+
+                            let newX = startBox.origin.x + t * (endBox.origin.x - startBox.origin.x)
+                            let newY = startBox.origin.y + t * (endBox.origin.y - startBox.origin.y)
+                            let newW = startBox.size.width + t * (endBox.size.width - startBox.size.width)
+                            let newH = startBox.size.height + t * (endBox.size.height - startBox.size.height)
+                            
+                            let interpolatedBox = CGRect(x: newX, y: newY, width: newW, height: newH)
+                            
+                            analysisResults[k].boundingBox = interpolatedBox
+                        }
+                    }
+                    i = endIndex
+                } else {
+                    i += 1
+                }
+            } else {
+                i += 1
+            }
+        }
+    }
+    
     private func recalculateAllSpeeds() {
         let freshTracker = ShuttlecockTracker(scaleFactor: initialResult.scaleFactor)
         for i in 0..<analysisResults.count {
@@ -292,23 +342,33 @@ struct ReviewView: View {
     
     // MARK: - Bounding Box Manipulation
     
-    private func removeCurrentFrame() {
+    private func addBox() {
+        guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
+        analysisResults[currentIndex].boundingBox = CGRect(x: 0.45, y: 0.45, width: 0.1, height: 0.1)
+        updateAndRecalculate()
+    }
+
+    private func removeBox() {
+        guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
+        analysisResults[currentIndex].boundingBox = nil
+        updateAndRecalculate()
+    }
+    
+    private func removeFrame() {
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
         
         analysisResults.remove(at: currentIndex)
         
-        // Adjust index to prevent crash
         if currentIndex >= analysisResults.count {
             currentIndex = max(0, analysisResults.count - 1)
         }
         
-        recalculateAllSpeeds()
+        updateAndRecalculate()
     }
     
     private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0, pressCount: Int) {
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
-        
-        var box = analysisResults[currentIndex].boundingBox
+        guard var box = analysisResults[currentIndex].boundingBox else { return }
         
         let multiplier: CGFloat
         switch pressCount {
@@ -327,7 +387,7 @@ struct ReviewView: View {
         box.size.height = max(0.01, box.size.height + (dh * resizeSensitivity / scale))
         
         analysisResults[currentIndex].boundingBox = box
-        recalculateAllSpeeds()
+        updateAndRecalculate()
     }
     
     private func goToPreviousFrame() { if currentIndex > 0 { currentIndex -= 1 } }
@@ -457,48 +517,72 @@ private struct StaticBoxView: View {
     let globalOffset: CGSize
 
     var body: some View {
-        let box = analysis.boundingBox
-        let imageInfo = getScaledImageInfo(containerSize: containerSize, videoSize: videoSize)
-        
-        let staticPixelFrame = CGRect(
-            x: imageInfo.origin.x + (box.origin.x * imageInfo.scaledSize.width),
-            y: imageInfo.origin.y + (box.origin.y * imageInfo.scaledSize.height),
-            width: box.size.width * imageInfo.scaledSize.width,
-            height: box.size.height * imageInfo.scaledSize.height
-        )
-        
-        Rectangle().stroke(Color.red, lineWidth: 2 / currentScale)
-            .frame(width: staticPixelFrame.width, height: staticPixelFrame.height)
-            .position(x: staticPixelFrame.midX, y: staticPixelFrame.midY)
-            .scaleEffect(currentScale)
-            .offset(globalOffset)
-            .allowsHitTesting(false)
+        if let box = analysis.boundingBox {
+            let imageInfo = getScaledImageInfo(containerSize: containerSize, videoSize: videoSize)
+            
+            let staticPixelFrame = CGRect(
+                x: imageInfo.origin.x + (box.origin.x * imageInfo.scaledSize.width),
+                y: imageInfo.origin.y + (box.origin.y * imageInfo.scaledSize.height),
+                width: box.size.width * imageInfo.scaledSize.width,
+                height: box.size.height * imageInfo.scaledSize.height
+            )
+            
+            Rectangle().stroke(Color.red, lineWidth: 2 / currentScale)
+                .frame(width: staticPixelFrame.width, height: staticPixelFrame.height)
+                .position(x: staticPixelFrame.midX, y: staticPixelFrame.midY)
+                .scaleEffect(currentScale)
+                .offset(globalOffset)
+                .allowsHitTesting(false)
+        }
     }
 }
 
 private struct BoxAdjustmentControls: View {
     @Binding var editMode: ReviewView.EditMode
-    let removeFrameAction: () -> Void
+    let hasBox: Bool
+    let addBoxAction: () -> Void
+    let removeBoxAction: () -> Void
     let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat, Int) -> Void
+    let removeFrameAction: () -> Void
     
     var body: some View {
-        VStack(spacing: 8) {
-            Picker("Edit Mode", selection: $editMode) {
-                Text("Nudge").tag(ReviewView.EditMode.move)
-                Text("Resize").tag(ReviewView.EditMode.resize)
-            }.pickerStyle(.segmented)
-            
-            if editMode == .move {
-                ReviewDirectionalPad { dx, dy, pressCount in adjustBoxAction(dx, dy, 0, 0, pressCount) }
-            } else {
-                ReviewResizeControls { dw, dh, pressCount in adjustBoxAction(0, 0, dw, dh, pressCount) }
+        VStack(spacing: 15) {
+            if hasBox {
+                Picker("Edit Mode", selection: $editMode) {
+                    Text("Nudge").tag(ReviewView.EditMode.move)
+                    Text("Resize").tag(ReviewView.EditMode.resize)
+                }.pickerStyle(.segmented)
+                
+                if editMode == .move {
+                    ReviewDirectionalPad { dx, dy, pressCount in adjustBoxAction(dx, dy, 0, 0, pressCount) }
+                } else {
+                    ReviewResizeControls { dw, dh, pressCount in adjustBoxAction(0, 0, dw, dh, pressCount) }
+                }
             }
             
-            HStack {
-                Spacer()
-                Button(role: .destructive, action: removeFrameAction) { Label("Remove Frame", systemImage: "trash") }.tint(.red)
-                Spacer()
-            }.buttonStyle(.bordered).controlSize(.small)
+            HStack(spacing: 12) {
+                if !hasBox {
+                    Button(action: addBoxAction) {
+                        Label("Add Box", systemImage: "plus.square")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .tint(.blue)
+                } else {
+                    Button(role: .destructive, action: removeBoxAction) {
+                        Label("Remove Box", systemImage: "xmark.square")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .tint(.orange)
+                }
+                
+                Button(role: .destructive, action: removeFrameAction) {
+                    Label("Delete Frame", systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+                .tint(.red)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
         }
     }
 }

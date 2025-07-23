@@ -22,10 +22,10 @@ struct VideoAnalysisResult {
 
 // Data for a single frame during local analysis.
 // Note: This model is NOT saved to Firestore.
-struct FrameAnalysis: Identifiable {
+struct FrameAnalysis: Identifiable, Hashable {
     let id = UUID()
     let timestamp: Double // Using Double for easier conversion
-    var boundingBox: CGRect
+    var boundingBox: CGRect? // ✅ CHANGED: This is now optional to handle frames with no detection.
     var speedKPH: Double?
     var trackedPoint: CGPoint?
 }
