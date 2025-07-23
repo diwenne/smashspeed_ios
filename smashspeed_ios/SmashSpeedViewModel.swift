@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 import Combine
-import FirebaseStorage
 
 @MainActor
 class SmashSpeedViewModel: ObservableObject {
@@ -17,7 +16,7 @@ class SmashSpeedViewModel: ObservableObject {
         case idle
         case trimming(URL)
         case awaitingCalibration(URL)
-        case processing(Progress)
+        case processing
         case review(videoURL: URL, result: VideoAnalysisResult)
         case completed(Double)
         case error(String)
@@ -39,9 +38,9 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
+
     func startProcessing(videoURL: URL, scaleFactor: Double) {
-        let progress = Progress(totalUnitCount: 100)
-        appState = .processing(progress)
+        appState = .processing
         
         Task {
             do {
@@ -54,12 +53,8 @@ class SmashSpeedViewModel: ObservableObject {
                 self.videoProcessor = VideoProcessor(videoURL: videoURL, modelHandler: modelHandler, tracker: tracker)
                 
                 if let processor = self.videoProcessor,
-                   let result = try await processor.processVideo(progressHandler: { prog in
-                    DispatchQueue.main.async {
-                        progress.completedUnitCount = prog.completedUnitCount
-                        progress.totalUnitCount = prog.totalUnitCount
-                    }
-                   }) {
+                   // --- FIXED ---: Provide an empty closure instead of nil.
+                   let result = try await processor.processVideo(progressHandler: { _ in }) {
                     appState = .review(videoURL: videoURL, result: result)
                 }
             } catch {
@@ -76,16 +71,28 @@ class SmashSpeedViewModel: ObservableObject {
     func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL) {
         let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         
+        let frameDataToSave = editedFrames.map { frame in
+            FrameData(
+                timestamp: frame.timestamp,
+                speedKPH: frame.speedKPH ?? 0.0, // Ensure non-optional value
+                boundingBox: CodableRect(from: frame.boundingBox)
+            )
+        }
+        
         if let userID = userID {
-            // Re-use the .processing state to show a temporary "uploading" indicator
-            let uploadProgress = Progress(totalUnitCount: 100)
-            uploadProgress.completedUnitCount = 50 // You can adjust this to feel right
-            appState = .processing(uploadProgress)
+            appState = .processing
             
             Task {
                 do {
                     let downloadURL = try await StorageManager.shared.uploadVideo(localURL: videoURL, for: userID)
-                    try HistoryViewModel.saveResult(peakSpeedKph: maxSpeed, for: userID, videoURL: downloadURL.absoluteString)
+                    
+                    try HistoryViewModel.saveResult(
+                        peakSpeedKph: maxSpeed,
+                        for: userID,
+                        videoURL: downloadURL.absoluteString,
+                        frameData: frameDataToSave
+                    )
+                    
                     appState = .completed(maxSpeed)
                 } catch {
                     let errorMessage = "Failed to upload video. Please try again.\nError: \(error.localizedDescription)"

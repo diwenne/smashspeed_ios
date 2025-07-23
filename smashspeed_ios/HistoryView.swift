@@ -12,6 +12,7 @@ import Charts
 import FirebaseAuth
 import AVKit
 import FirebaseStorage
+import CoreGraphics
 
 // MARK: - Main History View
 
@@ -19,25 +20,16 @@ struct HistoryView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @StateObject private var historyViewModel = HistoryViewModel()
     
-    // State for the delete confirmation alert
     @State private var showDeleteConfirmation = false
     @State private var resultToDelete: DetectionResult?
     
     var body: some View {
         NavigationStack {
             ZStack {
-                // 1. A monochromatic blue aurora background to match other views.
                 Color(.systemBackground).ignoresSafeArea()
                 
-                Circle()
-                    .fill(Color.blue.opacity(0.8))
-                    .blur(radius: 150)
-                    .offset(x: -150, y: -200)
-
-                Circle()
-                    .fill(Color.blue.opacity(0.5))
-                    .blur(radius: 180)
-                    .offset(x: 150, y: 150)
+                Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
+                Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
                 
                 VStack {
                     if authViewModel.isSignedIn, let user = authViewModel.user {
@@ -52,7 +44,6 @@ struct HistoryView: View {
                         historyViewModel.subscribe(to: userID)
                     }
                 }
-                // Add the confirmation alert modifier here
                 .alert("Confirm Deletion", isPresented: $showDeleteConfirmation, presenting: resultToDelete) { result in
                     Button("Delete", role: .destructive) {
                         historyViewModel.deleteResult(result)
@@ -68,7 +59,7 @@ struct HistoryView: View {
     private func content(for userID: String) -> some View {
         if historyViewModel.detectionResults.isEmpty {
             VStack {
-                ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
+                 ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
             }
             .padding(40)
             .background(GlassPanel())
@@ -117,9 +108,7 @@ struct HistoryView: View {
                             .frame(height: 200)
                         } else {
                             Text("Analyze at least two smashes to see your progress chart.")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .padding()
+                                .font(.subheadline).foregroundColor(.secondary).padding()
                         }
                     }
                     .padding(25)
@@ -148,7 +137,6 @@ struct HistoryView: View {
                                 .tint(.red)
                             }
                     }
-                    // FIX: Add the .onDelete modifier back to enable the EditButton functionality.
                     .onDelete { indexSet in
                         guard let index = indexSet.first else { return }
                         resultToDelete = historyViewModel.detectionResults[index]
@@ -175,36 +163,7 @@ struct HistoryView: View {
     }
 }
 
-// MARK: - Subviews & Player
-
-struct HistoryRow: View {
-    let result: DetectionResult
-    var body: some View {
-        let destination = result.videoURL.flatMap(URL.init).map(VideoPlayerView.init)
-
-        let rowContent = HStack {
-            if destination != nil {
-                Image(systemName: "play.circle.fill")
-                    .foregroundColor(.accentColor)
-                    .font(.title2)
-            }
-            VStack(alignment: .leading) {
-                Text(result.date.dateValue(), style: .date).font(.headline)
-                Text(result.date.dateValue(), style: .time).font(.caption).foregroundColor(.secondary)
-            }
-            Spacer()
-            Text(result.formattedSpeed).font(.title2).fontWeight(.semibold)
-        }
-
-        if let destinationView = destination {
-            NavigationLink(destination: destinationView) {
-                rowContent
-            }
-        } else {
-            rowContent
-        }
-    }
-}
+// MARK: - Subviews
 
 struct StatRow: View {
     let label: String
@@ -214,51 +173,239 @@ struct StatRow: View {
     }
 }
 
-class PlayerViewModel: ObservableObject {
-    let player: AVPlayer
-    @Published var status: AVPlayer.Status = .unknown
-    private var statusObserver: NSKeyValueObservation?
-    init(url: URL) {
-        self.player = AVPlayer(url: url)
-        self.statusObserver = self.player.observe(\.status, options: [.new]) { player, change in
-            DispatchQueue.main.async {
-                self.status = player.status
-                if player.status == .readyToPlay {
-                    player.play()
-                }
+struct HistoryRow: View {
+    let result: DetectionResult
+    
+    var body: some View {
+        let destination = ResultDetailView(result: result)
+
+        let rowContent = HStack {
+            if result.videoURL != nil, result.frameData != nil {
+                Image(systemName: "play.circle.fill")
+                    .foregroundColor(.accentColor)
+                    .font(.title2)
             }
+            
+            VStack(alignment: .leading) {
+                Text(result.date.dateValue(), style: .date).font(.headline)
+                Text(result.date.dateValue(), style: .time).font(.caption).foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Text(result.formattedSpeed).font(.title2).fontWeight(.semibold)
+        }
+        
+        if result.videoURL != nil, result.frameData != nil {
+            NavigationLink(destination: destination) {
+                rowContent
+            }
+        } else {
+            rowContent
         }
     }
 }
 
-struct VideoPlayerView: View {
-    @StateObject private var viewModel: PlayerViewModel
-    init(videoURL: URL) {
-        _viewModel = StateObject(wrappedValue: PlayerViewModel(url: videoURL))
+// MARK: - Detail View with Embedded Player
+
+@MainActor
+class ResultDetailViewModel: ObservableObject {
+    let player: AVPlayer
+    let frameData: [FrameData]
+    let originalAsset: AVAsset
+
+    @Published var currentSpeed: Double = 0.0
+    @Published var currentBoundingBox: CGRect? = nil
+    @Published var videoSize: CGSize = .zero
+    
+    private var timeObserver: Any?
+
+    init(result: DetectionResult) {
+        if let videoURLString = result.videoURL, let url = URL(string: videoURLString) {
+            let asset = AVURLAsset(url: url)
+            self.originalAsset = asset
+            self.player = AVPlayer(url: url)
+        } else {
+            self.originalAsset = AVAsset()
+            self.player = AVPlayer()
+        }
+        self.frameData = result.frameData ?? []
+        
+        Task {
+            await loadVideoSize()
+            startObserving()
+        }
     }
-    var body: some View {
-        ZStack {
-            Color.black.edgesIgnoringSafeArea(.all)
-            switch viewModel.status {
-            case .readyToPlay:
-                VideoPlayer(player: viewModel.player).edgesIgnoringSafeArea(.all)
-            case .failed:
-                VStack {
-                    Image(systemName: "xmark.circle.fill").font(.largeTitle).foregroundColor(.red)
-                    Text("Video Failed to Load").foregroundColor(.white).padding(.top, 8)
-                }
-            case .unknown:
-                ProgressView().tint(.white)
-            @unknown default:
-                EmptyView()
+    
+    private func loadVideoSize() async {
+        guard let track = try? await originalAsset.loadTracks(withMediaType: .video).first else { return }
+        self.videoSize = await track.naturalSize
+    }
+    
+    func startObserving() {
+        timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] time in
+            guard let self = self else { return }
+            let currentTime = time.seconds
+            let currentFrame = self.frameData.min(by: { abs($0.timestamp - currentTime) < abs($1.timestamp - currentTime) })
+
+            if let currentFrame = currentFrame {
+                self.currentSpeed = currentFrame.speedKPH
+                self.currentBoundingBox = currentFrame.boundingBox.toCGRect()
             }
         }
-        .navigationTitle("Smash Replay")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear { try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: []) }
-        .onDisappear { viewModel.player.pause() }
+    }
+    
+    func stopObserving() {
+        if let observer = timeObserver {
+            player.removeTimeObserver(observer)
+            timeObserver = nil
+        }
     }
 }
+
+struct ResultDetailView: View {
+    @StateObject private var viewModel: ResultDetailViewModel
+    private let result: DetectionResult
+
+    // 1. State to hold the generated image for sharing
+    @State private var shareableImage: UIImage?
+
+    init(result: DetectionResult) {
+        self.result = result
+        _viewModel = StateObject(wrappedValue: ResultDetailViewModel(result: result))
+    }
+
+    // MARK: - Body
+    var body: some View {
+        ZStack {
+            // Aurora background theme
+            Color(.systemBackground).ignoresSafeArea()
+            Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: 150, y: -200)
+            Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: -150, y: 250)
+
+            ScrollView {
+                VStack(spacing: 20) {
+                    videoPlayerSection
+                    detailsSection
+                }
+                .padding()
+            }
+        }
+        .navigationTitle("Smash Details")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.player.play()
+        }
+        .onDisappear {
+            viewModel.player.pause()
+            viewModel.stopObserving()
+        }
+        // 2. Sheet to present the share preview when an image is ready
+        .sheet(item: $shareableImage) { image in
+            SharePreviewView(image: image)
+        }
+    }
+
+    // MARK: - Helper Views
+    
+    private var videoPlayerSection: some View {
+        // ... (This section remains unchanged)
+        GeometryReader { geometry in
+            ZStack {
+                Color.black
+                VideoPlayer(player: viewModel.player)
+                
+                if let box = viewModel.currentBoundingBox, viewModel.videoSize != .zero {
+                    let videoFrame = AVMakeRect(aspectRatio: viewModel.videoSize, insideRect: geometry.frame(in: .local))
+                    let viewRect = CGRect(
+                        x: videoFrame.origin.x + (box.origin.x * videoFrame.width),
+                        y: videoFrame.origin.y + (box.origin.y * videoFrame.height),
+                        width: box.width * videoFrame.width,
+                        height: box.height * videoFrame.height
+                    )
+                    Rectangle()
+                        .stroke(Color.yellow, lineWidth: 2)
+                        .frame(width: viewRect.width, height: viewRect.height)
+                        .position(x: viewRect.midX, y: viewRect.midY)
+                }
+            }
+        }
+        .frame(height: 300)
+        .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+        .shadow(color: .black.opacity(0.2), radius: 10)
+    }
+    
+    private var detailsSection: some View {
+        // 3. Wrap the panel in a ZStack to overlay the button
+        ZStack {
+            // The existing panel content
+            VStack(spacing: 15) {
+                Text("Live Speed")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
+                Text(String(format: "%.1f km/h", viewModel.currentSpeed))
+                    .font(.system(size: 60, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+                
+                Divider()
+                
+                Text("Frame Data")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
+                VStack {
+                    ForEach(viewModel.frameData, id: \.self) { frame in
+                        VStack {
+                            HStack {
+                                Text("Time: \(String(format: "%.2f", frame.timestamp))s")
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text("\(String(format: "%.1f", frame.speedKPH)) km/h")
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(.vertical, 4)
+                            
+                            if frame != viewModel.frameData.last {
+                                Divider()
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(20)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+            
+            // 4. The new Share Button, aligned to the top-right corner
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: renderImageForSharing) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .font(.title3)
+                    .padding(10)
+//                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                }
+                Spacer()
+            }
+            .padding([.top, .trailing], 12)
+        }
+    }
+
+    // MARK: - Functions
+    
+    /// Renders the ShareableView to an image and triggers the share sheet.
+    @MainActor
+    private func renderImageForSharing() {
+        let shareView = ShareableView(speed: result.peakSpeedKph) // Use the peak speed for sharing
+        self.shareableImage = shareView.snapshot()
+    }
+}
+
 
 // MARK: - History View Model
 
@@ -273,9 +420,7 @@ class HistoryViewModel: ObservableObject {
         let speeds = detectionResults.map { $0.peakSpeedKph }
         return speeds.isEmpty ? 0.0 : speeds.reduce(0, +) / Double(speeds.count)
     }
-    var detectionCount: Int {
-        detectionResults.count
-    }
+    var detectionCount: Int { detectionResults.count }
     
     func subscribe(to userID: String) {
         if listenerRegistration != nil { unsubscribe() }
@@ -297,34 +442,27 @@ class HistoryViewModel: ObservableObject {
         detectionResults = []
     }
     
-    static func saveResult(peakSpeedKph: Double, for userID: String, videoURL: String) throws {
+    static func saveResult(peakSpeedKph: Double, for userID: String, videoURL: String, frameData: [FrameData]) throws {
         let db = Firestore.firestore()
         let result = DetectionResult(
             userID: userID,
             date: Timestamp(date: Date()),
             peakSpeedKph: peakSpeedKph,
-            videoURL: videoURL
+            videoURL: videoURL,
+            frameData: frameData
         )
         try db.collection("detections").addDocument(from: result)
     }
     
-    // This method now takes a specific result to delete.
     func deleteResult(_ result: DetectionResult) {
         Task {
             do {
                 if let videoURLString = result.videoURL {
                     let storageRef = Storage.storage().reference(forURL: videoURLString)
                     try await storageRef.delete()
-                    #if DEBUG
-                    print("Successfully deleted video from Storage.")
-                    #endif
                 }
-                
                 if let docID = result.id {
                     try await db.collection("detections").document(docID).delete()
-                    #if DEBUG
-                    print("Successfully deleted document from Firestore.")
-                    #endif
                 }
             } catch {
                 #if DEBUG
@@ -333,15 +471,4 @@ class HistoryViewModel: ObservableObject {
             }
         }
     }
-}
-
-// --- MODIFIED ---: Add the videoURL property to your data model.
-struct DetectionResult: Identifiable, Codable, Hashable {
-    @DocumentID var id: String?
-    let userID: String
-    let date: Timestamp
-    let peakSpeedKph: Double
-    var videoURL: String? // --- ADDED ---: The URL of the video in Firebase Storage.
-    
-    var formattedSpeed: String { String(format: "%.1f km/h", peakSpeedKph) }
 }
