@@ -90,6 +90,19 @@ struct CalibrationView: View {
                 
                 // Control Panel on a single, clean GlassPanel
                 VStack(spacing: 16) {
+                    
+                    HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "hand.point.up.left.fill")
+                                .font(.subheadline)
+                                .foregroundColor(.accentColor)
+                                .padding(.top, 2)
+                            Text("Place one point on the front service line and the other on the doubles long service (flick) line.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Divider()
+                    
                     VStack {
                         HStack {
                             Label("Reference Length", systemImage: "ruler")
