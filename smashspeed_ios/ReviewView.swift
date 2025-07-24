@@ -17,6 +17,13 @@ struct ReviewView: View {
     
     @State private var showInfoSheet: Bool = false
     @State private var showTuningControls = false
+    @State private var showInterpolationInfo = false
+    @State private var showManualInfo = false
+    @State private var showInterpolationFeedback = false
+    
+    // State for the undo/redo history stacks.
+    @State private var undoStack: [[FrameAnalysis]] = []
+    @State private var redoStack: [[FrameAnalysis]] = []
     
     // State for Pan and Zoom
     @State private var scale: CGFloat = 1.0
@@ -65,8 +72,23 @@ struct ReviewView: View {
             VStack(spacing: 0) {
                 // --- Top Frame Display ---
                 HStack {
-                    Image(systemName: "info.circle").font(.title3).padding().opacity(0)
+                    // Undo/Redo buttons in the top bar.
+                    HStack {
+                        Button(action: undo) {
+                            Image(systemName: "arrow.uturn.backward.circle")
+                        }
+                        .disabled(undoStack.isEmpty)
+                        
+                        Button(action: redo) {
+                            Image(systemName: "arrow.uturn.forward.circle")
+                        }
+                        .disabled(redoStack.isEmpty)
+                    }
+                    .font(.title3)
+                    .padding(.leading)
+                    
                     Spacer()
+                    
                     if !analysisResults.isEmpty {
                         Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
                             .font(.headline)
@@ -81,7 +103,6 @@ struct ReviewView: View {
 
                 GeometryReader { geo in
                     ZStack {
-                        // Image container
                         ZStack {
                             if let image = currentFrameImage {
                                 Image(uiImage: image).resizable().scaledToFit()
@@ -94,7 +115,6 @@ struct ReviewView: View {
                         .offset(currentOffset)
                         .gesture(panGesture().simultaneously(with: magnificationGesture()))
                         
-                        // Overlay for bounding box
                         if !analysisResults.isEmpty && analysisResults.indices.contains(currentIndex) {
                              OverlayView(
                                  analysis: $analysisResults[currentIndex],
@@ -105,7 +125,6 @@ struct ReviewView: View {
                              )
                         }
                         
-                        // Zoom controls
                         VStack {
                             Spacer()
                             HStack {
@@ -162,20 +181,11 @@ struct ReviewView: View {
                                             showTuningControls.toggle()
                                         }
                                     } label: {
-                                        Label(showTuningControls ? "Hide Box Controls" : "Manually Adjust Box",
+                                        Label(showTuningControls ? "Hide Manual Controls" : "Show Manual Controls",
                                               systemImage: showTuningControls ? "chevron.up" : "slider.horizontal.3")
                                     }
                                     .font(.callout)
                                     .tint(.secondary)
-                                    
-                                    if !showTuningControls {
-                                        Text("Note: The AI detection is usually very accurate. Manual tuning is rarely needed.")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal)
-                                            .transition(.opacity)
-                                    }
                                 }
                             }
                             .glassPanelStyle()
@@ -184,24 +194,23 @@ struct ReviewView: View {
                         // --- Section 2: Bounding Box Adjustment (Conditional) ---
                         if showTuningControls {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("BOUNDING BOX ADJUSTMENT")
-                                    .sectionHeaderStyle()
+                                HStack {
+                                    Text("MANUAL ADJUSTMENT")
+                                        .sectionHeaderStyle()
+                                    Spacer()
+                                    Button { showManualInfo = true } label: {
+                                        Image(systemName: "info.circle")
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
                                 
                                 VStack(spacing: 15) {
-                                    Text("Use these controls if the red box is not accurately tracking the shuttlecock.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    
-                                    Divider()
-                                    
                                     BoxAdjustmentControls(
                                         editMode: $editMode,
                                         hasBox: currentFrameData?.boundingBox != nil,
                                         addBoxAction: addBox,
                                         removeBoxAction: removeBox,
-                                        adjustBoxAction: adjustBox,
-                                        removeFrameAction: removeFrame
+                                        adjustBoxAction: adjustBox
                                     )
                                 }
                                 .glassPanelStyle()
@@ -210,6 +219,32 @@ struct ReviewView: View {
                                     removal: .opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
                                 )
                             }
+                        }
+                        
+                        // --- Section 3: Interpolation (Always Visible) ---
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("AUTOMATIC ADJUSTMENT")
+                                    .sectionHeaderStyle()
+                                Spacer()
+                                Button { showInterpolationInfo = true } label: {
+                                    Image(systemName: "info.circle")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
+                            VStack(spacing: 15) {
+                                Button(action: interpolateFrames) {
+                                    Label("Interpolate Gap", systemImage: "arrow.up.left.and.arrow.down.right")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.regular)
+                                .tint(.purple)
+                                .scaleEffect(showInterpolationFeedback ? 1.05 : 1.0)
+                                .opacity(showInterpolationFeedback ? 0.6 : 1.0)
+                            }
+                            .glassPanelStyle()
                         }
                         
                         // --- Finalize Button ---
@@ -231,25 +266,58 @@ struct ReviewView: View {
             }
         }
         .onAppear {
-            updateAndRecalculate()
+            recalculateAllSpeeds()
         }
         .sheet(isPresented: $showInfoSheet) {
-             OnboardingSheetContainerView {
-                 OnboardingInstructionView(
-                     slideIndex: 0,
-                     currentTab: .constant(0),
-                     imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
-                     title: "3. Review Detection",
-                     instructions: [
-                         (icon: "arrow.left.and.right.circle.fill", text: "Use the slider or arrow keys to move through each frame and view the shuttle speed."),
-                         (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
-                         (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the box."),
-                         (icon: "trash.fill", text: "If a frame is completely wrong, you can remove it entirely."),
-                         (icon: "checkmark.circle.fill", text: "Most videos don’t need manual correction—just review and continue.")
-                     ]
-                 )
-             }
+            OnboardingSheetContainerView {
+                OnboardingInstructionView(
+                    slideIndex: 0,
+                    currentTab: .constant(0),
+                    imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
+                    title: "3. Review Detection",
+                    instructions: [
+                        (icon: "arrow.left.and.right.circle.fill", text: "Use the slider or arrow keys to move through each frame and view the shuttle speed."),
+                        (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
+                        (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the box."),
+                        (icon: "xmark.square.fill", text: "If a frame has a bad detection, you can remove its box before interpolating."),
+                        (icon: "arrow.up.left.and.arrow.down.right", text: "Use the Interpolate tool to automatically fill in gaps between good detections.")
+                    ]
+                )
+            }
         }
+        .alert("What is Interpolation?", isPresented: $showInterpolationInfo) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Interpolation automatically fills in missing bounding boxes. If you have a frame with a box, then a gap of frames with no box, followed by another frame with a box, this tool will draw a straight line to fill in the gap.")
+        }
+        .alert("Manual Adjustment", isPresented: $showManualInfo) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Use these controls to fix errors made by the AI. You can add a box if the AI missed the shuttle, remove a box if the detection is wrong, or nudge/resize an existing box for better accuracy.")
+        }
+    }
+    
+    // MARK: - Undo/Redo Logic
+    
+    private func saveUndoState() {
+        undoStack.append(analysisResults)
+        redoStack.removeAll() // Clear redo stack on new action
+    }
+    
+    private func undo() {
+        guard !undoStack.isEmpty else { return }
+        let lastState = undoStack.removeLast()
+        redoStack.append(analysisResults)
+        analysisResults = lastState
+        triggerHapticFeedback()
+    }
+    
+    private func redo() {
+        guard !redoStack.isEmpty else { return }
+        let nextState = redoStack.removeLast()
+        undoStack.append(analysisResults)
+        analysisResults = nextState
+        triggerHapticFeedback()
     }
     
     // MARK: - Gesture and Zoom Logic
@@ -277,9 +345,26 @@ struct ReviewView: View {
         return analysisResults[currentIndex]
     }
     
-    private func updateAndRecalculate() {
+    private func triggerHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+    }
+    
+    private func interpolateFrames() {
+        saveUndoState()
         interpolateMissingFrames()
         recalculateAllSpeeds()
+        triggerHapticFeedback()
+        
+        Task {
+            withAnimation(.spring()) {
+                showInterpolationFeedback = true
+            }
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+            withAnimation(.spring()) {
+                showInterpolationFeedback = false
+            }
+        }
     }
     
     private func interpolateMissingFrames() {
@@ -288,31 +373,24 @@ struct ReviewView: View {
             if analysisResults[i].boundingBox != nil && analysisResults[i+1].boundingBox == nil {
                 let startIndex = i
                 var endIndex = -1
-
                 for j in (startIndex + 2)..<analysisResults.count {
                     if analysisResults[j].boundingBox != nil {
                         endIndex = j
                         break
                     }
                 }
-
                 if endIndex != -1 {
                     if let startBox = analysisResults[startIndex].boundingBox,
                        let endBox = analysisResults[endIndex].boundingBox {
-                        
                         let gapLength = endIndex - startIndex
-                        
                         for k in (startIndex + 1)..<endIndex {
                             let stepWithinGap = k - startIndex
                             let t = CGFloat(stepWithinGap) / CGFloat(gapLength)
-
                             let newX = startBox.origin.x + t * (endBox.origin.x - startBox.origin.x)
                             let newY = startBox.origin.y + t * (endBox.origin.y - startBox.origin.y)
                             let newW = startBox.size.width + t * (endBox.size.width - startBox.size.width)
                             let newH = startBox.size.height + t * (endBox.size.height - startBox.size.height)
-                            
                             let interpolatedBox = CGRect(x: newX, y: newY, width: newW, height: newH)
-                            
                             analysisResults[k].boundingBox = interpolatedBox
                         }
                     }
@@ -343,30 +421,26 @@ struct ReviewView: View {
     // MARK: - Bounding Box Manipulation
     
     private func addBox() {
+        saveUndoState()
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
         analysisResults[currentIndex].boundingBox = CGRect(x: 0.45, y: 0.45, width: 0.1, height: 0.1)
-        updateAndRecalculate()
+        recalculateAllSpeeds()
+        triggerHapticFeedback()
     }
 
     private func removeBox() {
+        saveUndoState()
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
         analysisResults[currentIndex].boundingBox = nil
-        updateAndRecalculate()
-    }
-    
-    private func removeFrame() {
-        guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
-        
-        analysisResults.remove(at: currentIndex)
-        
-        if currentIndex >= analysisResults.count {
-            currentIndex = max(0, analysisResults.count - 1)
-        }
-        
-        updateAndRecalculate()
+        recalculateAllSpeeds()
+        triggerHapticFeedback()
     }
     
     private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0, pressCount: Int) {
+        if pressCount == 0 {
+            saveUndoState()
+        }
+        
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
         guard var box = analysisResults[currentIndex].boundingBox else { return }
         
@@ -387,7 +461,7 @@ struct ReviewView: View {
         box.size.height = max(0.01, box.size.height + (dh * resizeSensitivity / scale))
         
         analysisResults[currentIndex].boundingBox = box
-        updateAndRecalculate()
+        recalculateAllSpeeds()
     }
     
     private func goToPreviousFrame() { if currentIndex > 0 { currentIndex -= 1 } }
@@ -428,7 +502,6 @@ extension View {
     func sectionHeaderStyle() -> some View { self.modifier(SectionHeaderStyle()) }
 }
 
-
 // MARK: - Onboarding Sheet Container
 private struct OnboardingSheetContainerView<Content: View>: View {
     @Environment(\.dismiss) var dismiss
@@ -454,7 +527,6 @@ private struct OnboardingSheetContainerView<Content: View>: View {
         }
     }
 }
-
 
 // MARK: - Helper Views for ReviewView
 private struct OverlayView: View {
@@ -543,11 +615,20 @@ private struct BoxAdjustmentControls: View {
     let addBoxAction: () -> Void
     let removeBoxAction: () -> Void
     let adjustBoxAction: (CGFloat, CGFloat, CGFloat, CGFloat, Int) -> Void
-    let removeFrameAction: () -> Void
     
     var body: some View {
         VStack(spacing: 15) {
             if hasBox {
+                Button(role: .destructive, action: removeBoxAction) {
+                    Label("Remove Box", systemImage: "xmark.square")
+                        .frame(maxWidth: .infinity)
+                }
+                .tint(.orange)
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+                
+                Divider()
+                
                 Picker("Edit Mode", selection: $editMode) {
                     Text("Nudge").tag(ReviewView.EditMode.move)
                     Text("Resize").tag(ReviewView.EditMode.resize)
@@ -558,31 +639,15 @@ private struct BoxAdjustmentControls: View {
                 } else {
                     ReviewResizeControls { dw, dh, pressCount in adjustBoxAction(0, 0, dw, dh, pressCount) }
                 }
-            }
-            
-            HStack(spacing: 12) {
-                if !hasBox {
-                    Button(action: addBoxAction) {
-                        Label("Add Box", systemImage: "plus.square")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .tint(.blue)
-                } else {
-                    Button(role: .destructive, action: removeBoxAction) {
-                        Label("Remove Box", systemImage: "xmark.square")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .tint(.orange)
-                }
-                
-                Button(role: .destructive, action: removeFrameAction) {
-                    Label("Delete Frame", systemImage: "trash")
+            } else {
+                Button(action: addBoxAction) {
+                    Label("Add Box", systemImage: "plus.square")
                         .frame(maxWidth: .infinity)
                 }
-                .tint(.red)
+                .tint(.blue)
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.regular)
         }
     }
 }

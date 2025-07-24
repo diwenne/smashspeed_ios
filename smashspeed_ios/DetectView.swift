@@ -174,7 +174,7 @@ struct TrimmingView: View {
                     Text("Trim to the Smash")
                         .font(.largeTitle.bold())
                     
-                    Text("Isolate the moment of impact. The final clip should be **very short** (~ 0.5 seconds, ~ 15 frames).")
+                    Text("Isolate the moment of impact. The final clip should be very short (~0.5 seconds, ~10 frames), and the birdie should be clearly visible in each frame.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
