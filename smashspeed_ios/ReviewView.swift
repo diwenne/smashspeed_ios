@@ -186,6 +186,16 @@ struct ReviewView: View {
                                     }
                                     .font(.callout)
                                     .tint(.secondary)
+                                    
+                                    if !showTuningControls {
+                                        Text("The AI detection is very accurate—these controls are not usually needed.")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal)
+                                            .padding(.top, 2)
+                                            .transition(.opacity)
+                                    }
                                 }
                             }
                             .glassPanelStyle()
@@ -234,6 +244,12 @@ struct ReviewView: View {
                             }
                             
                             VStack(spacing: 15) {
+                                
+                                Text("It's recommended to run this at least once to fill in any missing frames.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                
                                 Button(action: interpolateFrames) {
                                     Label("Interpolate Gap", systemImage: "arrow.up.left.and.arrow.down.right")
                                         .frame(maxWidth: .infinity)
