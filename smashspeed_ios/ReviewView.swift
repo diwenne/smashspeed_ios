@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import Vision
+import StoreKit
 
 // MARK: - Main Review View
 struct ReviewView: View {
@@ -9,6 +10,8 @@ struct ReviewView: View {
     let onFinish: ([FrameAnalysis]) -> Void
     
     enum EditMode { case move, resize }
+    
+    @Environment(\.requestReview) var requestReview
     
     @State private var analysisResults: [FrameAnalysis]
     @State private var currentIndex = 0
@@ -264,11 +267,15 @@ struct ReviewView: View {
                         }
                         
                         // --- Finalize Button ---
-                        Button("Finish & Save Analysis") { onFinish(analysisResults) }
+                        Button("Finish & Save Analysis") {
+                            onFinish(analysisResults)
+                            requestReview()
+                        }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.large)
                             .frame(maxWidth: .infinity)
                             .disabled(analysisResults.isEmpty)
+                            
                     }
                     .padding()
                 }

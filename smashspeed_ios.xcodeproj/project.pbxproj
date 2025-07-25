@@ -461,14 +461,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "smashspeed-ios-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Smash;
+				INFOPLIST_KEY_CFBundleDisplayName = Smashspeed;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_NSCameraUsageDescription = "SmashSpeed needs access to your camera to record your smashes.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SmashSpeed needs access to your microphone to record audio for your smash videos.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "We need access to save videos to your photo library.";
@@ -482,7 +482,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -498,14 +498,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "smashspeed-ios-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Smash;
+				INFOPLIST_KEY_CFBundleDisplayName = Smashspeed;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_NSCameraUsageDescription = "SmashSpeed needs access to your camera to record your smashes.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SmashSpeed needs access to your microphone to record audio for your smash videos.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "We need access to save videos to your photo library.";
@@ -519,7 +519,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
