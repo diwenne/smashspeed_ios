@@ -51,7 +51,7 @@ class SmashSpeedViewModel: ObservableObject {
                     return
                 }
                 
-                let tracker = ShuttlecockTracker(scaleFactor: scaleFactor)
+                let tracker = KalmanTracker(scaleFactor: scaleFactor)
                 self.videoProcessor = VideoProcessor(videoURL: videoURL, modelHandler: modelHandler, tracker: tracker)
                 
                 // ✅ FIXED: Corrected the `if let` syntax and the progress handler logic.

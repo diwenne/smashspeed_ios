@@ -2,6 +2,7 @@ import SwiftUI
 import AVFoundation
 import Vision
 import StoreKit
+import UIKit // Added for UIImpactFeedbackGenerator
 
 // MARK: - Main Review View
 struct ReviewView: View {
@@ -275,7 +276,7 @@ struct ReviewView: View {
                             .controlSize(.large)
                             .frame(maxWidth: .infinity)
                             .disabled(analysisResults.isEmpty)
-                            
+                        
                     }
                     .padding()
                 }
@@ -428,25 +429,68 @@ struct ReviewView: View {
     }
     
     private func recalculateAllSpeeds() {
-        let freshTracker = ShuttlecockTracker(scaleFactor: initialResult.scaleFactor)
+        let freshTracker = KalmanTracker(scaleFactor: initialResult.scaleFactor)
+        
+        let frameRate = initialResult.frameRate
+        let videoSize = initialResult.videoSize
+        
         for i in 0..<analysisResults.count {
-            let result = freshTracker.track(
-                box: analysisResults[i].boundingBox,
-                timestamp: CMTime(seconds: analysisResults[i].timestamp, preferredTimescale: 600),
-                frameSize: initialResult.videoSize,
-                fps: initialResult.frameRate
-            )
-            analysisResults[i].speedKPH = result.speedKPH
-            analysisResults[i].trackedPoint = result.point
+            
+            _ = freshTracker.predict(dt: 1.0)
+            
+            if let boundingBox = analysisResults[i].boundingBox {
+                let pixelRect = VNImageRectForNormalizedRect(boundingBox, Int(videoSize.width), Int(videoSize.height))
+                freshTracker.update(measurement: pixelRect.center)
+            }
+            
+            let currentState = freshTracker.getCurrentState()
+            let pixelsPerFrameVelocity = currentState.speedKPH ?? 0.0
+            
+            let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
+            let metersPerSecond = pixelsPerSecond * initialResult.scaleFactor
+            let finalSpeed = metersPerSecond * 3.6
+            
+            analysisResults[i].speedKPH = finalSpeed
+            analysisResults[i].trackedPoint = currentState.point
         }
     }
     
     // MARK: - Bounding Box Manipulation
     
+    // --- ❗️ MODIFIED FUNCTION ---
     private func addBox() {
         saveUndoState()
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
-        analysisResults[currentIndex].boundingBox = CGRect(x: 0.45, y: 0.45, width: 0.1, height: 0.1)
+
+        let videoSize = initialResult.videoSize
+        var newBoxCenter = CGPoint(x: 0.5, y: 0.5) // Default to screen center
+
+        // Use the tracker's last known point for this frame as the center.
+        // This point is already present even if the box was removed.
+        if let predictedPixelPoint = analysisResults[currentIndex].trackedPoint {
+            if videoSize.width > 0 && videoSize.height > 0 {
+                newBoxCenter = CGPoint(
+                    x: predictedPixelPoint.x / videoSize.width,
+                    y: predictedPixelPoint.y / videoSize.height
+                )
+            }
+        }
+        
+        // Use the previous frame's box size, or a default.
+        var newBoxSize = CGSize(width: 0.1, height: 0.1) // Default size
+        if currentIndex > 0, let prevBox = analysisResults[currentIndex - 1].boundingBox {
+            newBoxSize = prevBox.size
+        }
+
+        // Create the new box, centered on the predicted point.
+        let newBox = CGRect(
+            x: newBoxCenter.x - (newBoxSize.width / 2),
+            y: newBoxCenter.y - (newBoxSize.height / 2),
+            width: newBoxSize.width,
+            height: newBoxSize.height
+        )
+        
+        analysisResults[currentIndex].boundingBox = newBox
         recalculateAllSpeeds()
         triggerHapticFeedback()
     }

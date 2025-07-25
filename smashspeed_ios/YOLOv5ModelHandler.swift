@@ -12,11 +12,21 @@ import UIKit
 
 class YOLOv5ModelHandler {
     
+    // MARK: - Prediction Struct
+    
+    /// A struct to hold the result of a single object detection.
+    /// This must be public so VideoProcessor can access it.
+    public struct Prediction {
+        public let confidence: Float
+        // This rect is in the model's coordinate space (e.g., 640x640 pixels)
+        public let rect: CGRect
+    }
+    
     // MARK: - Properties
     
     private let model: VNCoreMLModel
-    private let modelInputSize = CGSize(width: 640, height: 640)
-    private let confidenceThreshold: Float = 0.25
+    let modelInputSize = CGSize(width: 640, height: 640)
+    private let confidenceThreshold: Float = 0.10
     private let iouThreshold: Float = 0.45
     
     // MARK: - Initialization
@@ -41,9 +51,8 @@ class YOLOv5ModelHandler {
     
     // MARK: - Main Inference Function
     
-    func performDetection(on pixelBuffer: CVPixelBuffer, completion: @escaping (Result<(CGRect?, Float?), Error>) -> Void) {
-        
-        let originalSize = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
+    /// Performs detection and returns an array of all valid predictions.
+    func performDetection(on pixelBuffer: CVPixelBuffer, completion: @escaping (Result<[Prediction], Error>) -> Void) {
         
         guard let resizedBuffer = try? ImageProcessor.resizePixelBuffer(pixelBuffer, to: modelInputSize) else {
             let error = NSError(domain: "YOLOv5ModelHandler", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to resize pixel buffer."])
@@ -60,34 +69,18 @@ class YOLOv5ModelHandler {
             guard let results = request.results,
                   let output = results.first as? VNCoreMLFeatureValueObservation,
                   let multiArray = output.featureValue.multiArrayValue else {
-                completion(.success((nil, nil)))
+                completion(.success([])) // Return empty array if no results
                 return
             }
             
             let predictions = self.decodeOutput(multiArray: multiArray)
+            
+            
             let nmsResults = self.nonMaxSuppression(predictions: predictions, iouThreshold: self.iouThreshold)
             
-            if let bestResult = nmsResults.max(by: { $0.confidence < $1.confidence }) {
-                
-                // `bestResult.rect` is a CGRect in the 640x640 (model input) pixel space.
-                // We now convert it to the original video frame's pixel space.
-                let pixelRect = self.scaleBoxFromModelToOriginal(bestResult.rect, modelSize: self.modelInputSize, originalSize: originalSize)
-                
-                // Finally, normalize the result for the rest of the app.
-                let normalizedRect = CGRect(
-                    x: pixelRect.origin.x / originalSize.width,
-                    y: pixelRect.origin.y / originalSize.height,
-                    width: pixelRect.size.width / originalSize.width,
-                    height: pixelRect.size.height / originalSize.height
-                )
-                #if DEBUG
-                print("✅ HANDLER SENDING NORMALIZED RECT: \(normalizedRect)")
-                #endif
-                completion(.success((normalizedRect, bestResult.confidence)))
-                
-            } else {
-                completion(.success((nil, nil)))
-            }
+    
+            // Return ALL detections after non-max suppression.
+            completion(.success(nmsResults))
         }
         
         let handler = VNImageRequestHandler(cvPixelBuffer: resizedBuffer, options: [:])
@@ -103,13 +96,6 @@ class YOLOv5ModelHandler {
     
     // MARK: - Post-processing
     
-    private struct Prediction {
-        let classIndex: Int
-        let confidence: Float
-        // This rect is in the model's coordinate space (e.g., 640x640 pixels)
-        let rect: CGRect
-    }
-
     private func decodeOutput(multiArray: MLMultiArray) -> [Prediction] {
         var predictions: [Prediction] = []
         let pointer = UnsafeMutableBufferPointer<Float32>(start: multiArray.dataPointer.assumingMemoryBound(to: Float32.self),
@@ -120,14 +106,13 @@ class YOLOv5ModelHandler {
         
         for i in 0..<numBoxes {
             let offset = i * numAttributes
-            // The box coordinates from the tensor are already scaled to the model input size (e.g., 640x640)
-            let x = pointer[offset]     // center_x
-            let y = pointer[offset + 1] // center_y
-            let w = pointer[offset + 2] // width
-            let h = pointer[offset + 3] // height
+            let x = pointer[offset]       // center_x
+            let y = pointer[offset + 1]   // center_y
+            let w = pointer[offset + 2]   // width
+            let h = pointer[offset + 3]   // height
             
             let confidence = pointer[offset + 4]
-            let classProbability = pointer[offset + 5] // Assuming single class at index 5
+            let classProbability = pointer[offset + 5] // Assuming single class
             let finalConfidence = confidence * classProbability
 
             if finalConfidence >= self.confidenceThreshold {
@@ -136,7 +121,7 @@ class YOLOv5ModelHandler {
                                   width: CGFloat(w),
                                   height: CGFloat(h))
                 
-                let prediction = Prediction(classIndex: 0, confidence: finalConfidence, rect: rect)
+                let prediction = Prediction(confidence: finalConfidence, rect: rect)
                 predictions.append(prediction)
             }
         }
@@ -167,32 +152,11 @@ class YOLOv5ModelHandler {
 
     private func calculateIOU(box1: CGRect, box2: CGRect) -> Float {
         let intersection = box1.intersection(box2)
-        let union = box1.union(box2)
+        let unionArea = (box1.width * box1.height) + (box2.width * box2.height) - (intersection.width * intersection.height)
         
-        guard union.width > 0, union.height > 0 else { return 0 }
+        guard unionArea > 0 else { return 0 }
         
-        let iou = (intersection.width * intersection.height) / (union.width * union.height)
+        let iou = (intersection.width * intersection.height) / unionArea
         return Float(iou)
-    }
-    
-    // --- CORRECTED SCALING LOGIC ---
-    /// Converts a bounding box from the model's pixel space (e.g., 640x640) back to the original image's pixel space.
-    private func scaleBoxFromModelToOriginal(_ boxInModelCoords: CGRect, modelSize: CGSize, originalSize: CGSize) -> CGRect {
-        // 1. Calculate the scale factor and padding used for letterboxing
-        let scale = min(modelSize.width / originalSize.width, modelSize.height / originalSize.height)
-        let offsetX = (modelSize.width - originalSize.width * scale) / 2
-        let offsetY = (modelSize.height - originalSize.height * scale) / 2
-        
-        // 2. Remove the padding from the box's coordinates
-        let unpaddedX = boxInModelCoords.origin.x - offsetX
-        let unpaddedY = boxInModelCoords.origin.y - offsetY
-        
-        // 3. Scale the coordinates back up to the original image size
-        let finalX = unpaddedX / scale
-        let finalY = unpaddedY / scale
-        let finalWidth = boxInModelCoords.width / scale
-        let finalHeight = boxInModelCoords.height / scale
-        
-        return CGRect(x: finalX, y: finalY, width: finalWidth, height: finalHeight)
     }
 }
