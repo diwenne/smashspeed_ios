@@ -52,6 +52,8 @@ struct ReviewView: View {
         self.imageGenerator.requestedTimeToleranceAfter = .zero
     }
     
+    // MARK: - Computed Properties
+    
     private var frameIndexBinding: Binding<Double> {
         Binding<Double>(
             get: { Double(self.currentIndex) },
@@ -66,217 +68,47 @@ struct ReviewView: View {
         return scale * magnifyBy
     }
 
+    private var isInterpolationRecommended: Bool {
+        guard analysisResults.count > 2 else { return false }
+        var inGap = false
+        for i in 0..<analysisResults.count - 1 {
+            let currentHasBox = analysisResults[i].boundingBox != nil
+            let nextHasBox = analysisResults[i+1].boundingBox != nil
+            if currentHasBox && !nextHasBox {
+                inGap = true
+            }
+            if inGap && nextHasBox {
+                return true
+            }
+        }
+        return false
+    }
+
     var body: some View {
         ZStack {
-            // Background aurora
             Color(.systemBackground).ignoresSafeArea()
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
 
             VStack(spacing: 0) {
-                // --- Top Frame Display ---
-                HStack {
-                    // Undo/Redo buttons in the top bar.
-                    HStack {
-                        Button(action: undo) {
-                            Image(systemName: "arrow.uturn.backward.circle")
-                        }
-                        .disabled(undoStack.isEmpty)
-                        
-                        Button(action: redo) {
-                            Image(systemName: "arrow.uturn.forward.circle")
-                        }
-                        .disabled(redoStack.isEmpty)
-                    }
-                    .font(.title3)
-                    .padding(.leading)
-                    
-                    Spacer()
-                    
-                    if !analysisResults.isEmpty {
-                        Text("Frame \(currentIndex + 1) of \(analysisResults.count)")
-                            .font(.headline)
-                    } else {
-                        Text("No Frames")
-                            .font(.headline)
-                    }
-                    Spacer()
-                    Button { showInfoSheet = true } label: { Image(systemName: "info.circle").font(.title3) }.padding()
-                }
-                .frame(maxWidth: .infinity).background(.ultraThinMaterial)
-
-                GeometryReader { geo in
-                    ZStack {
-                        ZStack {
-                            if let image = currentFrameImage {
-                                Image(uiImage: image).resizable().scaledToFit()
-                            } else {
-                                Color.black
-                                ProgressView().tint(.white)
-                            }
-                        }
-                        .scaleEffect(currentScale)
-                        .offset(currentOffset)
-                        .gesture(panGesture().simultaneously(with: magnificationGesture()))
-                        
-                        if !analysisResults.isEmpty && analysisResults.indices.contains(currentIndex) {
-                             OverlayView(
-                                 analysis: $analysisResults[currentIndex],
-                                 containerSize: geo.size,
-                                 videoSize: initialResult.videoSize,
-                                 currentScale: self.currentScale,
-                                 globalOffset: self.currentOffset
-                             )
-                        }
-                        
-                        VStack {
-                            Spacer()
-                            HStack {
-                                Spacer()
-                                Button { withAnimation { zoom(by: 1.5) } } label: { Image(systemName: "plus.magnifyingglass") }
-                                Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
-                                Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
-                            }
-                            .font(.title2).padding().background(.black.opacity(0.5)).foregroundColor(.white).cornerRadius(15).padding()
-                        }
-                    }
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .clipped()
-                    .onAppear { self.viewportSize = geo.size }
-                }
-                .frame(maxHeight: .infinity)
-
-                // --- Bottom control panel ---
+                topBar
+                frameDisplay
+                interpolationSection
+                
                 ScrollView {
                     VStack(spacing: 25) {
-                        // --- Section 1: Frame Navigation ---
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("FRAME NAVIGATION")
-                                .sectionHeaderStyle()
-                            
-                            VStack(spacing: 15) {
-                                VStack {
-                                    Text("Speed at this frame:").font(.caption).foregroundStyle(.secondary)
-                                    if let speed = currentFrameData?.speedKPH {
-                                        Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
-                                    } else {
-                                        Text("N/A").font(.headline).foregroundStyle(.secondary)
-                                    }
-                                }
-                                
-                                HStack {
-                                    Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
-                                    if !analysisResults.isEmpty {
-                                        Slider(value: frameIndexBinding, in: 0...Double(analysisResults.count - 1), step: 1)
-                                    } else {
-                                        Slider(value: .constant(0), in: 0...0)
-                                    }
-                                    Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(analysisResults.isEmpty || currentIndex >= analysisResults.count - 1)
-                                }
-                                .font(.largeTitle)
-                                .buttonStyle(.plain)
-                                .disabled(analysisResults.isEmpty)
-                                
-                                Divider()
-                                
-                                VStack(spacing: 8) {
-                                    Button {
-                                        withAnimation(.spring()) {
-                                            showTuningControls.toggle()
-                                        }
-                                    } label: {
-                                        Label(showTuningControls ? "Hide Manual Controls" : "Show Manual Controls",
-                                              systemImage: showTuningControls ? "chevron.up" : "slider.horizontal.3")
-                                    }
-                                    .font(.callout)
-                                    .tint(.secondary)
-                                    
-                                    if !showTuningControls {
-                                        Text("The AI detection is very accurate—these controls are not usually needed.")
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal)
-                                            .padding(.top, 2)
-                                            .transition(.opacity)
-                                    }
-                                }
-                            }
-                            .glassPanelStyle()
-                        }
-                        
-                        // --- Section 2: Bounding Box Adjustment (Conditional) ---
+                        frameNavigationControls
                         if showTuningControls {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text("MANUAL ADJUSTMENT")
-                                        .sectionHeaderStyle()
-                                    Spacer()
-                                    Button { showManualInfo = true } label: {
-                                        Image(systemName: "info.circle")
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                
-                                VStack(spacing: 15) {
-                                    BoxAdjustmentControls(
-                                        editMode: $editMode,
-                                        hasBox: currentFrameData?.boundingBox != nil,
-                                        addBoxAction: addBox,
-                                        removeBoxAction: removeBox,
-                                        adjustBoxAction: adjustBox
-                                    )
-                                }
-                                .glassPanelStyle()
-                                .transition(.asymmetric(
-                                    insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
-                                    removal: .opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
-                                )
-                            }
+                            manualAdjustmentControls
                         }
-                        
-                        // --- Section 3: Interpolation (Always Visible) ---
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("AUTOMATIC ADJUSTMENT")
-                                    .sectionHeaderStyle()
-                                Spacer()
-                                Button { showInterpolationInfo = true } label: {
-                                    Image(systemName: "info.circle")
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            
-                            VStack(spacing: 15) {
-                                
-                                Text("It's recommended to run this at least once to fill in any missing frames.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                                
-                                Button(action: interpolateFrames) {
-                                    Label("Interpolate Gap", systemImage: "arrow.up.left.and.arrow.down.right")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .controlSize(.regular)
-                                .tint(.purple)
-                                .scaleEffect(showInterpolationFeedback ? 1.05 : 1.0)
-                                .opacity(showInterpolationFeedback ? 0.6 : 1.0)
-                            }
-                            .glassPanelStyle()
-                        }
-                        
-                        // --- Finalize Button ---
                         Button("Finish & Save Analysis") {
                             onFinish(analysisResults)
                             requestReview()
                         }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.large)
-                            .frame(maxWidth: .infinity)
-                            .disabled(analysisResults.isEmpty)
-                        
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
+                        .disabled(analysisResults.isEmpty)
                     }
                     .padding()
                 }
@@ -301,10 +133,9 @@ struct ReviewView: View {
                     title: "3. Review Detection",
                     instructions: [
                         (icon: "arrow.left.and.right.circle.fill", text: "Use the slider or arrow keys to move through each frame and view the shuttle speed."),
-                        (icon: "rectangle.dashed", text: "If the shuttle is detected incorrectly, adjust the red box to tightly fit around it."),
-                        (icon: "slider.horizontal.3", text: "Use the controls below to manually move, resize, or fine-tune the box."),
-                        (icon: "xmark.square.fill", text: "If a frame has a bad detection, you can remove its box before interpolating."),
-                        (icon: "arrow.up.left.and.arrow.down.right", text: "Use the Interpolate tool to automatically fill in gaps between good detections.")
+                        (icon: "wand.and.stars.inverse", text: "Use the 'Interpolate' tool to automatically fill in gaps between good detections. This is highly recommended."),
+                        (icon: "slider.horizontal.3", text: "For fine-tuning, use the manual controls to move, resize, add, or remove a detection box."),
+                        (icon: "arrow.uturn.backward", text: "If you make a mistake, use the undo/redo buttons in the top left.")
                     ]
                 )
             }
@@ -321,11 +152,206 @@ struct ReviewView: View {
         }
     }
     
+    // MARK: - View Components
+    
+    private var topBar: some View {
+        HStack(spacing: 16) {
+            HStack {
+                Button(action: undo) { Image(systemName: "arrow.uturn.backward.circle") }.disabled(undoStack.isEmpty)
+                Button(action: redo) { Image(systemName: "arrow.uturn.forward.circle") }.disabled(redoStack.isEmpty)
+            }
+            
+            Spacer()
+            
+            Text(analysisResults.isEmpty ? "No Frames" : "Frame \(currentIndex + 1) of \(analysisResults.count)")
+                .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            
+            Spacer()
+            
+            HStack(spacing: 12) {
+                Button { withAnimation { zoom(by: 1.5) } } label: { Image(systemName: "plus.magnifyingglass") }
+                Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
+                Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
+            }
+            
+            Button { showInfoSheet = true } label: { Image(systemName: "info.circle") }
+        }
+        .font(.title3)
+        .padding(.horizontal)
+        .frame(height: 44)
+        .background(.ultraThinMaterial)
+    }
+    
+    private var frameDisplay: some View {
+        GeometryReader { geo in
+            ZStack {
+                ZStack {
+                    if let image = currentFrameImage {
+                        Image(uiImage: image).resizable().scaledToFit()
+                    } else {
+                        Color.black
+                        ProgressView().tint(.white)
+                    }
+                }
+                .scaleEffect(currentScale)
+                .offset(currentOffset)
+                .gesture(panGesture().simultaneously(with: magnificationGesture()))
+                
+                if !analysisResults.isEmpty && analysisResults.indices.contains(currentIndex) {
+                     OverlayView(
+                         analysis: $analysisResults[currentIndex],
+                         containerSize: geo.size,
+                         videoSize: initialResult.videoSize,
+                         currentScale: self.currentScale,
+                         globalOffset: self.currentOffset
+                     )
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .clipped()
+            .onAppear { self.viewportSize = geo.size }
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    // --- MODIFIED: The entire section is now conditional on `isInterpolationRecommended` ---
+    @ViewBuilder
+    private var interpolationSection: some View {
+        // The whole view only appears if there are gaps to fix.
+        if isInterpolationRecommended {
+            VStack(spacing: 15) {
+                // The warning banner
+                HStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.headline)
+                        .foregroundColor(.orange)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Gaps Detected in Tracking")
+                            .fontWeight(.bold)
+                        Text("Use 'Interpolate' to ensure accurate speed results.")
+                            .foregroundColor(.secondary)
+                    }
+                    .font(.footnote)
+                    
+                    Spacer()
+                }
+                .padding(12)
+                .background(Color.orange.opacity(0.15))
+                .cornerRadius(12)
+                
+                // The action buttons
+                Button(action: interpolateFrames) {
+                    Label("Interpolate Missing Frames", systemImage: "arrow.up.left.and.arrow.down.right")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+                .tint(.purple)
+                .scaleEffect(showInterpolationFeedback ? 1.05 : 1.0)
+                
+                Button { showInterpolationInfo = true } label: {
+                    Label("What is Interpolation?", systemImage: "info.circle.fill")
+                        .font(.caption)
+                }
+                .tint(.secondary)
+            }
+            .padding()
+            .background(.thinMaterial)
+            .animation(.spring(), value: isInterpolationRecommended)
+            .transition(.move(edge: .top).combined(with: .opacity))
+        }
+    }
+    
+    private var frameNavigationControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("FRAME NAVIGATION")
+                .sectionHeaderStyle()
+            
+            VStack(spacing: 15) {
+                VStack {
+                    Text("Speed at this frame:").font(.caption).foregroundStyle(.secondary)
+                    if let speed = currentFrameData?.speedKPH {
+                        Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
+                    } else {
+                        Text("N/A").font(.headline).foregroundStyle(.secondary)
+                    }
+                }
+                
+                HStack {
+                    Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
+                    if !analysisResults.isEmpty {
+                        Slider(value: frameIndexBinding, in: 0...Double(analysisResults.count - 1), step: 1)
+                    } else {
+                        Slider(value: .constant(0), in: 0...0)
+                    }
+                    Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(analysisResults.isEmpty || currentIndex >= analysisResults.count - 1)
+                }
+                .font(.largeTitle)
+                .buttonStyle(.plain)
+                .disabled(analysisResults.isEmpty)
+                
+                Divider()
+                
+                VStack(spacing: 8) {
+                    Button { withAnimation(.spring()) { showTuningControls.toggle() } } label: {
+                        Label(showTuningControls ? "Hide Manual Controls" : "Show Manual Controls",
+                              systemImage: showTuningControls ? "chevron.up" : "slider.horizontal.3")
+                    }
+                    .font(.callout)
+                    .tint(.secondary)
+                    
+                    if !showTuningControls {
+                        Text("The AI detection is very accurate—these controls are not usually needed.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .padding(.top, 2)
+                            .transition(.opacity)
+                    }
+                }
+            }
+            .glassPanelStyle()
+        }
+    }
+    
+    private var manualAdjustmentControls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("MANUAL ADJUSTMENT")
+                    .sectionHeaderStyle()
+                Spacer()
+                Button { showManualInfo = true } label: {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            VStack(spacing: 15) {
+                BoxAdjustmentControls(
+                    editMode: $editMode,
+                    hasBox: currentFrameData?.boundingBox != nil,
+                    addBoxAction: addBox,
+                    removeBoxAction: removeBox,
+                    adjustBoxAction: adjustBox
+                )
+            }
+            .glassPanelStyle()
+            .transition(.asymmetric(
+                insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
+                removal: .opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
+            )
+        }
+    }
+
     // MARK: - Undo/Redo Logic
     
     private func saveUndoState() {
         undoStack.append(analysisResults)
-        redoStack.removeAll() // Clear redo stack on new action
+        redoStack.removeAll()
     }
     
     private func undo() {
@@ -384,7 +410,7 @@ struct ReviewView: View {
             withAnimation(.spring()) {
                 showInterpolationFeedback = true
             }
-            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+            try? await Task.sleep(nanoseconds: 200_000_000)
             withAnimation(.spring()) {
                 showInterpolationFeedback = false
             }
@@ -457,16 +483,13 @@ struct ReviewView: View {
     
     // MARK: - Bounding Box Manipulation
     
-    // --- ❗️ MODIFIED FUNCTION ---
     private func addBox() {
         saveUndoState()
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
 
         let videoSize = initialResult.videoSize
-        var newBoxCenter = CGPoint(x: 0.5, y: 0.5) // Default to screen center
+        var newBoxCenter = CGPoint(x: 0.5, y: 0.5)
 
-        // Use the tracker's last known point for this frame as the center.
-        // This point is already present even if the box was removed.
         if let predictedPixelPoint = analysisResults[currentIndex].trackedPoint {
             if videoSize.width > 0 && videoSize.height > 0 {
                 newBoxCenter = CGPoint(
@@ -476,13 +499,11 @@ struct ReviewView: View {
             }
         }
         
-        // Use the previous frame's box size, or a default.
-        var newBoxSize = CGSize(width: 0.1, height: 0.1) // Default size
+        var newBoxSize = CGSize(width: 0.1, height: 0.1)
         if currentIndex > 0, let prevBox = analysisResults[currentIndex - 1].boundingBox {
             newBoxSize = prevBox.size
         }
 
-        // Create the new box, centered on the predicted point.
         let newBox = CGRect(
             x: newBoxCenter.x - (newBoxSize.width / 2),
             y: newBoxCenter.y - (newBoxSize.height / 2),
@@ -795,4 +816,4 @@ private struct RepeatingFineTuneButton: View {
         timer = nil
         pressCount = 0
     }
-}  
+}

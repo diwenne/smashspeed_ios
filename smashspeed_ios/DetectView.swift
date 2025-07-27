@@ -104,8 +104,6 @@ struct DetectView: View {
                         viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
                     }, onCancel: { viewModel.cancelCalibration() })
                 
-                // --- MODIFIED ---
-                // The `processing` case no longer receives a `Progress` object.
                 case .processing:
                     ProcessingView { viewModel.cancelProcessing() }
                     
@@ -144,6 +142,10 @@ struct TrimmingView: View {
     @State private var startTime: Double = 0.0
     @State private var endTime: Double = 0.0
     @State private var isExporting = false
+    
+    // --- ADDED: State for validation ---
+    @State private var frameRate: Float = 30.0 // Default, will be updated
+    @State private var showTooLongAlert = false
 
     init(videoURL: URL, onComplete: @escaping (URL) -> Void, onCancel: @escaping () -> Void) {
         self.videoURL = videoURL
@@ -154,9 +156,6 @@ struct TrimmingView: View {
     
     var body: some View {
         ZStack {
-            
-            // --- MODIFIED ---
-            // This now shows a loading view consistent with the ProcessingView.
             if isExporting {
                 VStack(spacing: 20) {
                     ProgressView()
@@ -215,8 +214,9 @@ struct TrimmingView: View {
                             .buttonStyle(.bordered)
                             .controlSize(.large)
                         
+                        // --- MODIFIED: Button now calls validation function ---
                         Button("Confirm Trim") {
-                            trimVideo()
+                            validateAndProceed()
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
@@ -226,22 +226,48 @@ struct TrimmingView: View {
                 }
                 .padding(.top, 40)
                 .onAppear(perform: loadVideoDetails)
+                // --- ADDED: Alert for validation ---
+                .alert("Clip Too Long", isPresented: $showTooLongAlert) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    let maxFrames = Int(0.8 * Double(frameRate))
+                    Text("Trim the clip to under 0.8s (~\(maxFrames) frames), showing only the smash. The shuttle should be visible in every frame.")
+                }
             }
         }
     }
-
+    
+    // --- MODIFIED: Now loads frame rate as well ---
     private func loadVideoDetails() {
         Task {
             let asset = AVURLAsset(url: videoURL)
             do {
+                // Load duration
                 let duration = try await asset.load(.duration)
                 let durationInSeconds = CMTimeGetSeconds(duration)
                 self.videoDuration = durationInSeconds
                 self.endTime = durationInSeconds
+                
+                // Load frame rate
+                guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else { return }
+                self.frameRate = try await videoTrack.load(.nominalFrameRate)
+                
             } catch {
-                print("Error loading video duration: \(error)")
+                print("Error loading video details: \(error)")
                 onCancel()
             }
+        }
+    }
+    
+    // --- ADDED: New function to validate before trimming ---
+    private func validateAndProceed() {
+        let selectedDuration = endTime - startTime
+        let maxDurationAllowed = 0.8
+
+        if selectedDuration > maxDurationAllowed {
+            showTooLongAlert = true
+        } else {
+            trimVideo()
         }
     }
     
@@ -279,7 +305,6 @@ struct TrimmingView: View {
     }
 }
 
-// ✅ REBUILT: This custom range slider is now more robust and uses absolute positions.
 private struct RangeSliderView: View {
     @Binding var startTime: Double
     @Binding var endTime: Double
@@ -288,43 +313,34 @@ private struct RangeSliderView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            // Guard against videoDuration being zero to prevent division errors
             if videoDuration > 0 {
                 let totalWidth = geometry.size.width
                 
-                // Calculate the absolute X position for start and end handles
                 let startX = CGFloat(startTime / videoDuration) * totalWidth
                 let endX = CGFloat(endTime / videoDuration) * totalWidth
 
                 ZStack(alignment: .leading) {
-                    // Background Track
                     Capsule()
                         .fill(Color.secondary.opacity(0.3))
                         .frame(height: 8)
                     
-                    // Selected Range Track
                     Capsule()
                         .fill(Color.accentColor)
                         .frame(width: max(0, endX - startX), height: 8)
                         .offset(x: startX)
 
-                    // Start Handle
                     HandleView()
                         .position(x: startX, y: geometry.size.height / 2)
                         .gesture(
                             DragGesture()
                                 .onChanged { value in
-                                    // Use the drag gesture's direct location
                                     let newX = value.location.x
                                     let calculatedTime = (newX / totalWidth) * videoDuration
-                                    // Clamp the value to prevent errors
                                     self.startTime = max(0, min(calculatedTime, self.endTime))
-                                    // Seek the player for live preview
                                     player.seek(to: CMTime(seconds: self.startTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
                                 }
                         )
                     
-                    // End Handle
                     HandleView()
                         .position(x: endX, y: geometry.size.height / 2)
                         .gesture(
@@ -338,13 +354,11 @@ private struct RangeSliderView: View {
                         )
                 }
             } else {
-                // Show a placeholder while the duration is loading
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
     
-    // Helper view for the draggable circles
     private struct HandleView: View {
         var body: some View {
             Circle()
@@ -422,13 +436,11 @@ struct InputSourceSelectorView: View {
     }
 }
 
-// --- MODIFIED ---
-// This view no longer uses a percentage-based progress bar.
 struct ProcessingView: View {
     let onCancel: () -> Void
     var body: some View {
         VStack(spacing: 20) {
-            ProgressView() // Use a simple, indeterminate progress view
+            ProgressView()
                 .scaleEffect(1.5)
             Text("Analyzing Video...")
                 .font(.title2)

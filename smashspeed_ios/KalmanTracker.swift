@@ -36,7 +36,6 @@ class KalmanTracker {
     /// Predicts the next state and returns the predicted point.
     /// Returns nil if the tracker is not yet initialized.
     func predict(dt: Double = 1.0) -> CGPoint? {
-        // --- ❗️ THIS IS THE MAIN FIX ---
         guard isInitialized else { return nil }
 
         // State Transition Model F
@@ -111,11 +110,23 @@ class KalmanTracker {
     }
 
     /// Returns the current estimated state (position and speed).
+    /// The returned `speedKPH` value is the raw velocity in pixels/frame.
+    /// Conversion to a metric like KPH must be done by the caller.
     func getCurrentState() -> (point: CGPoint, speedKPH: Double?) {
         guard isInitialized else { return (CGPoint.zero, nil) }
         let point = CGPoint(x: x.0, y: x.1)
+        // This is velocity in pixels per frame (or per dt)
         let velocityPixelsPerFrame = sqrt(x.2 * x.2 + x.3 * x.3)
         return (point, velocityPixelsPerFrame)
+    }
+    
+    /// Creates a deep copy of the tracker's current state.
+    func copy() -> KalmanTracker {
+        let newTracker = KalmanTracker(scaleFactor: self.scaleFactor)
+        newTracker.x = self.x
+        newTracker.p = self.p
+        newTracker.isInitialized = self.isInitialized
+        return newTracker
     }
     
     func reset() {

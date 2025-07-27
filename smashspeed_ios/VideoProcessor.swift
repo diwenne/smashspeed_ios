@@ -48,8 +48,6 @@ class VideoProcessor {
         let totalFrames = Int(CMTimeGetSeconds(videoDuration) * Double(frameRate))
         let progress = Progress(totalUnitCount: Int64(totalFrames))
         
-        let maxSpeedKPH: Double = 550.0 // Plausible speed limit
-        
         while assetReader.status == .reading {
             if isCancelled { break }
             
@@ -60,9 +58,7 @@ class VideoProcessor {
             
             let presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
             
-            // --- ❗️ LOGIC CHANGE ---
             // 1. Predict where the tracker thinks the shuttlecock will be.
-            //    This now returns an optional CGPoint, which will be nil on frame 1.
             let predictedPoint = tracker.predict(dt: 1.0)
             
             #if DEBUG
@@ -83,39 +79,65 @@ class VideoProcessor {
                 }
             }
 
-            // 3. Score detections based on confidence and proximity to prediction.
-            var bestDetection: (prediction: YOLOv5ModelHandler.Prediction, score: Double)? = nil
+            // --- ❗️ LOGIC CHANGE ---
+            // 3. Score detections, sort them, and find the best one that passes a speed check.
+            let maxSpeedKPH: Double = 375.0 // Reject detections that would cause a speed > 375 km/h
+            var chosenDetection: (prediction: YOLOv5ModelHandler.Prediction, score: Double)? = nil
+            
             if !allDetections.isEmpty {
                 let scoredDetections = allDetections.map { detection -> (prediction: YOLOv5ModelHandler.Prediction, score: Double) in
                     let pixelRect = scaleBoxFromModelToOriginal(detection.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
-                    // The 'predictedPoint' is now correctly nil on the first frame.
                     let score = calculateScore(for: pixelRect.center, confidence: Double(detection.confidence), predictedPoint: predictedPoint, frameSize: videoSize)
                     return (detection, score)
                 }
+                .sorted { $0.score > $1.score } // Sort by score, highest first
 
                 #if DEBUG
-                if scoredDetections.count >= 1 {
-                    print("⚖️ Frame \(frameCount + 1) Scoring \(scoredDetections.count) Detections:")
-                    for item in scoredDetections {
-                        let scaledRect = scaleBoxFromModelToOriginal(item.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
-                        let normX = scaledRect.origin.x / videoSize.width
-                        let normY = scaledRect.origin.y / videoSize.height
-                        print(String(format: "   - Box (norm): [x: %.3f, y: %.3f], Conf: %.2f, Score: %.3f", normX, normY, item.prediction.confidence, item.score))
-                    }
+                if !scoredDetections.isEmpty {
+                    print("⚖️ Frame \(frameCount + 1) Checking \(scoredDetections.count) Detections (sorted by score):")
                 }
                 #endif
 
-                bestDetection = scoredDetections.max(by: { $0.score < $1.score })
+                // Iterate through sorted detections to find one that doesn't produce an absurd speed.
+                for scoredDetection in scoredDetections {
+                    let tempTracker = tracker.copy() // Use a temporary tracker to test the update
+                    let pixelRect = scaleBoxFromModelToOriginal(scoredDetection.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
+                    
+                    tempTracker.update(measurement: pixelRect.center)
+                    let tempState = tempTracker.getCurrentState()
+                    
+                    // Calculate the speed that would result from this update
+                    let pixelsPerFrameVelocity = tempState.speedKPH ?? 0.0
+                    let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
+                    let metersPerSecond = pixelsPerSecond * tempTracker.scaleFactor
+                    let potentialSpeedKPH = metersPerSecond * 3.6
+                    
+                    #if DEBUG
+                    print(String(format: "   - 𝗧𝗲𝘀𝘁𝗶𝗻𝗴 box with score %.3f... potential speed: %.1f kph", scoredDetection.score, potentialSpeedKPH))
+                    #endif
+
+                    // If the speed is plausible, we've found our box for this frame.
+                    if potentialSpeedKPH < maxSpeedKPH {
+                        chosenDetection = scoredDetection
+                        #if DEBUG
+                        print("   - ✅ PASSED speed check. Selecting this box.")
+                        #endif
+                        break // Exit the loop, we have our winner.
+                    } else {
+                        #if DEBUG
+                        print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too high.", potentialSpeedKPH))
+                        #endif
+                    }
+                }
             }
             
-            // 4. Update the tracker with the best detection, if one was found.
+            // 4. Update the main tracker with the validated detection, if one was found.
             var finalBox: CGRect?
-            var finalSpeed: Double?
-            var finalPoint: CGPoint?
             
-            if let chosenOne = bestDetection {
+            if let chosenOne = chosenDetection {
                 let pixelRect = scaleBoxFromModelToOriginal(chosenOne.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
                 
+                // Perform the REAL update on the main tracker.
                 tracker.update(measurement: pixelRect.center)
                 
                 finalBox = CGRect(x: pixelRect.origin.x / videoSize.width,
@@ -124,8 +146,14 @@ class VideoProcessor {
                                   height: pixelRect.size.height / videoSize.height)
                 
                 #if DEBUG
-                if let box = finalBox, allDetections.count >= 1 {
-                    print(String(format: "✅ Frame %d CHOSEN Box (norm): [x: %.3f, y: %.3f], Score: %.3f", frameCount + 1, box.origin.x, box.origin.y, chosenOne.score))
+                print(String(format: "✅ Frame %d CHOSEN Box (norm): [x: %.3f, y: %.3f], Score: %.3f", frameCount + 1, finalBox!.origin.x, finalBox!.origin.y, chosenOne.score))
+                #endif
+            } else {
+                #if DEBUG
+                if !allDetections.isEmpty {
+                     print("🔴 Frame \(frameCount + 1): All detections resulted in excessive speed. Using prediction only.")
+                } else if frameCount > 0 {
+                     print("📪 Frame \(frameCount + 1): No detections found. Using prediction only.")
                 }
                 #endif
             }
@@ -136,14 +164,8 @@ class VideoProcessor {
             
             let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
             let metersPerSecond = pixelsPerSecond * tracker.scaleFactor
-            finalSpeed = metersPerSecond * 3.6
-            
-            if let speed = finalSpeed, speed > maxSpeedKPH {
-                finalSpeed = nil
-                tracker.reset()
-            }
-            
-            finalPoint = currentState.point
+            let finalSpeed = metersPerSecond * 3.6
+            let finalPoint = currentState.point
 
             let frameResult = FrameAnalysis(
                 timestamp: presentationTime.seconds,
@@ -171,8 +193,9 @@ class VideoProcessor {
         let confidenceWeight = 0.3
         let distanceWeight = 0.7
         
-        var distanceScore = 0.5
+        var distanceScore = 0.5 // Default score if there's no prediction yet
         if let prediction = predictedPoint {
+            // Normalize distance by a fraction of the frame width to make scoring independent of resolution
             let normalizer = frameSize.width / 4.0
             let distance = point.distance(to: prediction)
             distanceScore = max(0.0, 1.0 - (distance / normalizer))
@@ -182,13 +205,18 @@ class VideoProcessor {
     }
 
     private func scaleBoxFromModelToOriginal(_ boxInModelCoords: CGRect, modelSize: CGSize, originalSize: CGSize) -> CGRect {
-        let scale = min(modelSize.width / originalSize.width, modelSize.height / originalSize.height)
+        // Adjust for padding ("letterboxing")
+        let scaleX = modelSize.width / originalSize.width
+        let scaleY = modelSize.height / originalSize.height
+        let scale = min(scaleX, scaleY)
+        
         let offsetX = (modelSize.width - originalSize.width * scale) / 2
         let offsetY = (modelSize.height - originalSize.height * scale) / 2
         
         let unpaddedX = boxInModelCoords.origin.x - offsetX
         let unpaddedY = boxInModelCoords.origin.y - offsetY
         
+        // Un-scale to original image coordinates
         let finalX = unpaddedX / scale
         let finalY = unpaddedY / scale
         let finalWidth = boxInModelCoords.width / scale
