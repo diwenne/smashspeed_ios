@@ -82,6 +82,7 @@ class VideoProcessor {
             // --- ❗️ LOGIC CHANGE ---
             // 3. Score detections, sort them, and find the best one that passes a speed check.
             let maxSpeedKPH: Double = 375.0 // Reject detections that would cause a speed > 375 km/h
+            let minSpeedKPH: Double = 5.0   // Reject detections that would cause a speed < 5 km/h
             var chosenDetection: (prediction: YOLOv5ModelHandler.Prediction, score: Double)? = nil
             
             if !allDetections.isEmpty {
@@ -97,6 +98,12 @@ class VideoProcessor {
                     print("⚖️ Frame \(frameCount + 1) Checking \(scoredDetections.count) Detections (sorted by score):")
                 }
                 #endif
+                
+                // Check if the main tracker has already established motion.
+                // If not, we waive the minimum speed requirement for the first valid detection.
+                let mainTrackerState = tracker.getCurrentState()
+                let mainTrackerPixelVelocity = mainTrackerState.speedKPH ?? 0.0
+                let trackerHasEstablishedMotion = mainTrackerPixelVelocity > 0.0
 
                 // Iterate through sorted detections to find one that doesn't produce an absurd speed.
                 for scoredDetection in scoredDetections {
@@ -116,8 +123,13 @@ class VideoProcessor {
                     print(String(format: "   - 𝗧𝗲𝘀𝘁𝗶𝗻𝗴 box with score %.3f... potential speed: %.1f kph", scoredDetection.score, potentialSpeedKPH))
                     #endif
 
-                    // If the speed is plausible, we've found our box for this frame.
-                    if potentialSpeedKPH < maxSpeedKPH {
+                    let isTooFast = potentialSpeedKPH >= maxSpeedKPH
+                    let isTooSlow = potentialSpeedKPH < minSpeedKPH
+                    
+                    // The minimum speed check is only enforced after the tracker has a non-zero velocity.
+                    let motionCheckFailed = isTooSlow && trackerHasEstablishedMotion
+
+                    if !isTooFast && !motionCheckFailed {
                         chosenDetection = scoredDetection
                         #if DEBUG
                         print("   - ✅ PASSED speed check. Selecting this box.")
@@ -125,7 +137,11 @@ class VideoProcessor {
                         break // Exit the loop, we have our winner.
                     } else {
                         #if DEBUG
-                        print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too high.", potentialSpeedKPH))
+                        if isTooFast {
+                            print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too high (max: %.0f).", potentialSpeedKPH, maxSpeedKPH))
+                        } else if motionCheckFailed {
+                            print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too low (min: %.0f).", potentialSpeedKPH, minSpeedKPH))
+                        }
                         #endif
                     }
                 }
@@ -151,7 +167,7 @@ class VideoProcessor {
             } else {
                 #if DEBUG
                 if !allDetections.isEmpty {
-                     print("🔴 Frame \(frameCount + 1): All detections resulted in excessive speed. Using prediction only.")
+                     print("🔴 Frame \(frameCount + 1): All detections resulted in out-of-range speed. Using prediction only.")
                 } else if frameCount > 0 {
                      print("📪 Frame \(frameCount + 1): No detections found. Using prediction only.")
                 }

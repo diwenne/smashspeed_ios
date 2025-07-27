@@ -57,7 +57,15 @@ struct ReviewView: View {
     private var frameIndexBinding: Binding<Double> {
         Binding<Double>(
             get: { Double(self.currentIndex) },
-            set: { self.currentIndex = Int($0) }
+            set: {
+                let oldValue = self.currentIndex
+                let newValue = Int($0)
+                // Only trigger haptic if the index actually changes
+                if oldValue != newValue {
+                    self.currentIndex = newValue
+                    triggerHapticFeedback(style: .light)
+                }
+            }
         )
     }
     
@@ -216,13 +224,10 @@ struct ReviewView: View {
         .frame(maxHeight: .infinity)
     }
 
-    // --- MODIFIED: The entire section is now conditional on `isInterpolationRecommended` ---
     @ViewBuilder
     private var interpolationSection: some View {
-        // The whole view only appears if there are gaps to fix.
         if isInterpolationRecommended {
             VStack(spacing: 15) {
-                // The warning banner
                 HStack(spacing: 10) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.headline)
@@ -242,7 +247,6 @@ struct ReviewView: View {
                 .background(Color.orange.opacity(0.15))
                 .cornerRadius(12)
                 
-                // The action buttons
                 Button(action: interpolateFrames) {
                     Label("Interpolate Missing Frames", systemImage: "arrow.up.left.and.arrow.down.right")
                         .frame(maxWidth: .infinity)
@@ -281,16 +285,32 @@ struct ReviewView: View {
                 }
                 
                 HStack {
-                    Button(action: goToPreviousFrame) { Image(systemName: "arrow.left.circle.fill") }.disabled(currentIndex == 0)
+                    // --- MODIFIED: Added haptic feedback ---
+                    Button(action: {
+                        goToPreviousFrame()
+                        triggerHapticFeedback(style: .medium)
+                    }) {
+                        Image(systemName: "arrow.left.circle.fill")
+                    }
+                    .disabled(currentIndex == 0)
+                    .buttonStyle(GlowButtonStyle())
+                    
                     if !analysisResults.isEmpty {
                         Slider(value: frameIndexBinding, in: 0...Double(analysisResults.count - 1), step: 1)
                     } else {
                         Slider(value: .constant(0), in: 0...0)
                     }
-                    Button(action: goToNextFrame) { Image(systemName: "arrow.right.circle.fill") }.disabled(analysisResults.isEmpty || currentIndex >= analysisResults.count - 1)
+
+                    Button(action: {
+                        goToNextFrame()
+                        triggerHapticFeedback(style: .medium)
+                    }) {
+                        Image(systemName: "arrow.right.circle.fill")
+                    }
+                    .disabled(analysisResults.isEmpty || currentIndex >= analysisResults.count - 1)
+                    .buttonStyle(GlowButtonStyle())
                 }
                 .font(.largeTitle)
-                .buttonStyle(.plain)
                 .disabled(analysisResults.isEmpty)
                 
                 Divider()
@@ -359,7 +379,7 @@ struct ReviewView: View {
         let lastState = undoStack.removeLast()
         redoStack.append(analysisResults)
         analysisResults = lastState
-        triggerHapticFeedback()
+        triggerHapticFeedback(style: .medium)
     }
     
     private func redo() {
@@ -367,7 +387,7 @@ struct ReviewView: View {
         let nextState = redoStack.removeLast()
         undoStack.append(analysisResults)
         analysisResults = nextState
-        triggerHapticFeedback()
+        triggerHapticFeedback(style: .medium)
     }
     
     // MARK: - Gesture and Zoom Logic
@@ -395,8 +415,9 @@ struct ReviewView: View {
         return analysisResults[currentIndex]
     }
     
-    private func triggerHapticFeedback() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
+    // --- MODIFIED: Added haptic style parameter ---
+    private func triggerHapticFeedback(style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        let generator = UIImpactFeedbackGenerator(style: style)
         generator.impactOccurred()
     }
     
@@ -404,7 +425,7 @@ struct ReviewView: View {
         saveUndoState()
         interpolateMissingFrames()
         recalculateAllSpeeds()
-        triggerHapticFeedback()
+        triggerHapticFeedback(style: .heavy)
         
         Task {
             withAnimation(.spring()) {
@@ -513,7 +534,7 @@ struct ReviewView: View {
         
         analysisResults[currentIndex].boundingBox = newBox
         recalculateAllSpeeds()
-        triggerHapticFeedback()
+        triggerHapticFeedback(style: .medium)
     }
 
     private func removeBox() {
@@ -521,7 +542,7 @@ struct ReviewView: View {
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
         analysisResults[currentIndex].boundingBox = nil
         recalculateAllSpeeds()
-        triggerHapticFeedback()
+        triggerHapticFeedback(style: .medium)
     }
     
     private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0, pressCount: Int) {
@@ -576,7 +597,18 @@ struct ReviewView: View {
     }
 }
 
-// MARK: - Reusable View Styles
+// MARK: - Reusable View Styles & Components
+
+// --- ADDED: Reusable button style for glow effect ---
+struct GlowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .shadow(color: configuration.isPressed ? .accentColor.opacity(0.8) : .clear, radius: 5, x: 0, y: 0)
+            .scaleEffect(configuration.isPressed ? 1.1 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 struct SectionHeaderStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
@@ -590,7 +622,6 @@ extension View {
     func sectionHeaderStyle() -> some View { self.modifier(SectionHeaderStyle()) }
 }
 
-// MARK: - Onboarding Sheet Container
 private struct OnboardingSheetContainerView<Content: View>: View {
     @Environment(\.dismiss) var dismiss
     let content: Content
@@ -616,7 +647,6 @@ private struct OnboardingSheetContainerView<Content: View>: View {
     }
 }
 
-// MARK: - Helper Views for ReviewView
 private struct OverlayView: View {
     @Binding var analysis: FrameAnalysis
     let containerSize: CGSize
@@ -774,6 +804,7 @@ private struct ReviewResizeControls: View {
     }
 }
 
+// --- MODIFIED: Added haptics and glow effect ---
 private struct RepeatingFineTuneButton: View {
     let icon: String
     let action: (Int) -> Void
@@ -786,13 +817,18 @@ private struct RepeatingFineTuneButton: View {
         Button(action: {
             if !isPressing { self.action(0) }
         }) {
-            Image(systemName: icon).font(.title3).frame(width: 50, height: 36).padding(4)
+            Image(systemName: icon)
+                .font(.title3)
+                .frame(width: 50, height: 36)
+                .padding(4)
                 .background(isPressing ? Color.gray.opacity(0.5) : Color.gray.opacity(0.2))
                 .cornerRadius(8)
+                .shadow(color: isPressing ? .accentColor.opacity(0.7) : .clear, radius: 4)
         }
         .onLongPressGesture(minimumDuration: 0.2, pressing: { pressing in
             self.isPressing = pressing
             if pressing {
+                triggerHapticFeedback(style: .medium)
                 self.startTimer()
             } else {
                 self.stopTimer()
@@ -808,6 +844,7 @@ private struct RepeatingFineTuneButton: View {
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
             self.action(pressCount)
             pressCount += 1
+            triggerHapticFeedback(style: .light)
         }
     }
     
@@ -815,5 +852,10 @@ private struct RepeatingFineTuneButton: View {
         timer?.invalidate()
         timer = nil
         pressCount = 0
+    }
+    
+    private func triggerHapticFeedback(style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.impactOccurred()
     }
 }
