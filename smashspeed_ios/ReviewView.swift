@@ -23,6 +23,7 @@ struct ReviewView: View {
     @State private var showTuningControls = false
     @State private var showInterpolationInfo = false
     @State private var showManualInfo = false
+    @State private var showSpeedInfoAlert = false // Added state for the new alert
     @State private var showInterpolationFeedback = false
     
     // State for the undo/redo history stacks.
@@ -158,6 +159,12 @@ struct ReviewView: View {
         } message: {
             Text("Use these controls to fix errors made by the AI. You can add a box if the AI missed the shuttle, remove a box if the detection is wrong, or nudge/resize an existing box for better accuracy.")
         }
+        // --- ADDED: Alert for explaining speed calculation ---
+        .alert("How is Speed Calculated?", isPresented: $showSpeedInfoAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Speed is calculated using the distance the shuttlecock travels between frames, combined with the video's frame rate (fps).\n\n1. The AI tracks the shuttle's center point in pixels.\n2. The distance moved (in pixels) is multiplied by the frame rate to get pixels/second.\n3. A scale factor (meters/pixel), determined from the court's known dimensions, converts this to meters/second.\n4. The result is converted to km/h.")
+        }
     }
     
     // MARK: - View Components
@@ -276,7 +283,18 @@ struct ReviewView: View {
             
             VStack(spacing: 15) {
                 VStack {
-                    Text("Speed at this frame:").font(.caption).foregroundStyle(.secondary)
+                    // --- MODIFIED: Added info button for speed calculation ---
+                    HStack(spacing: 4) {
+                        Text("Speed at this frame:")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button { showSpeedInfoAlert = true } label: {
+                            Image(systemName: "info.circle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    
                     if let speed = currentFrameData?.speedKPH {
                         Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
                     } else {
@@ -285,7 +303,6 @@ struct ReviewView: View {
                 }
                 
                 HStack {
-                    // --- MODIFIED: Added haptic feedback ---
                     Button(action: {
                         goToPreviousFrame()
                         triggerHapticFeedback(style: .medium)
@@ -415,7 +432,6 @@ struct ReviewView: View {
         return analysisResults[currentIndex]
     }
     
-    // --- MODIFIED: Added haptic style parameter ---
     private func triggerHapticFeedback(style: UIImpactFeedbackGenerator.FeedbackStyle) {
         let generator = UIImpactFeedbackGenerator(style: style)
         generator.impactOccurred()
@@ -599,7 +615,6 @@ struct ReviewView: View {
 
 // MARK: - Reusable View Styles & Components
 
-// --- ADDED: Reusable button style for glow effect ---
 struct GlowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -804,7 +819,6 @@ private struct ReviewResizeControls: View {
     }
 }
 
-// --- MODIFIED: Added haptics and glow effect ---
 private struct RepeatingFineTuneButton: View {
     let icon: String
     let action: (Int) -> Void
