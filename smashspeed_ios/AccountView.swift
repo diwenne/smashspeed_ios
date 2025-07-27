@@ -4,11 +4,6 @@ import Combine
 import CryptoKit
 import AuthenticationServices
 
-// MARK: - App Settings Enums
-enum AppearanceMode: String, CaseIterable, Identifiable {
-    case system = "System", light = "Light", dark = "Dark"
-    var id: Self { self }
-}
 
 // MARK: - Account Tab Main View
 struct AccountView: View {
@@ -45,7 +40,6 @@ struct AccountView: View {
                     } label: { Image(systemName: "gearshape.fill").font(.title3).foregroundColor(.secondary) }
                 }
             }
-            .preferredColorScheme(appearanceMode == .light ? .light : (appearanceMode == .dark ? .dark : nil))
         }
     }
 }
@@ -89,6 +83,24 @@ struct LoggedInView: View {
                     Button { showOnboarding = true } label: { Label("View Tutorial", systemImage: "questionmark.circle.fill") }
                 }.glassPanelStyle()
 
+                // --- ❗️ NEWLY ADDED SECTION ---
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("Community & Support").font(.title2.bold()).padding(.bottom, 5)
+
+                    if let url = URL(string: "https://smashspeed.ca") {
+                        Link(destination: url) { Label("Official Website", systemImage: "globe") }
+                    }
+                    Divider()
+                    if let url = URL(string: "https://instagram.com/smashspeedai") {
+                        Link(destination: url) { Label("Follow on Instagram", systemImage: "camera.fill") }
+                    }
+                    Divider()
+                    if let url = URL(string: "mailto:smashspeedai@gmail.com") {
+                        Link(destination: url) { Label("Contact Support", systemImage: "envelope.fill") }
+                    }
+                }
+                .glassPanelStyle()
+                
                 // --- Account Actions ---
                 VStack(alignment: .leading, spacing: 15) {
                     Text("Account Actions").font(.title2.bold()).padding(.bottom, 5)

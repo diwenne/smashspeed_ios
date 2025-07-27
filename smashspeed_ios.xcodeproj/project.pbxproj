@@ -15,6 +15,7 @@
 		4E15708D2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 4E15708C2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion */; };
 		4E1570912E1736C200DAAE03 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4E1570902E1736C200DAAE03 /* FirebaseFirestore */; };
 		4E1570A12E17493300DAAE03 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 4E1570A02E17493300DAAE03 /* FirebaseStorage */; };
+		4E6A779F2E35C08F00DC469C /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 4E6A779E2E35C08F00DC469C /* FirebaseRemoteConfig */; };
 		4EA4AEEE2E20D0940051BBB5 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4EA4AEEC2E20D08E0051BBB5 /* .gitignore */; };
 /* End PBXBuildFile section */
 
@@ -89,6 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E6A779F2E35C08F00DC469C /* FirebaseRemoteConfig in Frameworks */,
 				4E15707F2E17210F00DAAE03 /* FirebaseAuth in Frameworks */,
 				4E15708D2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				4E15708B2E172AF500DAAE03 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
@@ -174,6 +176,7 @@
 				4E15708C2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion */,
 				4E1570902E1736C200DAAE03 /* FirebaseFirestore */,
 				4E1570A02E17493300DAAE03 /* FirebaseStorage */,
+				4E6A779E2E35C08F00DC469C /* FirebaseRemoteConfig */,
 			);
 			productName = smashspeed_ios;
 			productReference = 4E439D672E106B1C0034BCBB /* smashspeed_ios.app */;
@@ -461,7 +464,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -482,7 +485,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -498,7 +501,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -519,7 +522,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -688,6 +691,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4E15707C2E17201500DAAE03 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		4E6A779E2E35C08F00DC469C /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E15707C2E17201500DAAE03 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
