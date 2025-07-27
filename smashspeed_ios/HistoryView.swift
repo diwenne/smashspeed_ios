@@ -267,7 +267,6 @@ struct ResultDetailView: View {
     @StateObject private var viewModel: ResultDetailViewModel
     private let result: DetectionResult
 
-    // 1. State to hold the generated image for sharing
     @State private var shareableImage: UIImage?
 
     init(result: DetectionResult) {
@@ -275,10 +274,8 @@ struct ResultDetailView: View {
         _viewModel = StateObject(wrappedValue: ResultDetailViewModel(result: result))
     }
 
-    // MARK: - Body
     var body: some View {
         ZStack {
-            // Aurora background theme
             Color(.systemBackground).ignoresSafeArea()
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: 150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: -150, y: 250)
@@ -293,23 +290,17 @@ struct ResultDetailView: View {
         }
         .navigationTitle("Smash Details")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            viewModel.player.play()
-        }
+        .onAppear { viewModel.player.play() }
         .onDisappear {
             viewModel.player.pause()
             viewModel.stopObserving()
         }
-        // 2. Sheet to present the share preview when an image is ready
         .sheet(item: $shareableImage) { image in
             SharePreviewView(image: image)
         }
     }
 
-    // MARK: - Helper Views
-    
     private var videoPlayerSection: some View {
-        // ... (This section remains unchanged)
         GeometryReader { geometry in
             ZStack {
                 Color.black
@@ -336,20 +327,46 @@ struct ResultDetailView: View {
     }
     
     private var detailsSection: some View {
-        // 3. Wrap the panel in a ZStack to overlay the button
         ZStack {
-            // The existing panel content
             VStack(spacing: 15) {
-                Text("Live Speed")
+                Text("Peak Speed")
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
-                Text(String(format: "%.1f km/h", viewModel.currentSpeed))
+                Text(String(format: "%.1f km/h", result.peakSpeedKph))
                     .font(.system(size: 60, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
                 
                 Divider()
                 
+                if let angle = result.angle {
+                    HStack {
+                        Text("Smash Angle:")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(String(format: "%.0f° downward", angle))
+                            .font(.callout)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.horizontal)
+                }
+
+                HStack {
+                    Text("Live Speed:")
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(String(format: "%.1f km/h", viewModel.currentSpeed))
+                        .font(.callout)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                }
+                .padding(.horizontal)
+
+                Divider()
+
                 Text("Frame Data")
                     .font(.headline)
                     .foregroundColor(.secondary)
@@ -378,7 +395,6 @@ struct ResultDetailView: View {
             .background(GlassPanel())
             .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
             
-            // 4. The new Share Button, aligned to the top-right corner
             VStack {
                 HStack {
                     Spacer()
@@ -387,7 +403,6 @@ struct ResultDetailView: View {
                     }
                     .font(.title3)
                     .padding(10)
-//                    .background(.ultraThinMaterial)
                     .clipShape(Circle())
                 }
                 Spacer()
@@ -395,13 +410,10 @@ struct ResultDetailView: View {
             .padding([.top, .trailing], 12)
         }
     }
-
-    // MARK: - Functions
     
-    /// Renders the ShareableView to an image and triggers the share sheet.
     @MainActor
     private func renderImageForSharing() {
-        let shareView = ShareableView(speed: result.peakSpeedKph) // Use the peak speed for sharing
+        let shareView = ShareableView(speed: result.peakSpeedKph)
         self.shareableImage = shareView.snapshot()
     }
 }
@@ -442,12 +454,13 @@ class HistoryViewModel: ObservableObject {
         detectionResults = []
     }
     
-    static func saveResult(peakSpeedKph: Double, for userID: String, videoURL: String, frameData: [FrameData]) throws {
+    static func saveResult(peakSpeedKph: Double, angle: Double?, for userID: String, videoURL: String, frameData: [FrameData]) throws {
         let db = Firestore.firestore()
         let result = DetectionResult(
             userID: userID,
             date: Timestamp(date: Date()),
             peakSpeedKph: peakSpeedKph,
+            angle: angle,
             videoURL: videoURL,
             frameData: frameData
         )
@@ -472,3 +485,4 @@ class HistoryViewModel: ObservableObject {
         }
     }
 }
+

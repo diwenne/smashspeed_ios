@@ -107,8 +107,9 @@ struct DetectView: View {
                 case .processing:
                     ProcessingView { viewModel.cancelProcessing() }
                     
-                case .completed(let speed):
-                    ResultView(speed: speed, onReset: viewModel.reset)
+                case .completed(let speed, let angle):
+                    ResultView(speed: speed, angle: angle, onReset: viewModel.reset)
+                    
                 case .error(let message):
                     ErrorView(message: message, onReset: viewModel.reset)
                 }
@@ -143,8 +144,7 @@ struct TrimmingView: View {
     @State private var endTime: Double = 0.0
     @State private var isExporting = false
     
-    // --- ADDED: State for validation ---
-    @State private var frameRate: Float = 30.0 // Default, will be updated
+    @State private var frameRate: Float = 30.0
     @State private var showTooLongAlert = false
 
     init(videoURL: URL, onComplete: @escaping (URL) -> Void, onCancel: @escaping () -> Void) {
@@ -214,7 +214,6 @@ struct TrimmingView: View {
                             .buttonStyle(.bordered)
                             .controlSize(.large)
                         
-                        // --- MODIFIED: Button now calls validation function ---
                         Button("Confirm Trim") {
                             validateAndProceed()
                         }
@@ -226,7 +225,6 @@ struct TrimmingView: View {
                 }
                 .padding(.top, 40)
                 .onAppear(perform: loadVideoDetails)
-                // --- ADDED: Alert for validation ---
                 .alert("Clip Too Long", isPresented: $showTooLongAlert) {
                     Button("OK", role: .cancel) { }
                 } message: {
@@ -237,18 +235,15 @@ struct TrimmingView: View {
         }
     }
     
-    // --- MODIFIED: Now loads frame rate as well ---
     private func loadVideoDetails() {
         Task {
             let asset = AVURLAsset(url: videoURL)
             do {
-                // Load duration
                 let duration = try await asset.load(.duration)
                 let durationInSeconds = CMTimeGetSeconds(duration)
                 self.videoDuration = durationInSeconds
                 self.endTime = durationInSeconds
                 
-                // Load frame rate
                 guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else { return }
                 self.frameRate = try await videoTrack.load(.nominalFrameRate)
                 
@@ -259,7 +254,6 @@ struct TrimmingView: View {
         }
     }
     
-    // --- ADDED: New function to validate before trimming ---
     private func validateAndProceed() {
         let selectedDuration = endTime - startTime
         let maxDurationAllowed = 0.8
@@ -372,7 +366,8 @@ private struct RangeSliderView: View {
     }
 }
 
-// MARK: - Video Orientation Helper
+// MARK: - Video Orientation & Angle Calculation Helpers
+
 private func isVideoLandscape(url: URL) async -> Bool {
     let asset = AVAsset(url: url)
     guard let tracks = try? await asset.load(.tracks) else { return false }
@@ -381,6 +376,50 @@ private func isVideoLandscape(url: URL) async -> Bool {
     guard let transform = try? await videoTrack.load(.preferredTransform) else { return size.width >= size.height }
     let sizeWithTransform = size.applying(transform)
     return abs(sizeWithTransform.width) >= abs(sizeWithTransform.height)
+}
+
+private func calculateSmashAngle(from frames: [FrameAnalysis]) -> Double? {
+    let relevantPoints = frames.compactMap { frame -> CGPoint? in
+        guard frame.boundingBox != nil, let point = frame.trackedPoint else { return nil }
+        return point
+    }
+
+    guard relevantPoints.count > 1 else { return nil }
+
+    var maxSequenceLength = 0
+    var bestStartIndex = -1
+    var currentStartIndex = 0
+    
+    for i in 0..<(relevantPoints.count - 1) {
+        if relevantPoints[i+1].y > relevantPoints[i].y {
+        } else {
+            let currentSequenceLength = i - currentStartIndex + 1
+            if currentSequenceLength > maxSequenceLength {
+                maxSequenceLength = currentSequenceLength
+                bestStartIndex = currentStartIndex
+            }
+            currentStartIndex = i + 1
+        }
+    }
+
+    let lastSequenceLength = relevantPoints.count - currentStartIndex
+    if lastSequenceLength > maxSequenceLength {
+        maxSequenceLength = lastSequenceLength
+        bestStartIndex = currentStartIndex
+    }
+
+    guard bestStartIndex != -1, maxSequenceLength > 1 else { return nil }
+
+    let startPoint = relevantPoints[bestStartIndex]
+    let endPoint = relevantPoints[bestStartIndex + maxSequenceLength - 1]
+
+    let deltaY = endPoint.y - startPoint.y
+    let deltaX = endPoint.x - startPoint.x
+    
+    let angleInRadians = atan2(deltaY, deltaX)
+    let angleInDegrees = angleInRadians * 180 / .pi
+    
+    return abs(angleInDegrees)
 }
 
 
@@ -468,23 +507,58 @@ struct ErrorView: View {
 }
 
 // MARK: - Result View & Sharing Components
+
+// --- MODIFIED: ResultView layout is updated for vertical centering ---
 struct ResultView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
     let speed: Double
+    let angle: Double?
     let onReset: () -> Void
     @State private var shareableImage: UIImage?
     var body: some View {
         NavigationStack {
-            VStack(spacing: 30) {
-                VStack(spacing: 20) {
-                    Text("Maximum Speed").font(.title).foregroundColor(.secondary)
-                    Text(String(format: "%.1f", speed)).font(.system(size: 80, weight: .bold, design: .rounded)).foregroundColor(.accentColor)
-                    Text("km/h").font(.title2).foregroundColor(.secondary)
-                    if viewModel.authState != .signedIn {
-                        NavigationLink(destination: AccountView()) { Text("Want to save your result? Sign In") }.padding(.top, 10)
+            VStack(spacing: 20) {
+                Spacer() // Pushes content down from the top
+                
+                VStack(spacing: 15) {
+                    Text("Maximum Speed")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                    
+                    Text(String(format: "%.1f", speed))
+                        .font(.system(size: 80, weight: .bold, design: .rounded))
+                        .foregroundColor(.accentColor)
+                    
+                    Text("km/h")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                        .offset(y: -10)
+
+                    if let angle = angle {
+                        Divider().padding(.horizontal)
+                        HStack {
+                            Text("Smash Angle:")
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(String(format: "%.0f° downward", angle))
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                        }
+                        .padding(.horizontal)
                     }
                 }
-                .padding(40).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                .padding(30)
+                .background(GlassPanel())
+                .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                
+                if viewModel.authState != .signedIn {
+                    NavigationLink(destination: AccountView()) { Text("Want to save your result? Sign In") }.padding(.top, 10)
+                }
+                
+                Spacer() // Pushes the button to the bottom
+                
                 Button(action: onReset) { Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle") }
                 .buttonStyle(.bordered).controlSize(.large)
             }
@@ -540,11 +614,15 @@ struct ShareableView: View {
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 150).offset(x: 120, y: 150)
             VStack(spacing: 16) {
                 AppLogoView().scaleEffect(0.95).padding(.top, 20)
+                
                 VStack(spacing: 2) {
                     Text(String(format: "%.1f", speed)).font(.system(size: 80, weight: .heavy, design: .rounded)).foregroundColor(.accentColor)
                     Text("km/h").font(.title2).fontWeight(.medium).foregroundColor(.secondary)
                 }
-                .padding(22).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .padding(22)
+                .background(GlassPanel())
+                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+
                 VStack(spacing: 2) {
                     Text("How fast do you smash?").font(.headline).fontWeight(.semibold)
                     Text("Download Smashspeed to find out!").font(.subheadline).fontWeight(.regular).foregroundStyle(.secondary)

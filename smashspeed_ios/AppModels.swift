@@ -67,6 +67,7 @@ struct DetectionResult: Identifiable, Codable, Hashable {
     let userID: String
     let date: Timestamp
     let peakSpeedKph: Double
+    var angle: Double?
     var videoURL: String?
     var frameData: [FrameData]?
     

@@ -8,18 +8,19 @@
 import Foundation
 import SwiftUI
 import Combine
+import CoreGraphics // <-- ADDED: Needed for CGPoint
 
 @MainActor
 class SmashSpeedViewModel: ObservableObject {
     
-    // ✅ IMPROVED: The .processing state now holds a Progress object for the UI to observe.
+    // --- MODIFIED: The .completed state now holds both speed and angle. ---
     enum AppState {
         case idle
         case trimming(URL)
         case awaitingCalibration(URL)
         case processing(Progress)
         case review(videoURL: URL, result: VideoAnalysisResult)
-        case completed(Double)
+        case completed(speed: Double, angle: Double?)
         case error(String)
     }
     
@@ -40,7 +41,6 @@ class SmashSpeedViewModel: ObservableObject {
     }
 
     func startProcessing(videoURL: URL, scaleFactor: Double) {
-        // ✅ IMPROVED: Create a Progress object to track the analysis.
         let progress = Progress(totalUnitCount: 100)
         appState = .processing(progress)
         
@@ -53,11 +53,9 @@ class SmashSpeedViewModel: ObservableObject {
                 
                 let tracker = KalmanTracker(scaleFactor: scaleFactor)
                 self.videoProcessor = VideoProcessor(videoURL: videoURL, modelHandler: modelHandler, tracker: tracker)
-                
-                // ✅ FIXED: Corrected the `if let` syntax and the progress handler logic.
+
                 if let processor = self.videoProcessor {
                     if let result = try await processor.processVideo(progressHandler: { newProgress in
-                        // Update the main progress object so the UI can see changes.
                         progress.completedUnitCount = newProgress.completedUnitCount
                         progress.totalUnitCount = newProgress.totalUnitCount
                     }) {
@@ -75,14 +73,16 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
+    // --- MODIFIED: This function now calculates the angle and passes it to the completed state. ---
     func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL) {
         let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         
-        // ✅ FIXED: Use `compactMap` to safely unwrap the optional boundingBox
-        // and filter out frames that don't have a detection.
+        // Calculate the angle using the helper function.
+        let angle = self.calculateSmashAngle(from: editedFrames)
+        
         let frameDataToSave = editedFrames.compactMap { frame -> FrameData? in
             guard let validBox = frame.boundingBox else {
-                return nil // This will filter out this frame.
+                return nil
             }
             return FrameData(
                 timestamp: frame.timestamp,
@@ -92,7 +92,6 @@ class SmashSpeedViewModel: ObservableObject {
         }
         
         if let userID = userID {
-            // Use a simple state here; no need for a progress object for a quick upload.
             appState = .processing(Progress())
             
             Task {
@@ -101,24 +100,71 @@ class SmashSpeedViewModel: ObservableObject {
                     
                     try HistoryViewModel.saveResult(
                         peakSpeedKph: maxSpeed,
+                        angle: angle, // This now works
                         for: userID,
                         videoURL: downloadURL.absoluteString,
                         frameData: frameDataToSave
                     )
                     
-                    appState = .completed(maxSpeed)
+                    appState = .completed(speed: maxSpeed, angle: angle)
                 } catch {
                     let errorMessage = "Failed to upload video. Please try again.\nError: \(error.localizedDescription)"
                     appState = .error(errorMessage)
                 }
             }
         } else {
-            appState = .completed(maxSpeed)
+            appState = .completed(speed: maxSpeed, angle: angle)
         }
     }
 
     func reset() {
         videoProcessor = nil
         appState = .idle
+    }
+    
+    // --- ADDED: The angle calculation function now lives in the ViewModel. ---
+    private func calculateSmashAngle(from frames: [FrameAnalysis]) -> Double? {
+        let relevantPoints = frames.compactMap { frame -> CGPoint? in
+            guard frame.boundingBox != nil, let point = frame.trackedPoint else { return nil }
+            return point
+        }
+
+        guard relevantPoints.count > 1 else { return nil }
+
+        var maxSequenceLength = 0
+        var bestStartIndex = -1
+        var currentStartIndex = 0
+        
+        for i in 0..<(relevantPoints.count - 1) {
+            if relevantPoints[i+1].y > relevantPoints[i].y {
+                // The sequence continues downwards.
+            } else {
+                let currentSequenceLength = i - currentStartIndex + 1
+                if currentSequenceLength > maxSequenceLength {
+                    maxSequenceLength = currentSequenceLength
+                    bestStartIndex = currentStartIndex
+                }
+                currentStartIndex = i + 1
+            }
+        }
+
+        let lastSequenceLength = relevantPoints.count - currentStartIndex
+        if lastSequenceLength > maxSequenceLength {
+            maxSequenceLength = lastSequenceLength
+            bestStartIndex = currentStartIndex
+        }
+
+        guard bestStartIndex != -1, maxSequenceLength > 1 else { return nil }
+
+        let startPoint = relevantPoints[bestStartIndex]
+        let endPoint = relevantPoints[bestStartIndex + maxSequenceLength - 1]
+
+        let deltaY = endPoint.y - startPoint.y
+        let deltaX = endPoint.x - startPoint.x
+        
+        let angleInRadians = atan2(deltaY, deltaX)
+        let angleInDegrees = angleInRadians * 180 / .pi
+        
+        return abs(angleInDegrees)
     }
 }
