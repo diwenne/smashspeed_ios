@@ -165,6 +165,12 @@ class SmashSpeedViewModel: ObservableObject {
         let angleInRadians = atan2(deltaY, deltaX)
         let angleInDegrees = angleInRadians * 180 / .pi
         
-        return abs(angleInDegrees)
+        var finalAngle = abs(angleInDegrees)
+        
+        if finalAngle > 90 {
+            finalAngle = 180 - finalAngle
+        }
+        
+        return finalAngle
     }
 }

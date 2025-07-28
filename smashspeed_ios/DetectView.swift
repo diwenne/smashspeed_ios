@@ -366,7 +366,7 @@ private struct RangeSliderView: View {
     }
 }
 
-// MARK: - Video Orientation & Angle Calculation Helpers
+// MARK: - Video Orientation 
 
 private func isVideoLandscape(url: URL) async -> Bool {
     let asset = AVAsset(url: url)
@@ -378,97 +378,6 @@ private func isVideoLandscape(url: URL) async -> Bool {
     return abs(sizeWithTransform.width) >= abs(sizeWithTransform.height)
 }
 
-private func calculateSmashAngle(from frames: [FrameAnalysis]) -> Double? {
-    #if DEBUG
-    print("📐 Calculating smash angle...")
-    #endif
-
-    // 1. Filter frames to get only those with a bounding box and valid data.
-    let relevantFrames = frames.filter { $0.boundingBox != nil && $0.trackedPoint != nil && $0.speedKPH != nil }
-
-    #if DEBUG
-    print("   - Found \(relevantFrames.count) frames with valid detections.")
-    #endif
-
-    guard relevantFrames.count > 1 else {
-        #if DEBUG
-        print("   - Not enough valid frames to calculate angle. Aborting.")
-        #endif
-        return nil
-    }
-
-    // 2. Find all continuous downward trajectory segments.
-    var segments: [[FrameAnalysis]] = []
-    var currentSegment: [FrameAnalysis] = []
-
-    for i in 0..<(relevantFrames.count - 1) {
-        if currentSegment.isEmpty {
-            currentSegment.append(relevantFrames[i])
-        }
-
-        // Check if the shuttle is moving downwards
-        if let currentPoint = relevantFrames[i].trackedPoint, let nextPoint = relevantFrames[i+1].trackedPoint, nextPoint.y > currentPoint.y {
-            currentSegment.append(relevantFrames[i+1])
-        } else {
-            // Downward sequence broken or ended, save the segment if it's valid
-            if currentSegment.count > 1 {
-                segments.append(currentSegment)
-            }
-            currentSegment = [] // Reset for the next potential segment
-        }
-    }
-    // Add the last segment if it's valid
-    if currentSegment.count > 1 {
-        segments.append(currentSegment)
-    }
-
-    #if DEBUG
-    print("   - Found \(segments.count) downward trajectory segments.")
-    #endif
-
-    // 3. Filter segments by a speed threshold.
-    let speedThreshold: Double = 100.0 // Only consider trajectories faster than 100 km/h
-    let fastSegments = segments.filter { segment in
-        let speeds = segment.compactMap { $0.speedKPH }
-        let averageSpeed = speeds.reduce(0, +) / Double(speeds.count)
-        #if DEBUG
-        print(String(format: "     - Segment with %d frames, avg speed: %.1f km/h", segment.count, averageSpeed))
-        #endif
-        return averageSpeed >= speedThreshold
-    }
-
-    #if DEBUG
-    print("   - Found \(fastSegments.count) segments that meet the speed threshold of \(speedThreshold) km/h.")
-    #endif
-
-    // 4. From the fast segments, find the one with the most frames.
-    guard let longestFastSegment = fastSegments.max(by: { $0.count < $1.count }) else {
-        #if DEBUG
-        print("   - No downward segment met the speed threshold. No angle calculated.")
-        #endif
-        return nil
-    }
-
-    // 5. Calculate the angle from the start and end points of the chosen segment.
-    guard let startPoint = longestFastSegment.first?.trackedPoint, let endPoint = longestFastSegment.last?.trackedPoint else { return nil }
-
-    #if DEBUG
-    print("   - Chosen segment has \(longestFastSegment.count) frames. Calculating angle...")
-    #endif
-
-    let deltaY = endPoint.y - startPoint.y
-    let deltaX = endPoint.x - startPoint.x
-    
-    let angleInRadians = atan2(deltaY, deltaX)
-    let angleInDegrees = angleInRadians * 180 / .pi
-    
-    let finalAngle = abs(angleInDegrees)
-    #if DEBUG
-    print(String(format: "   - ✅ Final Angle Calculated: %.1f degrees", finalAngle))
-    #endif
-
-    return finalAngle
-}
 
 
 // MARK: - Subviews for DetectView (Main, InputSource, Processing, Error)
@@ -580,7 +489,6 @@ struct ResultView: View {
                         .foregroundColor(.secondary)
                         .offset(y: -10)
 
-                    // --- MODIFIED: Shows a message if angle is not calculated ---
                     if let angle = angle {
                         Divider().padding(.horizontal)
                         HStack {
