@@ -379,39 +379,82 @@ private func isVideoLandscape(url: URL) async -> Bool {
 }
 
 private func calculateSmashAngle(from frames: [FrameAnalysis]) -> Double? {
-    let relevantPoints = frames.compactMap { frame -> CGPoint? in
-        guard frame.boundingBox != nil, let point = frame.trackedPoint else { return nil }
-        return point
+    #if DEBUG
+    print("📐 Calculating smash angle...")
+    #endif
+
+    // 1. Filter frames to get only those with a bounding box and valid data.
+    let relevantFrames = frames.filter { $0.boundingBox != nil && $0.trackedPoint != nil && $0.speedKPH != nil }
+
+    #if DEBUG
+    print("   - Found \(relevantFrames.count) frames with valid detections.")
+    #endif
+
+    guard relevantFrames.count > 1 else {
+        #if DEBUG
+        print("   - Not enough valid frames to calculate angle. Aborting.")
+        #endif
+        return nil
     }
 
-    guard relevantPoints.count > 1 else { return nil }
+    // 2. Find all continuous downward trajectory segments.
+    var segments: [[FrameAnalysis]] = []
+    var currentSegment: [FrameAnalysis] = []
 
-    var maxSequenceLength = 0
-    var bestStartIndex = -1
-    var currentStartIndex = 0
-    
-    for i in 0..<(relevantPoints.count - 1) {
-        if relevantPoints[i+1].y > relevantPoints[i].y {
+    for i in 0..<(relevantFrames.count - 1) {
+        if currentSegment.isEmpty {
+            currentSegment.append(relevantFrames[i])
+        }
+
+        // Check if the shuttle is moving downwards
+        if let currentPoint = relevantFrames[i].trackedPoint, let nextPoint = relevantFrames[i+1].trackedPoint, nextPoint.y > currentPoint.y {
+            currentSegment.append(relevantFrames[i+1])
         } else {
-            let currentSequenceLength = i - currentStartIndex + 1
-            if currentSequenceLength > maxSequenceLength {
-                maxSequenceLength = currentSequenceLength
-                bestStartIndex = currentStartIndex
+            // Downward sequence broken or ended, save the segment if it's valid
+            if currentSegment.count > 1 {
+                segments.append(currentSegment)
             }
-            currentStartIndex = i + 1
+            currentSegment = [] // Reset for the next potential segment
         }
     }
-
-    let lastSequenceLength = relevantPoints.count - currentStartIndex
-    if lastSequenceLength > maxSequenceLength {
-        maxSequenceLength = lastSequenceLength
-        bestStartIndex = currentStartIndex
+    // Add the last segment if it's valid
+    if currentSegment.count > 1 {
+        segments.append(currentSegment)
     }
 
-    guard bestStartIndex != -1, maxSequenceLength > 1 else { return nil }
+    #if DEBUG
+    print("   - Found \(segments.count) downward trajectory segments.")
+    #endif
 
-    let startPoint = relevantPoints[bestStartIndex]
-    let endPoint = relevantPoints[bestStartIndex + maxSequenceLength - 1]
+    // 3. Filter segments by a speed threshold.
+    let speedThreshold: Double = 100.0 // Only consider trajectories faster than 100 km/h
+    let fastSegments = segments.filter { segment in
+        let speeds = segment.compactMap { $0.speedKPH }
+        let averageSpeed = speeds.reduce(0, +) / Double(speeds.count)
+        #if DEBUG
+        print(String(format: "     - Segment with %d frames, avg speed: %.1f km/h", segment.count, averageSpeed))
+        #endif
+        return averageSpeed >= speedThreshold
+    }
+
+    #if DEBUG
+    print("   - Found \(fastSegments.count) segments that meet the speed threshold of \(speedThreshold) km/h.")
+    #endif
+
+    // 4. From the fast segments, find the one with the most frames.
+    guard let longestFastSegment = fastSegments.max(by: { $0.count < $1.count }) else {
+        #if DEBUG
+        print("   - No downward segment met the speed threshold. No angle calculated.")
+        #endif
+        return nil
+    }
+
+    // 5. Calculate the angle from the start and end points of the chosen segment.
+    guard let startPoint = longestFastSegment.first?.trackedPoint, let endPoint = longestFastSegment.last?.trackedPoint else { return nil }
+
+    #if DEBUG
+    print("   - Chosen segment has \(longestFastSegment.count) frames. Calculating angle...")
+    #endif
 
     let deltaY = endPoint.y - startPoint.y
     let deltaX = endPoint.x - startPoint.x
@@ -419,7 +462,12 @@ private func calculateSmashAngle(from frames: [FrameAnalysis]) -> Double? {
     let angleInRadians = atan2(deltaY, deltaX)
     let angleInDegrees = angleInRadians * 180 / .pi
     
-    return abs(angleInDegrees)
+    let finalAngle = abs(angleInDegrees)
+    #if DEBUG
+    print(String(format: "   - ✅ Final Angle Calculated: %.1f degrees", finalAngle))
+    #endif
+
+    return finalAngle
 }
 
 
@@ -507,8 +555,6 @@ struct ErrorView: View {
 }
 
 // MARK: - Result View & Sharing Components
-
-// --- MODIFIED: ResultView layout is updated for vertical centering ---
 struct ResultView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
     let speed: Double
@@ -518,7 +564,7 @@ struct ResultView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Spacer() // Pushes content down from the top
+                Spacer()
                 
                 VStack(spacing: 15) {
                     Text("Maximum Speed")
@@ -534,6 +580,7 @@ struct ResultView: View {
                         .foregroundColor(.secondary)
                         .offset(y: -10)
 
+                    // --- MODIFIED: Shows a message if angle is not calculated ---
                     if let angle = angle {
                         Divider().padding(.horizontal)
                         HStack {
@@ -547,6 +594,19 @@ struct ResultView: View {
                                 .foregroundColor(.primary)
                         }
                         .padding(.horizontal)
+                    } else {
+                        Divider().padding(.horizontal)
+                        VStack(spacing: 5) {
+                            Text("Angle Not Calculated")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                            Text("Smash faster than 100 km/h to unlock angle analysis.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                        .padding(.vertical, 5)
                     }
                 }
                 .padding(30)
@@ -557,7 +617,7 @@ struct ResultView: View {
                     NavigationLink(destination: AccountView()) { Text("Want to save your result? Sign In") }.padding(.top, 10)
                 }
                 
-                Spacer() // Pushes the button to the bottom
+                Spacer()
                 
                 Button(action: onReset) { Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle") }
                 .buttonStyle(.bordered).controlSize(.large)
