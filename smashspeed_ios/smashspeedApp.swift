@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import GoogleSignIn // Added for Google Sign-In
 
 // This class is used to configure Firebase when the app starts.
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -32,7 +33,7 @@ struct smashspeed_iosApp: App {
     
   @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     
-  // ❗️ IMPORTANT: Replace this with your actual App Store ID
+
   private let appStoreID = "6748543435"
   private var appStoreURL: URL {
       URL(string: "https://apps.apple.com/app/id\(appStoreID)")!
@@ -41,6 +42,10 @@ struct smashspeed_iosApp: App {
   var body: some Scene {
     WindowGroup {
         ContentView()
+            // Added for Google Sign-In. This handles the redirect URL.
+            .onOpenURL { url in
+                GIDSignIn.sharedInstance.handle(url)
+            }
             .alert("Update Required", isPresented: $versionChecker.needsForceUpdate) {
                 // This button takes the user directly to the App Store.
                 // Because it's the only button, the user must tap it.

@@ -10,6 +10,8 @@ import FirebaseAuth
 import Combine
 import FirebaseStorage
 import AuthenticationServices
+import GoogleSignIn
+import CryptoKit // Import CryptoKit for SHA256
 
 @MainActor
 class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationControllerDelegate {
@@ -22,6 +24,8 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
     @Published var authState: AuthState = .unknown
     @Published var user: User?
     @Published var errorMessage: String?
+    @Published var infoMessage: String?
+
     private var authStateHandle: AuthStateDidChangeListenerHandle?
     private var currentNonce: String?
 
@@ -40,6 +44,7 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
 
     func signIn(email: String, password: String) {
         errorMessage = nil
+        infoMessage = nil
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] _, error in
             self?.errorMessage = error?.localizedDescription
         }
@@ -47,10 +52,13 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
 
     func signUp(email: String, password: String) {
         errorMessage = nil
+        infoMessage = nil
         Auth.auth().createUser(withEmail: email, password: password) { [weak self] _, error in
             self?.errorMessage = error?.localizedDescription
         }
     }
+    
+    // MARK: - Apple Sign-In
     
     func signInWithApple() {
         let nonce = UUID().uuidString
@@ -72,11 +80,11 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
                 fatalError("Invalid state: A login callback was received, but no login request was sent.")
             }
             guard let appleIDToken = appleIDCredential.identityToken else {
-                print("Unable to fetch identity token")
+                errorMessage = "Unable to fetch identity token from Apple."
                 return
             }
             guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
-                print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+                errorMessage = "Unable to serialize Apple token string."
                 return
             }
 
@@ -87,9 +95,7 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
             Auth.auth().signIn(with: credential) { [weak self] (authResult, error) in
                 if let error = error {
                     self?.errorMessage = error.localizedDescription
-                    return
                 }
-                // User is signed in
             }
         }
     }
@@ -98,29 +104,62 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
         errorMessage = error.localizedDescription
     }
 
+    // MARK: - Google Sign-In
+    
+    func signInWithGoogle() {
+        errorMessage = nil
+        infoMessage = nil
+        
+        guard let presentingViewController = UIApplication.shared.topViewController() else {
+            errorMessage = "Could not find a view controller to present from."
+            return
+        }
+
+        GIDSignIn.sharedInstance.signIn(withPresenting: presentingViewController) { [weak self] signInResult, error in
+            guard let self = self else { return }
+            guard error == nil else {
+                self.errorMessage = error?.localizedDescription
+                return
+            }
+            guard let user = signInResult?.user,
+                  let idToken = user.idToken?.tokenString else {
+                self.errorMessage = "Could not retrieve Google ID token."
+                return
+            }
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken,
+                                                             accessToken: user.accessToken.tokenString)
+            
+            Auth.auth().signIn(with: credential) { authResult, error in
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    // MARK: - Account Management
 
     func signOut() {
+        GIDSignIn.sharedInstance.signOut()
         self.authState = .signedOut
         try? Auth.auth().signOut()
     }
 
-
     func deleteAccount() {
         Auth.auth().currentUser?.delete { error in
             if let error = error {
-                // Handle the error (e.g., user needs to re-authenticate)
                 self.errorMessage = error.localizedDescription
                 print("Error deleting account: \(error.localizedDescription)")
             } else {
-                // The account was deleted successfully. The authState will update automatically.
                 print("Account successfully deleted.")
             }
         }
     }
-
-    @Published var infoMessage: String?
     
     func sendPasswordReset(for email: String) {
+        errorMessage = nil
+        infoMessage = nil
         Auth.auth().sendPasswordReset(withEmail: email) { error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -136,7 +175,6 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
         Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
             DispatchQueue.main.async {
                 if let error = error {
-                    // Handle errors, like needing a recent sign-in
                     completion(false, error.localizedDescription)
                 } else {
                     completion(true, "Password successfully updated!")
@@ -144,6 +182,31 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
             }
         }
     }
-
 }
 
+// Helper extension to find the top view controller.
+extension UIApplication {
+    func topViewController() -> UIViewController? {
+        let keyWindow = connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .compactMap({ $0 as? UIWindowScene })
+            .first?.windows
+            .filter({ $0.isKeyWindow }).first
+        
+        var topController = keyWindow?.rootViewController
+        while let presentedViewController = topController?.presentedViewController {
+            topController = presentedViewController
+        }
+        return topController
+    }
+}
+
+// --- ADDED BACK TO FIX ERROR ---
+// This extension provides the SHA256 hashing function required for Apple Sign-In's nonce.
+extension String {
+    func sha256() -> String {
+        let inputData = Data(self.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        return hashedData.compactMap { String(format: "%02x", $0) }.joined()
+    }
+}

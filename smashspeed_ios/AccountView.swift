@@ -4,7 +4,6 @@ import Combine
 import CryptoKit
 import AuthenticationServices
 
-
 // MARK: - Account Tab Main View
 struct AccountView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
@@ -55,6 +54,7 @@ struct LoggedInView: View {
     @State private var showOnboarding = false
     @State private var showDeleteAlert = false
     @State private var showChangePasswordSheet = false
+    @State private var showSignOutAlert = false // State for sign-out alert
     
     private var memberSince: String { user.metadata.creationDate?.formatted(date: .long, time: .omitted) ?? "N/A" }
     
@@ -83,30 +83,22 @@ struct LoggedInView: View {
                     Button { showOnboarding = true } label: { Label("View Tutorial", systemImage: "questionmark.circle.fill") }
                 }.glassPanelStyle()
 
-                // --- ❗️ NEWLY ADDED SECTION ---
+                // --- Community & Support ---
                 VStack(alignment: .leading, spacing: 15) {
                     Text("Community & Support").font(.title2.bold()).padding(.bottom, 5)
-
-                    if let url = URL(string: "https://smashspeed.ca") {
-                        Link(destination: url) { Label("Official Website", systemImage: "globe") }
-                    }
+                    if let url = URL(string: "https://smashspeed.ca") { Link(destination: url) { Label("Official Website", systemImage: "globe") } }
                     Divider()
-                    if let url = URL(string: "https://instagram.com/smashspeedai") {
-                        Link(destination: url) { Label("Follow on Instagram", systemImage: "camera.fill") }
-                    }
+                    if let url = URL(string: "https://instagram.com/smashspeedai") { Link(destination: url) { Label("Follow on Instagram", systemImage: "camera.fill") } }
                     Divider()
-                    if let url = URL(string: "mailto:smashspeedai@gmail.com") {
-                        Link(destination: url) { Label("Contact Support", systemImage: "envelope.fill") }
-                    }
-                }
-                .glassPanelStyle()
+                    if let url = URL(string: "mailto:smashspeedai@gmail.com") { Link(destination: url) { Label("Contact Support", systemImage: "envelope.fill") } }
+                }.glassPanelStyle()
                 
                 // --- Account Actions ---
                 VStack(alignment: .leading, spacing: 15) {
                     Text("Account Actions").font(.title2.bold()).padding(.bottom, 5)
                     Button("Change Password", action: { showChangePasswordSheet = true })
                     Divider()
-                    Button("Sign Out", role: .destructive, action: signOutAction)
+                    Button("Sign Out", role: .destructive, action: { showSignOutAlert = true }) // Triggers alert
                     Divider()
                     Button("Delete Account", role: .destructive, action: { showDeleteAlert = true })
                 }.glassPanelStyle()
@@ -119,6 +111,10 @@ struct LoggedInView: View {
             Button("Delete", role: .destructive, action: deleteAccountAction)
             Button("Cancel", role: .cancel) {}
         } message: { Text("Are you sure you want to delete your account? This action is permanent and cannot be undone.") }
+        .alert("Are you sure you want to sign out?", isPresented: $showSignOutAlert) {
+            Button("Sign Out", role: .destructive, action: signOutAction)
+            Button("Cancel", role: .cancel) {}
+        }
     }
 }
 
@@ -139,26 +135,17 @@ struct ChangePasswordView: View {
             VStack(spacing: 20) {
                 ModernTextField(title: "New Password", text: $newPassword, isSecure: true)
                 ModernTextField(title: "Confirm New Password", text: $confirmPassword, isSecure: true)
-                
-                if let feedbackMessage = feedbackMessage {
-                    Text(feedbackMessage).font(.caption).foregroundColor(isSuccess ? .green : .red).multilineTextAlignment(.center)
-                }
-
+                if let feedbackMessage = feedbackMessage { Text(feedbackMessage).font(.caption).foregroundColor(isSuccess ? .green : .red).multilineTextAlignment(.center) }
                 Button("Update Password") {
                     guard newPassword == confirmPassword else {
-                        isSuccess = false
-                        feedbackMessage = "Passwords do not match."
+                        isSuccess = false; feedbackMessage = "Passwords do not match."
                         return
                     }
                     viewModel.updatePassword(to: newPassword) { success, message in
-                        self.isSuccess = success
-                        self.feedbackMessage = message
-                        if success {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { dismiss() }
-                        }
+                        self.isSuccess = success; self.feedbackMessage = message
+                        if success { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { dismiss() } }
                     }
-                }
-                .buttonStyle(.borderedProminent).controlSize(.large).disabled(!canSubmit)
+                }.buttonStyle(.borderedProminent).controlSize(.large).disabled(!canSubmit)
                 Spacer()
             }
             .padding(30)
@@ -180,28 +167,25 @@ extension View {
 struct AuthView: View {
     @State private var isSigningUp = false
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 20) {
             VStack {
                 ZStack {
                     SignInForm(isSigningUp: $isSigningUp).offset(x: isSigningUp ? -UIScreen.main.bounds.width : 0).opacity(isSigningUp ? 0 : 1)
                     CreateAccountForm(isSigningUp: $isSigningUp).offset(x: isSigningUp ? 0 : UIScreen.main.bounds.width).opacity(isSigningUp ? 1 : 0)
                 }.animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSigningUp)
             }
-            .padding(30)
-            .background(GlassPanel())
-            .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+            .padding(30).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
             
             Text("Sign in to access more features, customize settings, and track your progress over time.")
-                .font(.headline)
+                .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
+                .padding(.horizontal, 25)
+                .fixedSize(horizontal: false, vertical: true)
+
             Spacer()
-        }
-        .padding()
-        .padding(.top, 40)
+        }.padding().padding(.top, 40)
     }
 }
 
@@ -212,18 +196,35 @@ struct SignInForm: View {
     @State private var password = ""
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 15) {
             Text("Sign In").font(.title2).fontWeight(.bold)
             ModernTextField(title: "Email", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress)
             ModernTextField(title: "Password", text: $password, isSecure: true).textContentType(.password)
+            
             HStack {
                 Spacer()
                 Button("Forgot Password?") { viewModel.sendPasswordReset(for: email) }.font(.footnote)
-            }.padding(.bottom, -10)
+            }.padding(.bottom, -5)
+            
             if let error = viewModel.errorMessage { Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center)
             } else if let info = viewModel.infoMessage { Text(info).font(.caption).foregroundColor(.green).multilineTextAlignment(.center) }
+            
             Button { viewModel.signIn(email: email, password: password) } label: { Text("Sign In").fontWeight(.bold).frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent).controlSize(.large)
-            SignInWithAppleButton().frame(height: 50).onTapGesture { viewModel.signInWithApple() }
+
+            HStack {
+                VStack { Divider() }
+                Text("Or").font(.footnote).foregroundColor(.secondary)
+                VStack { Divider() }
+            }.padding(.vertical, 5)
+
+            SignInWithAppleButton()
+                .frame(height: 50)
+                .onTapGesture { viewModel.signInWithApple() }
+
+            SignInWithGoogleButtonView(action: {
+                viewModel.signInWithGoogle()
+            })
+
             Button("Don't have an account? Sign Up") { isSigningUp = true }.font(.footnote).tint(.accentColor).padding(.top)
         }
         .onChange(of: email) { _ in viewModel.errorMessage = nil; viewModel.infoMessage = nil }
@@ -239,6 +240,7 @@ struct CreateAccountForm: View {
     @State private var confirmPassword = ""
     @State private var hasAcceptedTerms = false
     private var isFormValid: Bool { !email.isEmpty && !password.isEmpty && password == confirmPassword && hasAcceptedTerms }
+    
     var body: some View {
         VStack(spacing: 20) {
             Text("Create an Account").font(.title2).fontWeight(.bold)
@@ -254,11 +256,7 @@ struct CreateAccountForm: View {
                 guard password == confirmPassword else { viewModel.errorMessage = "Passwords do not match."; return }
                 viewModel.signUp(email: email, password: password)
             } label: { Text("Create Account").fontWeight(.bold).frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent).controlSize(.large).disabled(!isFormValid)
-            Button("Already have an account? Sign In") {
-                isSigningUp = false
-                viewModel.errorMessage = nil
-                viewModel.infoMessage = nil
-            }.font(.footnote).tint(.accentColor).padding(.top)
+            Button("Already have an account? Sign In") { isSigningUp = false; viewModel.errorMessage = nil; viewModel.infoMessage = nil }.font(.footnote).tint(.accentColor).padding(.top)
         }
         .onChange(of: email) { _ in viewModel.errorMessage = nil }
         .onChange(of: password) { _ in viewModel.errorMessage = nil }
@@ -278,21 +276,40 @@ struct ModernTextField: View {
                 if isSecure {
                     if isPasswordVisible { TextField(title, text: $text) } else { SecureField(title, text: $text) }
                 } else { TextField(title, text: $text) }
-                if isSecure {
-                    Button(action: { isPasswordVisible.toggle() }) { Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill").foregroundColor(.secondary) }.buttonStyle(.plain)
-                }
+                if isSecure { Button(action: { isPasswordVisible.toggle() }) { Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill").foregroundColor(.secondary) }.buttonStyle(.plain) }
             }
             Divider()
         }.autocapitalization(.none)
     }
 }
-extension String {
-    func sha256() -> String {
-        let inputData = Data(self.utf8); let hashedData = SHA256.hash(data: inputData)
-        return hashedData.compactMap { String(format: "%02x", $0) }.joined()
-    }
-}
+
 struct SignInWithAppleButton: UIViewRepresentable {
     func makeUIView(context: Context) -> ASAuthorizationAppleIDButton { ASAuthorizationAppleIDButton(type: .signIn, style: .black) }
     func updateUIView(_ uiView: ASAuthorizationAppleIDButton, context: Context) {}
+}
+
+struct SignInWithGoogleButtonView: View {
+    var action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image("google_logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+
+                Text("Sign in with Google")
+                    .font(.body.weight(.medium))
+                    .foregroundColor(Color.black.opacity(0.85))
+            }
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(Color.white)
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+            )
+        }
+    }
 }
