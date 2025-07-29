@@ -4,11 +4,7 @@
 //
 //  Created by Diwen Huang on 2025-07-05.
 //
-//  NOTE: This file assumes that the following types are defined elsewhere in your project:
-//  - struct DetectionResult, struct FrameData, struct BoundingBox
-//  - struct GlassPanel: View
-//  - struct ShareableView: View & extension View { func snapshot() -> UIImage? }
-//  - struct SharePreviewView: UIViewControllerRepresentable
+
 
 import SwiftUI
 import FirebaseFirestore
@@ -380,7 +376,8 @@ class ResultDetailViewModel: ObservableObject {
             self.originalAsset = AVAsset()
             self.player = AVPlayer()
         }
-        self.frameData = result.frameData ?? []
+        // Sort the frameData by timestamp to ensure it's in order for the table
+        self.frameData = result.frameData?.sorted { $0.timestamp < $1.timestamp } ?? []
         
         Task {
             await loadVideoSize()
@@ -401,7 +398,6 @@ class ResultDetailViewModel: ObservableObject {
             
             if let currentFrame = self.frameData.min(by: { abs($0.timestamp - currentTime) < abs($1.timestamp - currentTime) }) {
                 self.currentSpeed = currentFrame.speedKPH
-                // **FIXED**: Removed incorrect optional chaining '?'
                 self.currentBoundingBox = currentFrame.boundingBox.toCGRect()
             }
         }
@@ -435,6 +431,9 @@ struct ResultDetailView: View {
                 VStack(spacing: 20) {
                     videoPlayerSection
                     detailsSection
+                    
+                    // Add the new timestamp table section here
+                    timestampTableSection
                 }
                 .padding()
             }
@@ -446,7 +445,6 @@ struct ResultDetailView: View {
             viewModel.player.pause()
             viewModel.stopObserving()
         }
-        // **FIXED**: Correctly handles the unwrapped item from the sheet modifier.
         .sheet(item: $shareableImage) { image in
             SharePreviewView(image: image)
         }
@@ -480,7 +478,6 @@ struct ResultDetailView: View {
     
     private var detailsSection: some View {
          VStack(spacing: 15) {
-             // Re-added the full details section from your original code
              Text("Peak Speed")
                  .font(.headline)
                  .foregroundColor(.secondary)
@@ -514,6 +511,48 @@ struct ResultDetailView: View {
          .padding(20)
          .background(GlassPanel())
          .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+    }
+    
+    // New view for the timestamp data table
+    @ViewBuilder
+    private var timestampTableSection: some View {
+        if !viewModel.frameData.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Timestamp Data")
+                    .font(.headline)
+                    .padding([.horizontal, .top])
+                
+                // Table Header
+                HStack {
+                    Text("Time").fontWeight(.bold)
+                    Spacer()
+                    Text("Speed").fontWeight(.bold)
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+                
+                Divider().padding(.horizontal)
+                
+                // Table Rows
+                ForEach(viewModel.frameData, id: \.timestamp) { frame in
+                    HStack {
+                        Text(String(format: "%.2f s", frame.timestamp))
+                        Spacer()
+                        Text(String(format: "%.1f km/h", frame.speedKPH))
+                    }
+                    .font(.system(.body, design: .monospaced))
+                    .padding(.horizontal)
+                    
+                    Divider().padding(.horizontal)
+                }
+                .padding(.bottom, 5)
+                
+            }
+            .padding(.vertical, 10)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+        }
     }
 }
 
@@ -631,7 +670,6 @@ class HistoryViewModel: ObservableObject {
 }
 
 // MARK: - DateFormatter Extension
-// **FIXED**: Added a static DateFormatter to fix the '.abbreviated' error.
 extension Formatter {
     static let abbreviatedDate: DateFormatter = {
         let formatter = DateFormatter()
