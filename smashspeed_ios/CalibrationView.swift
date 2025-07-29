@@ -99,8 +99,19 @@ struct CalibrationView: View {
                             Text("Place one point on the front service line and the other on the doubles long service (flick) line.")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true) 
                         }
                         
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "cursorarrow.motionlines")
+                            .font(.subheadline)
+                            .foregroundColor(.accentColor)
+                            .padding(.top, 2)
+                        Text("Tip: Drag from the area around a point to avoid covering it with your finger.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                         Divider()
                     
                     VStack {
