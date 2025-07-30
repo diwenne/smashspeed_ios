@@ -17,9 +17,16 @@ class VersionChecker: ObservableObject {
         self.remoteConfig = RemoteConfig.remoteConfig()
         
         let settings = RemoteConfigSettings()
+        
         #if DEBUG
-        settings.minimumFetchInterval = 0
+            // For debug builds, fetch every time.
+            settings.minimumFetchInterval = 0
+        #else
+            // For release builds, fetch once per hour (3600 seconds).
+            // Use a reasonable interval for production.
+            settings.minimumFetchInterval = 3600
         #endif
+        
         self.remoteConfig.configSettings = settings
         
         self.remoteConfig.setDefaults(["minimum_required_version": "1.0.0" as NSObject])
