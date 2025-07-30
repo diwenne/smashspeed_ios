@@ -24,38 +24,39 @@ extension SmashSpeedViewModel.AppState: Equatable {
 struct DetectView: View {
     @StateObject private var viewModel = SmashSpeedViewModel()
     @EnvironmentObject var authViewModel: AuthenticationViewModel
-    
+
     @State private var selectedItem: PhotosPickerItem?
     @State private var showCamera = false
     @State private var recordedVideoURL: URL?
-    
+
     @State private var showInputSelector = false
-    
+    @State private var showRecordingGuide = false // Added state for the new guide
+
     @State private var showOnboarding = false
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(.systemBackground).ignoresSafeArea()
-                
+
                 Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
                 Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
 
                 switch viewModel.appState {
-                
+
                 case .idle:
-                    MainView(showInputSelector: $showInputSelector)
+                    MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide) // Pass binding
                         .onChange(of: selectedItem) {
                             Task {
                                 guard let item = selectedItem else { return }
                                 selectedItem = nil
-                                
+
                                 do {
                                     guard let videoFile = try await item.loadTransferable(type: VideoFile.self) else {
                                         viewModel.appState = .error("Could not load the selected video.")
                                         return
                                     }
-                                    
+
                                     let url = videoFile.url
                                     if await isVideoLandscape(url: url) {
                                         viewModel.videoSelected(url: url)
@@ -87,7 +88,7 @@ struct DetectView: View {
                                 }
                             }
                         }
-                
+
                 case .trimming(let videoURL):
                     TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
                         viewModel.videoTrimmed(url: trimmedURL)
@@ -103,13 +104,13 @@ struct DetectView: View {
                     CalibrationView(videoURL: url, onComplete: { scaleFactor in
                         viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
                     }, onCancel: { viewModel.cancelCalibration() })
-                
+
                 case .processing:
                     ProcessingView { viewModel.cancelProcessing() }
-                    
+
                 case .completed(let speed, let angle):
                     ResultView(speed: speed, angle: angle, onReset: viewModel.reset)
-                    
+
                 case .error(let message):
                     ErrorView(message: message, onReset: viewModel.reset)
                 }
@@ -124,6 +125,9 @@ struct DetectView: View {
             .presentationDetents([.height(260)])
             .background(ClearBackgroundView())
         }
+        .sheet(isPresented: $showRecordingGuide) { // Added sheet for the recording guide
+            RecordingGuideView()
+        }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker(videoURL: $recordedVideoURL)
                 .ignoresSafeArea()
@@ -132,18 +136,87 @@ struct DetectView: View {
     }
 }
 
+// MARK: - Recording Guide View
+struct RecordingGuideView: View {
+    @Environment(\.dismiss) var dismiss
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color(.systemBackground).ignoresSafeArea()
+                Circle().fill(Color.blue.opacity(0.8)).blur(radius: 120).offset(x: -120, y: -200)
+                Circle().fill(Color.blue.opacity(0.5)).blur(radius: 150).offset(x: 120, y: 150)
+
+                VStack(spacing: 20) {
+                    
+                    Spacer()
+                    
+                    Image("courtDiagram")
+                        .resizable()
+                        .scaledToFit()
+                        .shadow(radius: 5)
+                        .padding(.horizontal)
+
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("How to Record for Best Results")
+                            .font(.title3.bold())
+                            .padding(.bottom, 5)
+
+                        Label {
+                            Text("**Player A (Recorder):** Stand in the side tram lines.")
+                        } icon: {
+                            Image(systemName: "video.fill")
+                        }
+
+                        Label {
+                            Text("**Player B (Smasher):** Smash from the opposite half of the court.")
+                        } icon: {
+                            Image(systemName: "figure.badminton")
+                        }
+
+                        Label {
+                            Text("**Camera:** Use landscape mode with 0.5x zoom to keep the shuttle in frame.")
+                        } icon: {
+                            Image(systemName: "camera.viewfinder")
+                        }
+
+                        Label {
+                            Text("**Frame Rate:** 30 FPS, 60 FPS is ideal.")
+                        } icon: {
+                            Image(systemName: "film.stack")
+                        }
+                    }
+                    .padding(25)
+                    .background(GlassPanel())
+                    .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+
+                    Spacer()
+                }
+                .padding()
+            }
+            .navigationTitle("Recording Guide")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+
 // MARK: - Trimming View
 struct TrimmingView: View {
     let videoURL: URL
     let onComplete: (URL) -> Void
     let onCancel: () -> Void
-    
+
     @State private var player: AVPlayer
     @State private var videoDuration: Double = 0.0
     @State private var startTime: Double = 0.0
     @State private var endTime: Double = 0.0
     @State private var isExporting = false
-    
+
     @State private var frameRate: Float = 30.0
     @State private var showTooLongAlert = false
 
@@ -153,7 +226,7 @@ struct TrimmingView: View {
         self.onCancel = onCancel
         _player = State(initialValue: AVPlayer(url: videoURL))
     }
-    
+
     var body: some View {
         ZStack {
             if isExporting {
@@ -172,13 +245,13 @@ struct TrimmingView: View {
                 VStack(spacing: 20) {
                     Text("Trim to the Smash")
                         .font(.largeTitle.bold())
-                    
+
                     Text("Isolate the moment of impact. The final clip should be very short (~0.25 seconds), and the birdie should be clearly visible in each frame.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
-                    
+
                     VideoPlayer(player: player)
                         .frame(height: 300)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -194,7 +267,7 @@ struct TrimmingView: View {
                             player: player
                         )
                         .frame(height: 60)
-                        
+
                         HStack {
                             Text(String(format: "%.2fs", startTime))
                             Spacer()
@@ -206,14 +279,14 @@ struct TrimmingView: View {
                         .foregroundColor(.secondary)
                     }
                     .padding(.horizontal,30)
-                    
+
                     Spacer()
-                    
+
                     HStack {
                         Button("Cancel", role: .cancel, action: onCancel)
                             .buttonStyle(.bordered)
                             .controlSize(.large)
-                        
+
                         Button("Confirm Trim") {
                             validateAndProceed()
                         }
@@ -234,7 +307,7 @@ struct TrimmingView: View {
             }
         }
     }
-    
+
     private func loadVideoDetails() {
         Task {
             let asset = AVURLAsset(url: videoURL)
@@ -243,17 +316,17 @@ struct TrimmingView: View {
                 let durationInSeconds = CMTimeGetSeconds(duration)
                 self.videoDuration = durationInSeconds
                 self.endTime = durationInSeconds
-                
+
                 guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else { return }
                 self.frameRate = try await videoTrack.load(.nominalFrameRate)
-                
+
             } catch {
                 print("Error loading video details: \(error)")
                 onCancel()
             }
         }
     }
-    
+
     private func validateAndProceed() {
         let selectedDuration = endTime - startTime
         let maxDurationAllowed = 0.8
@@ -264,27 +337,27 @@ struct TrimmingView: View {
             trimVideo()
         }
     }
-    
+
     private func trimVideo() {
         player.pause()
         isExporting = true
-        
+
         let asset = AVURLAsset(url: videoURL)
         guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) else {
             isExporting = false; return
         }
-        
+
         let tempDirectory = FileManager.default.temporaryDirectory
         let outputURL = tempDirectory.appendingPathComponent(UUID().uuidString + ".mp4")
-        
+
         let startTime = CMTime(seconds: self.startTime, preferredTimescale: 600)
         let endTime = CMTime(seconds: self.endTime, preferredTimescale: 600)
         let timeRange = CMTimeRange(start: startTime, end: endTime)
-        
+
         exportSession.outputURL = outputURL
         exportSession.outputFileType = .mp4
         exportSession.timeRange = timeRange
-        
+
         exportSession.exportAsynchronously {
             DispatchQueue.main.async {
                 if exportSession.status == .completed, let url = exportSession.outputURL {
@@ -309,7 +382,7 @@ private struct RangeSliderView: View {
         GeometryReader { geometry in
             if videoDuration > 0 {
                 let totalWidth = geometry.size.width
-                
+
                 let startX = CGFloat(startTime / videoDuration) * totalWidth
                 let endX = CGFloat(endTime / videoDuration) * totalWidth
 
@@ -317,7 +390,7 @@ private struct RangeSliderView: View {
                     Capsule()
                         .fill(Color.secondary.opacity(0.3))
                         .frame(height: 8)
-                    
+
                     Capsule()
                         .fill(Color.accentColor)
                         .frame(width: max(0, endX - startX), height: 8)
@@ -334,7 +407,7 @@ private struct RangeSliderView: View {
                                     player.seek(to: CMTime(seconds: self.startTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
                                 }
                         )
-                    
+
                     HandleView()
                         .position(x: endX, y: geometry.size.height / 2)
                         .gesture(
@@ -352,7 +425,7 @@ private struct RangeSliderView: View {
             }
         }
     }
-    
+
     private struct HandleView: View {
         var body: some View {
             Circle()
@@ -366,7 +439,7 @@ private struct RangeSliderView: View {
     }
 }
 
-// MARK: - Video Orientation 
+// MARK: - Video Orientation
 
 private func isVideoLandscape(url: URL) async -> Bool {
     let asset = AVAsset(url: url)
@@ -383,6 +456,7 @@ private func isVideoLandscape(url: URL) async -> Bool {
 // MARK: - Subviews for DetectView (Main, InputSource, Processing, Error)
 struct MainView: View {
     @Binding var showInputSelector: Bool
+    @Binding var showRecordingGuide: Bool // Added binding
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -397,6 +471,15 @@ struct MainView: View {
                 }
             }.clipShape(Circle()).buttonStyle(ScaleAndOpacityButtonStyle())
             Text("Select a video to begin").font(.headline).fontWeight(.semibold).foregroundColor(.secondary).shadow(color: .black.opacity(0.1), radius: 1, y: 1)
+
+            // New Button for Recording Guide
+            Button(action: { showRecordingGuide = true }) {
+                Label("How to Record", systemImage: "questionmark.circle")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .padding(.top, 10)
+
             Spacer()
         }
     }
@@ -422,7 +505,7 @@ struct InputSourceSelectorView: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { showCamera = true }
                 } label: { Label("Record New Video", systemImage: "camera.fill").font(.headline).fontWeight(.semibold).frame(maxWidth: .infinity) }
                 .controlSize(.large).buttonStyle(.borderedProminent)
-                
+
                 PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
                     Label("Choose from Library", systemImage: "photo.on.rectangle.angled").font(.headline).fontWeight(.semibold).frame(maxWidth: .infinity)
                 }.controlSize(.large).buttonStyle(.bordered).onChange(of: selectedItem) { isPresented = false }
@@ -474,16 +557,16 @@ struct ResultView: View {
         NavigationStack {
             VStack(spacing: 20) {
                 Spacer()
-                
+
                 VStack(spacing: 15) {
                     Text("Maximum Speed")
                         .font(.title)
                         .foregroundColor(.secondary)
-                    
+
                     Text(String(format: "%.1f", speed))
                         .font(.system(size: 80, weight: .bold, design: .rounded))
                         .foregroundColor(.accentColor)
-                    
+
                     Text("km/h")
                         .font(.title2)
                         .foregroundColor(.secondary)
@@ -520,13 +603,13 @@ struct ResultView: View {
                 .padding(30)
                 .background(GlassPanel())
                 .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
-                
+
                 if viewModel.authState != .signedIn {
                     NavigationLink(destination: AccountView()) { Text("Want to save your result? Sign In") }.padding(.top, 10)
                 }
-                
+
                 Spacer()
-                
+
                 Button(action: onReset) { Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle") }
                 .buttonStyle(.bordered).controlSize(.large)
             }
@@ -541,7 +624,7 @@ struct ResultView: View {
             }
         }
     }
-    
+
     @MainActor
     private func renderImageForSharing() {
         let shareView = ShareableView(speed: self.speed)
@@ -582,7 +665,7 @@ struct ShareableView: View {
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 150).offset(x: 120, y: 150)
             VStack(spacing: 16) {
                 AppLogoView().scaleEffect(0.95).padding(.top, 20)
-                
+
                 VStack(spacing: 2) {
                     Text(String(format: "%.1f", speed)).font(.system(size: 80, weight: .heavy, design: .rounded)).foregroundColor(.accentColor)
                     Text("km/h").font(.title2).fontWeight(.medium).foregroundColor(.secondary)
