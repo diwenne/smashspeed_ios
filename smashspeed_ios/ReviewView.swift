@@ -580,10 +580,28 @@ struct ReviewView: View {
         let moveSensitivity: CGFloat = 0.002 * multiplier
         let resizeSensitivity: CGFloat = 0.005 * multiplier
         
-        box.origin.x = max(0, min(box.origin.x + (dx * moveSensitivity / scale), 1.0 - box.size.width))
-        box.origin.y = max(0, min(box.origin.y + (dy * moveSensitivity / scale), 1.0 - box.size.height))
-        box.size.width = max(0.01, box.size.width + (dw * resizeSensitivity / scale))
-        box.size.height = max(0.01, box.size.height + (dh * resizeSensitivity / scale))
+        // Calculate the total change in size
+        let widthChange = dw * resizeSensitivity / scale
+        let heightChange = dh * resizeSensitivity / scale
+        
+        // Calculate the new size, ensuring it's not smaller than a minimum value
+        let newWidth = max(0.01, box.size.width + widthChange)
+        let newHeight = max(0.01, box.size.height + heightChange)
+        
+        // Calculate the adjustment needed for the origin to keep the box centered
+        // This moves the origin by half the amount the size changed, in the opposite direction.
+        let originXAdjustment = (box.size.width - newWidth) / 2
+        let originYAdjustment = (box.size.height - newHeight) / 2
+        
+        // Calculate the total change for the origin (movement + resize adjustment)
+        let finalOriginX = box.origin.x + (dx * moveSensitivity / scale) + originXAdjustment
+        let finalOriginY = box.origin.y + (dy * moveSensitivity / scale) + originYAdjustment
+
+        // Apply the new values, clamped within the valid 0.0 to 1.0 range
+        box.origin.x = max(0, min(finalOriginX, 1.0 - newWidth))
+        box.origin.y = max(0, min(finalOriginY, 1.0 - newHeight))
+        box.size.width = newWidth
+        box.size.height = newHeight
         
         analysisResults[currentIndex].boundingBox = box
         recalculateAllSpeeds()

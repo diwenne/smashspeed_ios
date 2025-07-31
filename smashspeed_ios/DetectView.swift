@@ -148,6 +148,12 @@ struct RecordingGuideView: View {
 
                 VStack(spacing: 20) {
                     
+                    Text("For a video tutorial, visit smashspeed.ca")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 5)
+
+                    
                     Spacer()
                     
                     Image("courtDiagram")
@@ -163,24 +169,28 @@ struct RecordingGuideView: View {
 
                         Label {
                             Text("**Player A (Recorder):** Stand in the side tram lines.")
+                                .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "video.fill")
                         }
 
                         Label {
                             Text("**Player B (Smasher):** Smash from the opposite half of the court.")
+                                .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "figure.badminton")
                         }
 
                         Label {
                             Text("**Camera:** Use landscape mode with 0.5x zoom to keep the shuttle in frame.")
+                                .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "camera.viewfinder")
                         }
 
                         Label {
-                            Text("**Frame Rate:** 30 FPS, 60 FPS is ideal.")
+                            Text("**Frame Rate:** 30 FPS is fine, 60 FPS is better.")
+                                .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "film.stack")
                         }
@@ -188,6 +198,7 @@ struct RecordingGuideView: View {
                     .padding(25)
                     .background(GlassPanel())
                     .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
+                    .multilineTextAlignment(.leading)
 
                     Spacer()
                 }
