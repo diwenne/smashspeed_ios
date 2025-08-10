@@ -23,9 +23,13 @@ struct ReviewView: View {
     @State private var showTuningControls = false
     @State private var showInterpolationInfo = false
     @State private var showManualInfo = false
-    @State private var showSpeedInfoAlert = false // Added state for the new alert
+    @State private var showSpeedInfoAlert = false
     @State private var showInterpolationFeedback = false
-    
+
+    // <<-- MODIFIED: State logic adapted for the new guidance banner
+    @AppStorage("didShowInitialReviewGuidance") private var didShowInitialReviewGuidance: Bool = false
+    @State private var showInitialGuidance: Bool = false
+
     // State for the undo/redo history stacks.
     @State private var undoStack: [[FrameAnalysis]] = []
     @State private var redoStack: [[FrameAnalysis]] = []
@@ -95,6 +99,7 @@ struct ReviewView: View {
 
     var body: some View {
         ZStack {
+            // Main Content Layer
             Color(.systemBackground).ignoresSafeArea()
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
@@ -123,6 +128,23 @@ struct ReviewView: View {
                 }
                 .frame(maxHeight: .infinity)
             }
+            
+            // <<-- MODIFIED: Overlay layer for the new guidance banner
+            VStack {
+                Spacer()
+                if showInitialGuidance {
+                    InitialGuidanceView(
+                        dismissAction: {
+                            withAnimation(.spring()) { showInitialGuidance = false }
+                        },
+                        dontShowAgainAction: {
+                            didShowInitialReviewGuidance = true
+                            withAnimation(.spring()) { showInitialGuidance = false }
+                        }
+                    )
+                }
+            }
+            .animation(.spring(), value: showInitialGuidance)
         }
         .task(id: currentIndex) {
             await MainActor.run {
@@ -132,6 +154,19 @@ struct ReviewView: View {
         }
         .onAppear {
             recalculateAllSpeeds()
+            if !didShowInitialReviewGuidance {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                    showInitialGuidance = true
+                }
+            }
+        }
+        // <<-- ADDED: Automatically dismisses the banner on interaction
+        .onChange(of: currentIndex) { _ in
+            if showInitialGuidance {
+                withAnimation(.spring()) {
+                    showInitialGuidance = false
+                }
+            }
         }
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
@@ -159,7 +194,6 @@ struct ReviewView: View {
         } message: {
             Text("Use these controls to fix errors made by the AI. You can add a box if the AI missed the shuttle, remove a box if the detection is wrong, or nudge/resize an existing box for better accuracy.")
         }
-        // --- ADDED: Alert for explaining speed calculation ---
         .alert("How is Speed Calculated?", isPresented: $showSpeedInfoAlert) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -283,7 +317,6 @@ struct ReviewView: View {
             
             VStack(spacing: 15) {
                 VStack {
-                    // --- MODIFIED: Added info button for speed calculation ---
                     HStack(spacing: 4) {
                         Text("Speed at this frame:")
                             .font(.caption)
@@ -580,24 +613,18 @@ struct ReviewView: View {
         let moveSensitivity: CGFloat = 0.002 * multiplier
         let resizeSensitivity: CGFloat = 0.005 * multiplier
         
-        // Calculate the total change in size
         let widthChange = dw * resizeSensitivity / scale
         let heightChange = dh * resizeSensitivity / scale
         
-        // Calculate the new size, ensuring it's not smaller than a minimum value
         let newWidth = max(0.01, box.size.width + widthChange)
         let newHeight = max(0.01, box.size.height + heightChange)
         
-        // Calculate the adjustment needed for the origin to keep the box centered
-        // This moves the origin by half the amount the size changed, in the opposite direction.
         let originXAdjustment = (box.size.width - newWidth) / 2
         let originYAdjustment = (box.size.height - newHeight) / 2
         
-        // Calculate the total change for the origin (movement + resize adjustment)
         let finalOriginX = box.origin.x + (dx * moveSensitivity / scale) + originXAdjustment
         let finalOriginY = box.origin.y + (dy * moveSensitivity / scale) + originYAdjustment
 
-        // Apply the new values, clamped within the valid 0.0 to 1.0 range
         box.origin.x = max(0, min(finalOriginX, 1.0 - newWidth))
         box.origin.y = max(0, min(finalOriginY, 1.0 - newHeight))
         box.size.width = newWidth
@@ -632,6 +659,47 @@ struct ReviewView: View {
 }
 
 // MARK: - Reusable View Styles & Components
+
+// <<-- ADDED: New guidance banner view
+private struct InitialGuidanceView: View {
+    let dismissAction: () -> Void
+    let dontShowAgainAction: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .font(.title3)
+                    .foregroundColor(.yellow)
+                Text("Tip: Check All Frames")
+                    .fontWeight(.bold)
+                Spacer()
+                Button(action: dismissAction) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.gray, Color(uiColor: .systemGray4))
+                        .font(.title2)
+                }
+            }
+            Text("Use the slider to review the detection on each frame. Adjust boxes as needed for best accuracy.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            Button("Don't show this again") {
+                dontShowAgainAction()
+            }
+            .font(.caption)
+            .foregroundColor(.gray)
+            .padding(.top, 4)
+        }
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+}
+
 
 struct GlowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
