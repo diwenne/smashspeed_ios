@@ -623,6 +623,7 @@ struct ResultView: View {
 
                 Button(action: onReset) { Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle") }
                 .buttonStyle(.bordered).controlSize(.large)
+                
             }
             .padding()
             .toolbar {
