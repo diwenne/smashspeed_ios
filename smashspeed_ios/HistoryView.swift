@@ -414,6 +414,8 @@ class ResultDetailViewModel: ObservableObject {
 struct ResultDetailView: View {
     @StateObject private var viewModel: ResultDetailViewModel
     private let result: DetectionResult
+
+    // NEW: State variable to hold the rendered image for sharing.
     @State private var shareableImage: UIImage?
 
     init(result: DetectionResult) {
@@ -431,8 +433,6 @@ struct ResultDetailView: View {
                 VStack(spacing: 20) {
                     videoPlayerSection
                     detailsSection
-                    
-                    // Add the new timestamp table section here
                     timestampTableSection
                 }
                 .padding()
@@ -445,6 +445,7 @@ struct ResultDetailView: View {
             viewModel.player.pause()
             viewModel.stopObserving()
         }
+        // NEW: Add the sheet modifier to present the SharePreviewView.
         .sheet(item: $shareableImage) { image in
             SharePreviewView(image: image)
         }
@@ -455,7 +456,7 @@ struct ResultDetailView: View {
             ZStack {
                 Color.black
                 VideoPlayer(player: viewModel.player)
-            
+
                 if let box = viewModel.currentBoundingBox, viewModel.videoSize != .zero {
                     let videoFrame = AVMakeRect(aspectRatio: viewModel.videoSize, insideRect: geometry.frame(in: .local))
                     let viewRect = CGRect(
@@ -475,45 +476,63 @@ struct ResultDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
         .shadow(color: .black.opacity(0.2), radius: 10)
     }
-    
+
     private var detailsSection: some View {
-         VStack(spacing: 15) {
-             Text("Peak Speed")
-                 .font(.headline)
-                 .foregroundColor(.secondary)
-         
-             Text(String(format: "%.1f km/h", result.peakSpeedKph))
-                 .font(.system(size: 60, weight: .bold, design: .rounded))
-                 .foregroundColor(.primary)
-         
-             Divider()
-             
-             if let angle = result.angle {
+        // UPDATED: Wrap the section content in a ZStack to overlay the button.
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 15) {
+                 Text("Peak Speed")
+                     .font(.headline)
+                     .foregroundColor(.secondary)
+
+                 Text(String(format: "%.1f km/h", result.peakSpeedKph))
+                     .font(.system(size: 60, weight: .bold, design: .rounded))
+                     .foregroundColor(.primary)
+
+                 Divider()
+
+                 if let angle = result.angle {
+                     HStack {
+                         Text("Smash Angle:")
+                             .font(.callout).foregroundColor(.secondary)
+                         Spacer()
+                         Text(String(format: "%.0f° downward", angle))
+                             .font(.callout).fontWeight(.semibold)
+                     }
+                     .padding(.horizontal)
+                 }
+
                  HStack {
-                     Text("Smash Angle:")
+                     Text("Live Speed:")
                          .font(.callout).foregroundColor(.secondary)
                      Spacer()
-                     Text(String(format: "%.0f° downward", angle))
+                     Text(String(format: "%.1f km/h", viewModel.currentSpeed))
                          .font(.callout).fontWeight(.semibold)
                  }
                  .padding(.horizontal)
              }
+             .padding(20)
+             .background(GlassPanel())
+             .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
 
-             HStack {
-                 Text("Live Speed:")
-                     .font(.callout).foregroundColor(.secondary)
-                 Spacer()
-                 Text(String(format: "%.1f km/h", viewModel.currentSpeed))
-                     .font(.callout).fontWeight(.semibold)
-             }
-             .padding(.horizontal)
-         }
-         .padding(20)
-         .background(GlassPanel())
-         .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+            // NEW: The share button itself.
+            Button(action: renderImageForSharing) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.title2)
+                    .padding(20)
+                    .contentShape(Rectangle())
+            }
+            .tint(.blue)
+        }
     }
-    
-    // New view for the timestamp data table
+
+    // NEW: Function to render the ShareableView into an image.
+    @MainActor
+    private func renderImageForSharing() {
+        let shareView = ShareableView(speed: result.peakSpeedKph, angle: result.angle)
+        self.shareableImage = shareView.snapshot()
+    }
+
     @ViewBuilder
     private var timestampTableSection: some View {
         if !viewModel.frameData.isEmpty {
@@ -521,7 +540,7 @@ struct ResultDetailView: View {
                 Text("Timestamp Data")
                     .font(.headline)
                     .padding([.horizontal, .top])
-                
+
                 // Table Header
                 HStack {
                     Text("Time").fontWeight(.bold)
@@ -531,9 +550,9 @@ struct ResultDetailView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
-                
+
                 Divider().padding(.horizontal)
-                
+
                 // Table Rows
                 ForEach(viewModel.frameData, id: \.timestamp) { frame in
                     HStack {
@@ -543,11 +562,11 @@ struct ResultDetailView: View {
                     }
                     .font(.system(.body, design: .monospaced))
                     .padding(.horizontal)
-                    
+
                     Divider().padding(.horizontal)
                 }
                 .padding(.bottom, 5)
-                
+
             }
             .padding(.vertical, 10)
             .background(GlassPanel())
@@ -555,7 +574,6 @@ struct ResultDetailView: View {
         }
     }
 }
-
 // MARK: - History View Model
 @MainActor
 class HistoryViewModel: ObservableObject {
