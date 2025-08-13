@@ -9,16 +9,17 @@ struct ReviewView: View {
     let videoURL: URL
     let initialResult: VideoAnalysisResult
     let onFinish: ([FrameAnalysis]) -> Void
-    
+    let onRecalibrate: () -> Void
+
     enum EditMode { case move, resize }
-    
+
     @Environment(\.requestReview) var requestReview
-    
+
     @State private var analysisResults: [FrameAnalysis]
     @State private var currentIndex = 0
     @State private var currentFrameImage: UIImage?
     @State private var editMode: EditMode = .move
-    
+
     @State private var showInfoSheet: Bool = false
     @State private var showTuningControls = false
     @State private var showInterpolationInfo = false
@@ -26,29 +27,27 @@ struct ReviewView: View {
     @State private var showSpeedInfoAlert = false
     @State private var showInterpolationFeedback = false
 
-    // <<-- MODIFIED: State logic adapted for the new guidance banner
     @AppStorage("didShowInitialReviewGuidance") private var didShowInitialReviewGuidance: Bool = false
     @State private var showInitialGuidance: Bool = false
 
-    // State for the undo/redo history stacks.
     @State private var undoStack: [[FrameAnalysis]] = []
     @State private var redoStack: [[FrameAnalysis]] = []
-    
-    // State for Pan and Zoom
+
     @State private var scale: CGFloat = 1.0
     @GestureState private var magnifyBy: CGFloat = 1.0
     @State private var committedOffset: CGSize = .zero
     @GestureState private var dragOffset: CGSize = .zero
-    
+
     @State private var viewportSize: CGSize = .zero
-    
+
     private let imageGenerator: AVAssetImageGenerator
-    
-    init(videoURL: URL, initialResult: VideoAnalysisResult, onFinish: @escaping ([FrameAnalysis]) -> Void) {
+
+    init(videoURL: URL, initialResult: VideoAnalysisResult, onFinish: @escaping ([FrameAnalysis]) -> Void, onRecalibrate: @escaping () -> Void) {
         self.videoURL = videoURL
         self.initialResult = initialResult
         self._analysisResults = State(initialValue: initialResult.frameData)
         self.onFinish = onFinish
+        self.onRecalibrate = onRecalibrate
         
         let asset = AVURLAsset(url: videoURL)
         self.imageGenerator = AVAssetImageGenerator(asset: asset)
@@ -56,16 +55,15 @@ struct ReviewView: View {
         self.imageGenerator.requestedTimeToleranceBefore = .zero
         self.imageGenerator.requestedTimeToleranceAfter = .zero
     }
-    
+
     // MARK: - Computed Properties
-    
+
     private var frameIndexBinding: Binding<Double> {
         Binding<Double>(
             get: { Double(self.currentIndex) },
             set: {
                 let oldValue = self.currentIndex
                 let newValue = Int($0)
-                // Only trigger haptic if the index actually changes
                 if oldValue != newValue {
                     self.currentIndex = newValue
                     triggerHapticFeedback(style: .light)
@@ -73,7 +71,7 @@ struct ReviewView: View {
             }
         )
     }
-    
+
     private var currentOffset: CGSize {
         return CGSize(width: committedOffset.width + dragOffset.width, height: committedOffset.height + dragOffset.height)
     }
@@ -99,37 +97,53 @@ struct ReviewView: View {
 
     var body: some View {
         ZStack {
-            // Main Content Layer
             Color(.systemBackground).ignoresSafeArea()
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
 
+            // The main container that holds all screen elements
             VStack(spacing: 0) {
                 topBar
                 frameDisplay
                 interpolationSection
-                
+
+                // The main controls are now in their own scroll view
                 ScrollView {
                     VStack(spacing: 25) {
                         frameNavigationControls
                         if showTuningControls {
                             manualAdjustmentControls
                         }
-                        Button("Finish & Save Analysis") {
-                            onFinish(analysisResults)
-                            requestReview()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .frame(maxWidth: .infinity)
-                        .disabled(analysisResults.isEmpty)
+                        // MODIFIED: The "Finish" and "Recalibrate" buttons have been
+                        // permanently moved out of this ScrollView.
                     }
                     .padding()
                 }
                 .frame(maxHeight: .infinity)
+
+                // MODIFIED: A persistent bottom bar for primary actions.
+                // This VStack is outside the ScrollView, so it will always be visible.
+                VStack(spacing: 12) {
+                    Button("Finish & Save Analysis") {
+                        onFinish(analysisResults)
+                        requestReview()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+                    .disabled(analysisResults.isEmpty)
+
+                    Button(action: onRecalibrate) {
+                        Label("Recalibrate Distance", systemImage: "ruler.fill")
+                    }
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+                    .padding(.bottom, 5)
+                }
+                .padding([.horizontal, .top])
+                .background(.ultraThinMaterial)
             }
-            
-            // <<-- MODIFIED: Overlay layer for the new guidance banner
+
             VStack {
                 Spacer()
                 if showInitialGuidance {
@@ -160,7 +174,6 @@ struct ReviewView: View {
                 }
             }
         }
-        // <<-- ADDED: Automatically dismisses the banner on interaction
         .onChange(of: currentIndex) { _ in
             if showInitialGuidance {
                 withAnimation(.spring()) {
@@ -200,31 +213,31 @@ struct ReviewView: View {
             Text("Speed is calculated using the distance the shuttlecock travels between frames, combined with the video's frame rate (fps).\n\n1. The AI tracks the shuttle's center point in pixels.\n2. The distance moved (in pixels) is multiplied by the frame rate to get pixels/second.\n3. A scale factor (meters/pixel), determined from the court's known dimensions, converts this to meters/second.\n4. The result is converted to km/h.")
         }
     }
-    
+
     // MARK: - View Components
-    
+
     private var topBar: some View {
         HStack(spacing: 16) {
             HStack {
                 Button(action: undo) { Image(systemName: "arrow.uturn.backward.circle") }.disabled(undoStack.isEmpty)
                 Button(action: redo) { Image(systemName: "arrow.uturn.forward.circle") }.disabled(redoStack.isEmpty)
             }
-            
+
             Spacer()
-            
+
             Text(analysisResults.isEmpty ? "No Frames" : "Frame \(currentIndex + 1) of \(analysisResults.count)")
                 .font(.headline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
-            
+
             Spacer()
-            
+
             HStack(spacing: 12) {
                 Button { withAnimation { zoom(by: 1.5) } } label: { Image(systemName: "plus.magnifyingglass") }
                 Button { withAnimation { zoom(by: 0.66) } } label: { Image(systemName: "minus.magnifyingglass") }
                 Button { withAnimation { resetZoom() } } label: { Image(systemName: "arrow.up.left.and.down.right.magnifyingglass") }
             }
-            
+
             Button { showInfoSheet = true } label: { Image(systemName: "info.circle") }
         }
         .font(.title3)
@@ -232,7 +245,7 @@ struct ReviewView: View {
         .frame(height: 44)
         .background(.ultraThinMaterial)
     }
-    
+
     private var frameDisplay: some View {
         GeometryReader { geo in
             ZStack {
@@ -247,7 +260,7 @@ struct ReviewView: View {
                 .scaleEffect(currentScale)
                 .offset(currentOffset)
                 .gesture(panGesture().simultaneously(with: magnificationGesture()))
-                
+
                 if !analysisResults.isEmpty && analysisResults.indices.contains(currentIndex) {
                      OverlayView(
                          analysis: $analysisResults[currentIndex],
@@ -287,7 +300,7 @@ struct ReviewView: View {
                 .padding(12)
                 .background(Color.orange.opacity(0.15))
                 .cornerRadius(12)
-                
+
                 Button(action: interpolateFrames) {
                     Label("Interpolate Missing Frames", systemImage: "arrow.up.left.and.arrow.down.right")
                         .frame(maxWidth: .infinity)
@@ -296,7 +309,7 @@ struct ReviewView: View {
                 .controlSize(.regular)
                 .tint(.purple)
                 .scaleEffect(showInterpolationFeedback ? 1.05 : 1.0)
-                
+
                 Button { showInterpolationInfo = true } label: {
                     Label("What is Interpolation?", systemImage: "info.circle.fill")
                         .font(.caption)
@@ -309,12 +322,12 @@ struct ReviewView: View {
             .transition(.move(edge: .top).combined(with: .opacity))
         }
     }
-    
+
     private var frameNavigationControls: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("FRAME NAVIGATION")
                 .sectionHeaderStyle()
-            
+
             VStack(spacing: 15) {
                 VStack {
                     HStack(spacing: 4) {
@@ -327,14 +340,14 @@ struct ReviewView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    
+
                     if let speed = currentFrameData?.speedKPH {
                         Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
                     } else {
                         Text("N/A").font(.headline).foregroundStyle(.secondary)
                     }
                 }
-                
+
                 HStack {
                     Button(action: {
                         goToPreviousFrame()
@@ -344,7 +357,7 @@ struct ReviewView: View {
                     }
                     .disabled(currentIndex == 0)
                     .buttonStyle(GlowButtonStyle())
-                    
+
                     if !analysisResults.isEmpty {
                         Slider(value: frameIndexBinding, in: 0...Double(analysisResults.count - 1), step: 1)
                     } else {
@@ -362,9 +375,9 @@ struct ReviewView: View {
                 }
                 .font(.largeTitle)
                 .disabled(analysisResults.isEmpty)
-                
+
                 Divider()
-                
+
                 VStack(spacing: 8) {
                     Button { withAnimation(.spring()) { showTuningControls.toggle() } } label: {
                         Label(showTuningControls ? "Hide Manual Controls" : "Show Manual Controls",
@@ -372,9 +385,9 @@ struct ReviewView: View {
                     }
                     .font(.callout)
                     .tint(.secondary)
-                    
+
                     if !showTuningControls {
-                        Text("The AI detection is very accurate—these controls are not usually needed.")
+                        Text("AI detection is early-stage, manual tuning is often needed.")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -387,7 +400,7 @@ struct ReviewView: View {
             .glassPanelStyle()
         }
     }
-    
+
     private var manualAdjustmentControls: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -399,7 +412,7 @@ struct ReviewView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             VStack(spacing: 15) {
                 BoxAdjustmentControls(
                     editMode: $editMode,
@@ -418,12 +431,12 @@ struct ReviewView: View {
     }
 
     // MARK: - Undo/Redo Logic
-    
+
     private func saveUndoState() {
         undoStack.append(analysisResults)
         redoStack.removeAll()
     }
-    
+
     private func undo() {
         guard !undoStack.isEmpty else { return }
         let lastState = undoStack.removeLast()
@@ -431,7 +444,7 @@ struct ReviewView: View {
         analysisResults = lastState
         triggerHapticFeedback(style: .medium)
     }
-    
+
     private func redo() {
         guard !redoStack.isEmpty else { return }
         let nextState = redoStack.removeLast()
@@ -439,7 +452,7 @@ struct ReviewView: View {
         analysisResults = nextState
         triggerHapticFeedback(style: .medium)
     }
-    
+
     // MARK: - Gesture and Zoom Logic
     private func panGesture() -> some Gesture {
         DragGesture(minimumDistance: 0)
@@ -449,13 +462,13 @@ struct ReviewView: View {
                 committedOffset.height += value.translation.height
             }
     }
-    
+
     private func magnificationGesture() -> some Gesture {
         MagnificationGesture()
             .updating($magnifyBy) { value, state, _ in state = value }
             .onEnded { value in scale *= value }
     }
-    
+
     private func zoom(by factor: CGFloat) { scale = max(1.0, scale * factor) }
     private func resetZoom() { scale = 1.0; committedOffset = .zero }
 
@@ -464,18 +477,18 @@ struct ReviewView: View {
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return nil }
         return analysisResults[currentIndex]
     }
-    
+
     private func triggerHapticFeedback(style: UIImpactFeedbackGenerator.FeedbackStyle) {
         let generator = UIImpactFeedbackGenerator(style: style)
         generator.impactOccurred()
     }
-    
+
     private func interpolateFrames() {
         saveUndoState()
         interpolateMissingFrames()
         recalculateAllSpeeds()
         triggerHapticFeedback(style: .heavy)
-        
+
         Task {
             withAnimation(.spring()) {
                 showInterpolationFeedback = true
@@ -486,7 +499,7 @@ struct ReviewView: View {
             }
         }
     }
-    
+
     private func interpolateMissingFrames() {
         var i = 0
         while i < analysisResults.count - 1 {
@@ -523,36 +536,36 @@ struct ReviewView: View {
             }
         }
     }
-    
+
     private func recalculateAllSpeeds() {
         let freshTracker = KalmanTracker(scaleFactor: initialResult.scaleFactor)
-        
+
         let frameRate = initialResult.frameRate
         let videoSize = initialResult.videoSize
-        
+
         for i in 0..<analysisResults.count {
-            
+
             _ = freshTracker.predict(dt: 1.0)
-            
+
             if let boundingBox = analysisResults[i].boundingBox {
                 let pixelRect = VNImageRectForNormalizedRect(boundingBox, Int(videoSize.width), Int(videoSize.height))
                 freshTracker.update(measurement: pixelRect.center)
             }
-            
+
             let currentState = freshTracker.getCurrentState()
             let pixelsPerFrameVelocity = currentState.speedKPH ?? 0.0
-            
+
             let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
             let metersPerSecond = pixelsPerSecond * initialResult.scaleFactor
             let finalSpeed = metersPerSecond * 3.6
-            
+
             analysisResults[i].speedKPH = finalSpeed
             analysisResults[i].trackedPoint = currentState.point
         }
     }
-    
+
     // MARK: - Bounding Box Manipulation
-    
+
     private func addBox() {
         saveUndoState()
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
@@ -593,15 +606,15 @@ struct ReviewView: View {
         recalculateAllSpeeds()
         triggerHapticFeedback(style: .medium)
     }
-    
+
     private func adjustBox(dx: CGFloat = 0, dy: CGFloat = 0, dw: CGFloat = 0, dh: CGFloat = 0, pressCount: Int) {
         if pressCount == 0 {
             saveUndoState()
         }
-        
+
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return }
         guard var box = analysisResults[currentIndex].boundingBox else { return }
-        
+
         let multiplier: CGFloat
         switch pressCount {
         case 0..<5: multiplier = 1.0
@@ -609,19 +622,19 @@ struct ReviewView: View {
         case 15..<30: multiplier = 10.0
         default: multiplier = 25.0
         }
-        
+
         let moveSensitivity: CGFloat = 0.002 * multiplier
         let resizeSensitivity: CGFloat = 0.005 * multiplier
-        
+
         let widthChange = dw * resizeSensitivity / scale
         let heightChange = dh * resizeSensitivity / scale
-        
+
         let newWidth = max(0.01, box.size.width + widthChange)
         let newHeight = max(0.01, box.size.height + heightChange)
-        
+
         let originXAdjustment = (box.size.width - newWidth) / 2
         let originYAdjustment = (box.size.height - newHeight) / 2
-        
+
         let finalOriginX = box.origin.x + (dx * moveSensitivity / scale) + originXAdjustment
         let finalOriginY = box.origin.y + (dy * moveSensitivity / scale) + originYAdjustment
 
@@ -629,22 +642,22 @@ struct ReviewView: View {
         box.origin.y = max(0, min(finalOriginY, 1.0 - newHeight))
         box.size.width = newWidth
         box.size.height = newHeight
-        
+
         analysisResults[currentIndex].boundingBox = box
         recalculateAllSpeeds()
     }
-    
+
     private func goToPreviousFrame() { if currentIndex > 0 { currentIndex -= 1 } }
     private func goToNextFrame() { if currentIndex < analysisResults.count - 1 { currentIndex += 1 } }
-    
+
     private func loadFrame(at index: Int) {
         guard let timestampDouble = currentFrameData?.timestamp else {
             currentFrameImage = nil
             return
         }
-        
+
         let cmTimestamp = CMTime(seconds: timestampDouble, preferredTimescale: 600)
-        
+
         Task {
             do {
                 let cgImage = try await imageGenerator.image(at: cmTimestamp).image
@@ -660,7 +673,6 @@ struct ReviewView: View {
 
 // MARK: - Reusable View Styles & Components
 
-// <<-- ADDED: New guidance banner view
 private struct InitialGuidanceView: View {
     let dismissAction: () -> Void
     let dontShowAgainAction: () -> Void

@@ -16,6 +16,7 @@ class SmashSpeedViewModel: ObservableObject {
     // --- MODIFIED: The .completed state now holds both speed and angle. ---
     enum AppState {
         case idle
+        case preparing
         case trimming(URL)
         case awaitingCalibration(URL)
         case processing(Progress)

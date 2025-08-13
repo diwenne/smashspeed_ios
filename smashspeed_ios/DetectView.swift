@@ -5,10 +5,12 @@ import AVKit
 import UIKit
 
 // This Equatable extension matches the simplified AppState
+// NOTE: You will need to add a `preparing` case to your `SmashSpeedViewModel.AppState` enum for this code to compile.
 extension SmashSpeedViewModel.AppState: Equatable {
     static func == (lhs: SmashSpeedViewModel.AppState, rhs: SmashSpeedViewModel.AppState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle): return true
+        case (.preparing, .preparing): return true // Added state for pre-trimming processing
         case (.trimming, .trimming): return true
         case (.review, .review): return true
         case (.awaitingCalibration, .awaitingCalibration): return true
@@ -45,12 +47,14 @@ struct DetectView: View {
                 switch viewModel.appState {
 
                 case .idle:
-                    MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide) // Pass binding
+                    // MODIFIED: .navigationTitle and .toolbar are moved to the parent ZStack
+                    MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide)
                         .onChange(of: selectedItem) {
-                            Task {
-                                guard let item = selectedItem else { return }
-                                selectedItem = nil
+                            guard let item = selectedItem else { return }
+                            viewModel.appState = .preparing // Show processing view immediately
+                            selectedItem = nil
 
+                            Task {
                                 do {
                                     guard let videoFile = try await item.loadTransferable(type: VideoFile.self) else {
                                         viewModel.appState = .error("Could not load the selected video.")
@@ -70,24 +74,21 @@ struct DetectView: View {
                         }
                         .onChange(of: recordedVideoURL) {
                             guard let url = recordedVideoURL else { return }
+                            viewModel.appState = .preparing // Show processing view immediately
+                            recordedVideoURL = nil
+                            
                             Task {
                                 if await isVideoLandscape(url: url) {
                                     viewModel.videoSelected(url: url)
                                 } else {
                                     viewModel.appState = .error("Please record in landscape mode. Portrait videos are not supported.")
                                 }
-                                recordedVideoURL = nil
                             }
                         }
-                        .navigationTitle("Detect")
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) { AppLogoView() }
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button(action: { showOnboarding = true }) {
-                                    Image(systemName: "info.circle").foregroundColor(.accentColor)
-                                }
-                            }
-                        }
+                
+                // New case to handle the pre-trimming loading state
+                case .preparing:
+                    ProcessingView(message: "Preparing Video...") { viewModel.reset() }
 
                 case .trimming(let videoURL):
                     TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
@@ -97,9 +98,17 @@ struct DetectView: View {
                     })
 
                 case .review(let videoURL, let result):
-                    ReviewView(videoURL: videoURL, initialResult: result) { editedFrames in
-                        viewModel.finishReview(andShowResultsFrom: editedFrames, for: authViewModel.user?.uid, videoURL: videoURL)
-                    }
+                    ReviewView(
+                        videoURL: videoURL,
+                        initialResult: result,
+                        onFinish: { editedFrames in
+                            viewModel.finishReview(andShowResultsFrom: editedFrames, for: authViewModel.user?.uid, videoURL: videoURL)
+                        },
+                        onRecalibrate: {
+                            viewModel.appState = .awaitingCalibration(videoURL)
+                        }
+                    )
+                    
                 case .awaitingCalibration(let url):
                     CalibrationView(videoURL: url, onComplete: { scaleFactor in
                         viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
@@ -114,6 +123,19 @@ struct DetectView: View {
                 case .error(let message):
                     ErrorView(message: message, onReset: viewModel.reset)
                 }
+            }
+            .toolbar {
+                // Conditionally display toolbar items based on the current state
+                if case .idle = viewModel.appState {
+                    ToolbarItem(placement: .topBarLeading) { AppLogoView() }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: { showOnboarding = true }) {
+                            Image(systemName: "info.circle").foregroundColor(.accentColor)
+                        }
+                    }
+                }
+                
+                // You can add `else if` blocks here for other states if they need toolbars
             }
         }
         .sheet(isPresented: $showInputSelector) {
@@ -133,6 +155,26 @@ struct DetectView: View {
                 .ignoresSafeArea()
         }
         .sheet(isPresented: $showOnboarding) { OnboardingView { showOnboarding = false } }
+    }
+    
+    // ADDED: A helper computed property to manage the title
+    private var navigationTitleForState: String {
+        switch viewModel.appState {
+        case .idle:
+            return "Detect"
+        case .trimming:
+            return "Trim Video"
+        case .review:
+            return "Review & Adjust"
+        case .awaitingCalibration:
+            return "Calibration"
+        case .completed:
+            return "Analysis Result"
+        case .error:
+            return "Error"
+        default:
+            return "" // For .preparing, .processing
+        }
     }
 }
 
@@ -526,13 +568,15 @@ struct InputSourceSelectorView: View {
     }
 }
 
+// MODIFIED: This view now accepts a custom message.
 struct ProcessingView: View {
+    var message: String = "Analyzing Video..."
     let onCancel: () -> Void
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-            Text("Analyzing Video...")
+            Text(message)
                 .font(.title2)
                 .fontWeight(.bold)
             Button("Cancel", role: .destructive, action: onCancel)
