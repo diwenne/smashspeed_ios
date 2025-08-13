@@ -509,23 +509,83 @@ private func isVideoLandscape(url: URL) async -> Bool {
 // MARK: - Subviews for DetectView (Main, InputSource, Processing, Error)
 struct MainView: View {
     @Binding var showInputSelector: Bool
-    @Binding var showRecordingGuide: Bool // Added binding
+    @Binding var showRecordingGuide: Bool
+
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
-            Button(action: { showInputSelector = true }) {
-                ZStack {
-                    Circle().fill(.ultraThinMaterial)
-                        .overlay(LinearGradient(colors: [.white.opacity(0.15), .white.opacity(0.05), .clear], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .overlay(Circle().stroke(.white.opacity(0.2), lineWidth: 1))
-                        .shadow(color: .black.opacity(0.1), radius: 20, y: 10)
-                        .frame(width: 160, height: 160)
-                    Image(systemName: "arrow.up.circle.fill").font(.system(size: 70, weight: .thin)).foregroundColor(.white.opacity(0.8)).shadow(radius: 5)
-                }
-            }.clipShape(Circle()).buttonStyle(ScaleAndOpacityButtonStyle())
-            Text("Select a video to begin").font(.headline).fontWeight(.semibold).foregroundColor(.secondary).shadow(color: .black.opacity(0.1), radius: 1, y: 1)
 
-            // New Button for Recording Guide
+            // Main CTA
+            Button(action: { showInputSelector = true }) {
+                let circle = Circle()
+                ZStack {
+                    // 1. Bright frosty base — always light, even over dark bg
+                    circle
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.white.opacity(0.4),
+                                    Color.white.opacity(0.2)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+
+                    // 2. Frosted blur layer (glass look)
+                    circle
+                        .fill(.ultraThinMaterial)
+                        .background(
+                            circle
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.cyan.opacity(0.25),
+                                            Color.blue.opacity(0.08)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .blur(radius: 8)
+                        )
+
+                    // 3. Highlight stroke
+                    circle
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    .white.opacity(0.65),
+                                    .cyan.opacity(0.15)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.4
+                        )
+                        .blendMode(.overlay)
+
+                    // 4. Icon
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 70, weight: .thin))
+                        .foregroundColor(.white.opacity(0.95))
+                        .shadow(radius: 5)
+                }
+                .frame(width: 160, height: 160)
+                .shadow(color: .black.opacity(0.18), radius: 24, y: 12)
+                .shadow(color: .black.opacity(0.10), radius: 8, y: 2)
+            }
+            .clipShape(Circle())
+            .buttonStyle(ScaleAndOpacityButtonStyle())
+
+            // CTA label
+            Text("Select a video to begin")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+                .shadow(color: .black.opacity(0.1), radius: 1, y: 1)
+
+            // Recording guide button
             Button(action: { showRecordingGuide = true }) {
                 Label("How to Record", systemImage: "questionmark.circle")
             }
