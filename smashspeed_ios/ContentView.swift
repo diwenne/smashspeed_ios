@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  smashspeed
-//
-//  Created by Diwen Huang on 2025-06-27.
-//
-
 import SwiftUI
 
 struct ContentView: View {
@@ -36,10 +29,11 @@ struct LoadingView: View {
             Image("AppIconTransparent")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 80) // Matches .font(.system(size: 80))
+                .frame(width: 80, height: 80)
                 .shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
 
-            Text("Smashspeed")
+            // LOCALIZED
+            Text("appName")
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
@@ -51,30 +45,33 @@ struct LoadingView: View {
 struct MainTabView: View {
     var body: some View {
         TabView {
-            // --- The NavigationStack has been removed from here ---
-            // It is now managed inside DetectView.swift
             DetectView()
                 .tabItem {
-                    Label("Detect", systemImage: "camera.viewfinder")
+                    // LOCALIZED
+                    Label("tab_detect", systemImage: "camera.viewfinder")
                 }
             
             NavigationStack {
                 HistoryView()
-                    .navigationTitle("Results")
+                    // LOCALIZED
+                    .navigationTitle(Text("history_navTitle"))
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) { AppLogoView() }
                     }
             }
-            .tabItem { Label("Results", systemImage: "chart.bar.xaxis") }
+            // LOCALIZED
+            .tabItem { Label("tab_results", systemImage: "chart.bar.xaxis") }
 
             NavigationStack {
                 AccountView()
-                    .navigationTitle("Account")
+                    // LOCALIZED
+                    .navigationTitle(Text("account_navTitle"))
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) { AppLogoView() }
                     }
             }
-            .tabItem { Label("Account", systemImage: "person.crop.circle") }
+            // LOCALIZED
+            .tabItem { Label("tab_account", systemImage: "person.crop.circle") }
         }
     }
 }
@@ -85,10 +82,11 @@ struct AppLogoView: View {
             Image("AppIconTransparent")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 30, height: 30) // Adjust to match symbol size
+                .frame(width: 30, height: 30)
                 .shadow(color: .blue.opacity(0.3), radius: 4, y: 1)
 
-            Text("Smashspeed")
+            // LOCALIZED
+            Text("appName")
                 .font(.headline)
                 .fontWeight(.bold)
         }

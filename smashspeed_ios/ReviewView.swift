@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 import Vision
 import StoreKit
-import UIKit // Added for UIImpactFeedbackGenerator
+import UIKit
 
 // MARK: - Main Review View
 struct ReviewView: View {
@@ -56,8 +56,6 @@ struct ReviewView: View {
         self.imageGenerator.requestedTimeToleranceAfter = .zero
     }
 
-    // MARK: - Computed Properties
-
     private var frameIndexBinding: Binding<Double> {
         Binding<Double>(
             get: { Double(self.currentIndex) },
@@ -101,30 +99,25 @@ struct ReviewView: View {
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
 
-            // The main container that holds all screen elements
             VStack(spacing: 0) {
                 topBar
                 frameDisplay
                 interpolationSection
 
-                // The main controls are now in their own scroll view
                 ScrollView {
                     VStack(spacing: 25) {
                         frameNavigationControls
                         if showTuningControls {
                             manualAdjustmentControls
                         }
-                        // MODIFIED: The "Finish" and "Recalibrate" buttons have been
-                        // permanently moved out of this ScrollView.
                     }
                     .padding()
                 }
                 .frame(maxHeight: .infinity)
 
-                // MODIFIED: A persistent bottom bar for primary actions.
-                // This VStack is outside the ScrollView, so it will always be visible.
                 VStack(spacing: 12) {
-                    Button("Finish & Save Analysis") {
+                    // LOCALIZED
+                    Button("review_finishButton") {
                         onFinish(analysisResults)
                         requestReview()
                     }
@@ -134,7 +127,8 @@ struct ReviewView: View {
                     .disabled(analysisResults.isEmpty)
 
                     Button(action: onRecalibrate) {
-                        Label("Recalibrate Distance", systemImage: "ruler.fill")
+                        // LOCALIZED
+                        Label("review_recalibrateButton", systemImage: "ruler.fill")
                     }
                     .font(.callout)
                     .foregroundColor(.secondary)
@@ -183,38 +177,40 @@ struct ReviewView: View {
         }
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
+                // LOCALIZED
                 OnboardingInstructionView(
                     slideIndex: 0,
                     currentTab: .constant(0),
                     imageNames: ["OnboardingSlide3.1","OnboardingSlide3.2"],
-                    title: "3. Review Detection",
+                    titleKey: "onboarding_slide3_title",
                     instructions: [
-                        (icon: "arrow.left.and.right.circle.fill", text: "Use the slider or arrow keys to move through each frame and view the shuttle speed."),
-                        (icon: "wand.and.stars.inverse", text: "Use the 'Interpolate' tool to automatically fill in gaps between good detections. This is highly recommended."),
-                        (icon: "slider.horizontal.3", text: "For fine-tuning, use the manual controls to move, resize, add, or remove a detection box."),
-                        (icon: "arrow.uturn.backward", text: "If you make a mistake, use the undo/redo buttons in the top left.")
+                        (icon: "arrow.left.and.right.circle.fill", textKey: "onboarding_slide3_instruction1"),
+                        (icon: "wand.and.stars.inverse", textKey: "onboarding_slide3_instruction2"),
+                        (icon: "slider.horizontal.3", textKey: "onboarding_slide3_instruction3"),
+                        (icon: "arrow.uturn.backward", textKey: "onboarding_slide3_instruction4")
                     ]
                 )
             }
         }
-        .alert("What is Interpolation?", isPresented: $showInterpolationInfo) {
-            Button("OK", role: .cancel) { }
+        // LOCALIZED
+        .alert(Text("review_alert_interpolation_title"), isPresented: $showInterpolationInfo) {
+            Button("common_ok", role: .cancel) { }
         } message: {
-            Text("Interpolation automatically fills in missing bounding boxes. If you have a frame with a box, then a gap of frames with no box, followed by another frame with a box, this tool will draw a straight line to fill in the gap.")
+            Text("review_alert_interpolation_message")
         }
-        .alert("Manual Adjustment", isPresented: $showManualInfo) {
-            Button("OK", role: .cancel) { }
+        // LOCALIZED
+        .alert(Text("review_alert_manual_title"), isPresented: $showManualInfo) {
+            Button("common_ok", role: .cancel) { }
         } message: {
-            Text("Use these controls to fix errors made by the AI. You can add a box if the AI missed the shuttle, remove a box if the detection is wrong, or nudge/resize an existing box for better accuracy.")
+            Text("review_alert_manual_message")
         }
-        .alert("How is Speed Calculated?", isPresented: $showSpeedInfoAlert) {
-            Button("OK", role: .cancel) { }
+        // LOCALIZED
+        .alert(Text("review_alert_speedCalc_title"), isPresented: $showSpeedInfoAlert) {
+            Button("common_ok", role: .cancel) { }
         } message: {
-            Text("Speed is calculated using the distance the shuttlecock travels between frames, combined with the video's frame rate (fps).\n\n1. The AI tracks the shuttle's center point in pixels.\n2. The distance moved (in pixels) is multiplied by the frame rate to get pixels/second.\n3. A scale factor (meters/pixel), determined from the court's known dimensions, converts this to meters/second.\n4. The result is converted to km/h.")
+            Text("review_alert_speedCalc_message")
         }
     }
-
-    // MARK: - View Components
 
     private var topBar: some View {
         HStack(spacing: 16) {
@@ -224,11 +220,11 @@ struct ReviewView: View {
             }
 
             Spacer()
-
-            Text(analysisResults.isEmpty ? "No Frames" : "Frame \(currentIndex + 1) of \(analysisResults.count)")
+            // LOCALIZED
+            Text(analysisResults.isEmpty ? LocalizedStringKey("review_topBar_noFrames") : LocalizedStringKey(String.localizedStringWithFormat(NSLocalizedString("review_topBar_frameCountFormat", comment: ""), currentIndex + 1, analysisResults.count)))
                 .font(.headline)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(0.5)
 
             Spacer()
 
@@ -288,9 +284,11 @@ struct ReviewView: View {
                         .foregroundColor(.orange)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Gaps Detected in Tracking")
+                        // LOCALIZED
+                        Text("review_interp_gapWarning_title")
                             .fontWeight(.bold)
-                        Text("Use 'Interpolate' to ensure accurate speed results.")
+                        // LOCALIZED
+                        Text("review_interp_gapWarning_message")
                             .foregroundColor(.secondary)
                     }
                     .font(.footnote)
@@ -302,7 +300,8 @@ struct ReviewView: View {
                 .cornerRadius(12)
 
                 Button(action: interpolateFrames) {
-                    Label("Interpolate Missing Frames", systemImage: "arrow.up.left.and.arrow.down.right")
+                    // LOCALIZED
+                    Label("review_interp_interpolateButton", systemImage: "arrow.up.left.and.arrow.down.right")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -311,7 +310,8 @@ struct ReviewView: View {
                 .scaleEffect(showInterpolationFeedback ? 1.05 : 1.0)
 
                 Button { showInterpolationInfo = true } label: {
-                    Label("What is Interpolation?", systemImage: "info.circle.fill")
+                    // LOCALIZED
+                    Label("review_interp_whatIsButton", systemImage: "info.circle.fill")
                         .font(.caption)
                 }
                 .tint(.secondary)
@@ -325,13 +325,15 @@ struct ReviewView: View {
 
     private var frameNavigationControls: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("FRAME NAVIGATION")
+            // LOCALIZED
+            Text("review_nav_sectionTitle")
                 .sectionHeaderStyle()
 
             VStack(spacing: 15) {
                 VStack {
                     HStack(spacing: 4) {
-                        Text("Speed at this frame:")
+                        // LOCALIZED
+                        Text("review_nav_speedLabel")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Button { showSpeedInfoAlert = true } label: {
@@ -340,11 +342,13 @@ struct ReviewView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-
+                    
+                    // LOCALIZED
                     if let speed = currentFrameData?.speedKPH {
-                        Text(String(format: "%.1f km/h", speed)).font(.headline).bold()
+                        Text(String.localizedStringWithFormat(NSLocalizedString("review_speedWithUnitFormat", comment: ""), speed))
+                            .font(.headline).bold()
                     } else {
-                        Text("N/A").font(.headline).foregroundStyle(.secondary)
+                        Text("common_notAvailable").font(.headline).foregroundStyle(.secondary)
                     }
                 }
 
@@ -380,14 +384,16 @@ struct ReviewView: View {
 
                 VStack(spacing: 8) {
                     Button { withAnimation(.spring()) { showTuningControls.toggle() } } label: {
-                        Label(showTuningControls ? "Hide Manual Controls" : "Show Manual Controls",
+                        // LOCALIZED
+                        Label(showTuningControls ? "review_nav_hideManualControls" : "review_nav_showManualControls",
                               systemImage: showTuningControls ? "chevron.up" : "slider.horizontal.3")
                     }
                     .font(.callout)
                     .tint(.secondary)
 
                     if !showTuningControls {
-                        Text("AI detection is early-stage, manual tuning is often needed.")
+                        // LOCALIZED
+                        Text("review_nav_aiWarning")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -404,7 +410,8 @@ struct ReviewView: View {
     private var manualAdjustmentControls: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("MANUAL ADJUSTMENT")
+                // LOCALIZED
+                Text("review_manual_sectionTitle")
                     .sectionHeaderStyle()
                 Spacer()
                 Button { showManualInfo = true } label: {
@@ -430,8 +437,6 @@ struct ReviewView: View {
         }
     }
 
-    // MARK: - Undo/Redo Logic
-
     private func saveUndoState() {
         undoStack.append(analysisResults)
         redoStack.removeAll()
@@ -453,7 +458,6 @@ struct ReviewView: View {
         triggerHapticFeedback(style: .medium)
     }
 
-    // MARK: - Gesture and Zoom Logic
     private func panGesture() -> some Gesture {
         DragGesture(minimumDistance: 0)
             .updating($dragOffset) { value, state, _ in state = value.translation }
@@ -472,7 +476,6 @@ struct ReviewView: View {
     private func zoom(by factor: CGFloat) { scale = max(1.0, scale * factor) }
     private func resetZoom() { scale = 1.0; committedOffset = .zero }
 
-    // MARK: - Data and Frame Logic
     private var currentFrameData: FrameAnalysis? {
         guard !analysisResults.isEmpty, analysisResults.indices.contains(currentIndex) else { return nil }
         return analysisResults[currentIndex]
@@ -563,8 +566,6 @@ struct ReviewView: View {
             analysisResults[i].trackedPoint = currentState.point
         }
     }
-
-    // MARK: - Bounding Box Manipulation
 
     private func addBox() {
         saveUndoState()
@@ -671,8 +672,6 @@ struct ReviewView: View {
     }
 }
 
-// MARK: - Reusable View Styles & Components
-
 private struct InitialGuidanceView: View {
     let dismissAction: () -> Void
     let dontShowAgainAction: () -> Void
@@ -683,7 +682,8 @@ private struct InitialGuidanceView: View {
                 Image(systemName: "lightbulb.fill")
                     .font(.title3)
                     .foregroundColor(.yellow)
-                Text("Tip: Check All Frames")
+                // LOCALIZED
+                Text("review_guidance_title")
                     .fontWeight(.bold)
                 Spacer()
                 Button(action: dismissAction) {
@@ -692,11 +692,13 @@ private struct InitialGuidanceView: View {
                         .font(.title2)
                 }
             }
-            Text("Use the slider to review the detection on each frame. Adjust boxes as needed for best accuracy.")
+            // LOCALIZED
+            Text("review_guidance_message")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
-            Button("Don't show this again") {
+            // LOCALIZED
+            Button("review_guidance_dontShowAgain") {
                 dontShowAgainAction()
             }
             .font(.caption)
@@ -753,7 +755,8 @@ private struct OnboardingSheetContainerView<Content: View>: View {
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+                    // LOCALIZED
+                    Button("common_done") { dismiss() }
                 }
             }
         }
@@ -851,7 +854,8 @@ private struct BoxAdjustmentControls: View {
         VStack(spacing: 15) {
             if hasBox {
                 Button(role: .destructive, action: removeBoxAction) {
-                    Label("Remove Box", systemImage: "xmark.square")
+                    // LOCALIZED
+                    Label("review_box_removeButton", systemImage: "xmark.square")
                         .frame(maxWidth: .infinity)
                 }
                 .tint(.orange)
@@ -860,9 +864,10 @@ private struct BoxAdjustmentControls: View {
                 
                 Divider()
                 
-                Picker("Edit Mode", selection: $editMode) {
-                    Text("Nudge").tag(ReviewView.EditMode.move)
-                    Text("Resize").tag(ReviewView.EditMode.resize)
+                // LOCALIZED
+                Picker(LocalizedStringKey("Edit Mode"), selection: $editMode) {
+                    Text("review_box_nudgePicker").tag(ReviewView.EditMode.move)
+                    Text("review_box_resizePicker").tag(ReviewView.EditMode.resize)
                 }.pickerStyle(.segmented)
                 
                 if editMode == .move {
@@ -872,7 +877,8 @@ private struct BoxAdjustmentControls: View {
                 }
             } else {
                 Button(action: addBoxAction) {
-                    Label("Add Box", systemImage: "plus.square")
+                    // LOCALIZED
+                    Label("review_box_addButton", systemImage: "plus.square")
                         .frame(maxWidth: .infinity)
                 }
                 .tint(.blue)
@@ -904,12 +910,14 @@ private struct ReviewResizeControls: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text("Width").frame(width: 60)
+                // LOCALIZED
+                Text("common_width").frame(width: 60)
                 RepeatingFineTuneButton(icon: "minus") { pressCount in action(-1, 0, pressCount) }
                 RepeatingFineTuneButton(icon: "plus") { pressCount in action(1, 0, pressCount) }
             }
             HStack {
-                Text("Height").frame(width: 60)
+                // LOCALIZED
+                Text("common_height").frame(width: 60)
                 RepeatingFineTuneButton(icon: "minus") { pressCount in action(0, -1, pressCount) }
                 RepeatingFineTuneButton(icon: "plus") { pressCount in action(0, 1, pressCount) }
             }

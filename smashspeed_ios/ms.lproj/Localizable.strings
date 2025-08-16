@@ -5,3 +5,234 @@
 //  Created by Diwen Huang on 2025-08-15.
 //
 
+
+// =================================================================
+// Malay (ms.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "Anda pasti mahu memadamkan akaun anda? Tindakan ini adalah kekal dan tidak boleh dibatalkan.";
+"account_alert_delete_title" = "Padam Akaun";
+"account_alert_signOut_message" = "Anda pasti mahu mendaftar keluar?";
+"account_loggedIn_accountActions" = "Tindakan Akaun";
+"account_loggedIn_appearance" = "Penampilan";
+"account_loggedIn_appearanceDark" = "Gelap";
+"account_loggedIn_appearanceLight" = "Cerah";
+"account_loggedIn_appearanceSystem" = "Sistem";
+"account_loggedIn_changePassword" = "Tukar Kata Laluan";
+"account_loggedIn_communitySupport" = "Komuniti & Sokongan";
+"account_loggedIn_contactSupport" = "Hubungi Sokongan";
+"account_loggedIn_deleteAccount" = "Padam Akaun";
+"account_loggedIn_followInstagram" = "Ikuti di Instagram";
+"account_loggedIn_memberSinceFormat" = "Ahli sejak %@";
+"account_loggedIn_noEmail" = "Tiada e-mel ditemui";
+"account_loggedIn_officialWebsite" = "Laman Web Rasmi";
+"account_loggedIn_settingsTitle" = "Tetapan";
+"account_loggedIn_signOut" = "Daftar Keluar";
+"account_loggedIn_viewTutorial" = "Lihat Tutorial";
+"account_menu_contact" = "Hubungi Kami";
+"account_menu_faq" = "Soalan Lazim";
+"account_menu_privacy" = "Dasar Privasi";
+"account_menu_terms" = "Syarat Perkhidmatan";
+"account_navTitle_myAccount" = "Akaun Saya";
+"account_navTitle_welcome" = "Selamat Datang";
+"auth_alreadyHaveAccount" = "Sudah mempunyai akaun? Daftar Masuk";
+"auth_createAccountButton" = "Cipta Akaun";
+"auth_createAccountTitle" = "Cipta Akaun";
+"auth_dontHaveAccount" = "Tiada akaun? Daftar";
+"auth_forgotPassword" = "Lupa Kata Laluan?";
+"auth_orDivider" = "Atau";
+"auth_passwordMismatch" = "Kata laluan tidak sepadan.";
+"auth_signInButton" = "Daftar Masuk";
+"auth_signInPrompt" = "Daftar masuk untuk mengakses lebih banyak ciri, menyesuaikan tetapan, dan menjejaki kemajuan anda.";
+"auth_signInTitle" = "Daftar Masuk";
+"auth_signInWithGoogle" = "Daftar masuk dengan Google";
+"auth_termsAgreement" = "Saya telah membaca dan bersetuju dengan [Syarat Perkhidmatan](https://smashspeed.ca/terms-of-service) dan [Dasar Privasi](https://smashspeed.ca/privacy-policy).";
+"changePwd_cancelButton" = "Batal";
+"changePwd_confirmPwdField" = "Sahkan Kata Laluan Baharu";
+"changePwd_navTitle" = "Tukar Kata Laluan";
+"changePwd_newPwdField" = "Kata Laluan Baharu";
+"changePwd_updateButton" = "Kemas Kini Kata Laluan";
+
+/* Calibration */
+"calib_instruction1" = "Letakkan satu titik pada garisan servis hadapan dan satu lagi pada garisan servis panjang beregu (garisan flick).";
+"calib_instruction2" = "Petua: Seret dari kawasan sekitar titik untuk mengelak menutupinya dengan jari anda.";
+"calib_refLengthDescription" = "Masukkan jarak dunia sebenar antara dua titik tersebut.";
+"calib_refLengthLabel" = "Panjang Rujukan";
+"calib_startButton" = "Mulakan Analisis";
+"calib_title" = "Penentukuran";
+
+/* Common */
+"common_cancel" = "Batal";
+"common_delete" = "Padam";
+"common_done" = "Selesai";
+"common_email" = "E-mel";
+"common_error" = "Ralat";
+"common_height" = "Tinggi";
+"common_kmh" = "km/j";
+"common_meters" = "meter";
+"common_notAvailable" = "T/A";
+"common_ok" = "OK";
+"common_password" = "Kata Laluan";
+"common_smashAngle" = "Sudut Pukulan:";
+"common_speed" = "Kelajuan";
+"common_tryAgain" = "Cuba Lagi";
+"common_width" = "Lebar";
+
+/* Errors */
+"error_couldNotLoadVideo" = "Tidak dapat memuatkan video yang dipilih.";
+"error_genericVideoSelection" = "Berlaku ralat semasa memilih video.";
+"error_recordLandscape" = "Sila rakam dalam mod landskap. Video potret tidak disokong.";
+"error_selectLandscape" = "Sila pilih video landskap. Video potret tidak disokong.";
+
+/* History & Details */
+"details_liveSpeed" = "Kelajuan Semasa:";
+"details_navTitle" = "Butiran Pukulan";
+"details_peakSpeed" = "Kelajuan Puncak";
+"details_speedHeader" = "Kelajuan";
+"details_timeHeader" = "Masa";
+"details_timestampTitle" = "Data Cap Masa";
+"history_alert_delete_message" = "Anda pasti mahu memadamkan keputusan ini? Tindakan ini tidak boleh dibatalkan.";
+"history_alert_delete_title" = "Sahkan Pemadaman";
+"history_chart_noData" = "Data tidak mencukupi dengan penapis semasa untuk melukis carta.";
+"history_chart_selectedDataFormat" = "Kelajuan Tertinggi pada %@: %.1f km/j";
+"history_chart_subtitleFormat" = "Kelajuan Tertinggi setiap Hari (%@)";
+"history_chart_title" = "Kemajuan dari Semasa ke Semasa";
+"history_empty_message" = "Pukulan yang telah dianalisis akan muncul di sini.";
+"history_empty_title" = "Tiada Keputusan";
+"history_filters_filterBySpeed" = "Tapis mengikut Kelajuan";
+"history_filters_minSpeed" = "Kelajuan Min:";
+"history_filters_timeRange" = "Julat Masa";
+"history_filters_title" = "Penapis";
+"history_list_noResults" = "Tiada keputusan yang sepadan dengan penapis semasa anda.";
+"history_list_title" = "Sejarah";
+"history_loggedOut_message" = "Sila daftar masuk untuk melihat keputusan.";
+"history_loggedOut_title" = "Pendaftaran Masuk Diperlukan";
+"history_navTitle" = "Keputusan";
+"history_range_all" = "Semua Masa";
+"history_range_month" = "Bulan Lalu";
+"history_range_week" = "Minggu Lalu";
+"history_stats_avgSpeed" = "Kelajuan Purata";
+"history_stats_title" = "Statistik Ditapis";
+"history_stats_topSpeed" = "Kelajuan Tertinggi";
+"history_stats_totalSmashes" = "Jumlah Pukulan";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Pilih dari Pustaka";
+"inputSelector_landscapeOnlyWarning" = "Hanya video landskap disokong.";
+"inputSelector_recordNewButton" = "Rakam Video Baharu";
+"inputSelector_title" = "Analisis Pukulan";
+"mainView_howToRecordButton" = "Cara Merekod";
+"mainView_prompt" = "Pilih video untuk bermula";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "Keputusan Analisis";
+"navTitle_calibration" = "Penentukuran";
+"navTitle_detect" = "Kesan";
+"navTitle_recordingGuide" = "Panduan Rakaman";
+"navTitle_reviewAdjust" = "Semak & Laraskan";
+"navTitle_trimVideo" = "Potong Video";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "Bermula";
+"onboarding_slide1_instruction1" = "Letakkan kamera di garisan tepi, menghadap lurus. Garisan gelanggang sepatutnya kelihatan selari dengan bingkai.";
+"onboarding_slide1_instruction2" = "Pastikan bulu tangkis sentiasa kelihatan — elakkan silau atau latar belakang yang sibuk.";
+"onboarding_slide1_instruction3" = "Gunakan video biasa. Elakkan Gerak Perlahan atau penapis.";
+"onboarding_slide1_instruction4" = "Potong video hanya pada bahagian pukulan — di bawah 1 saat (~10 bingkai).";
+"onboarding_slide1_title" = "1. Rakam Pukulan Anda";
+"onboarding_slide2_instruction1" = "Tandakan garisan servis hadapan dan garisan servis beregu — berjarak 3.87 m.";
+"onboarding_slide2_instruction2" = "Letakkan garisan betul-betul di bawah pemain.";
+"onboarding_slide2_instruction3" = "Kekalkan 3.87 m melainkan menggunakan garisan lain — menukarnya boleh mengurangkan ketepatan.";
+"onboarding_slide2_title" = "2. Tandakan Jarak yang Diketahui";
+"onboarding_slide3_instruction1" = "Gunakan peluncur atau kekunci anak panah untuk melangkah melalui bingkai dan melihat kelajuan bulu tangkis.";
+"onboarding_slide3_instruction2" = "Gunakan alat 'Interpolasi' untuk mengisi jurang antara pengesanan yang baik secara automatik. Ini amat disyorkan.";
+"onboarding_slide3_instruction3" = "Untuk penalaan halus, gunakan kawalan manual untuk mengalih, mengubah saiz, menambah, atau membuang kotak pengesanan.";
+"onboarding_slide3_instruction4" = "Jika anda membuat kesilapan, gunakan butang buat asal/buat semula di bahagian atas kiri.";
+"onboarding_slide3_title" = "3. Semak Pengesanan";
+"onboarding_swipePrompt" = "Leret untuk bermula";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Ingin tahu seberapa laju pukulan anda?";
+"onboarding_welcome_title" = "Selamat datang ke";
+
+/* Processing States */
+"processing_analyzingVideo" = "Menganalisis Video...";
+"processing_preparingVideo" = "Menyediakan Video...";
+"processing_trimmingVideo" = "Memotong Video...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**Kamera:** Guna mod landskap dengan zum 0.5x untuk pastikan bulu tangkis dalam bingkai.";
+"recordingGuide_frameRateTip" = "**Kadar Bingkai:** 30 FPS sudah memadai, 60 FPS lebih baik.";
+"recordingGuide_recorderTip" = "**Pemain A (Perakam):** Berdiri di garisan tepi.";
+"recordingGuide_smasherTip" = "**Pemain B (Pemukul):** Pukul dari separuh gelanggang bertentangan.";
+"recordingGuide_title" = "Cara Merekod untuk Hasil Terbaik";
+"recordingGuide_visitWebsite" = "Untuk tutorial video, lawati smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "Analisis Video Lain";
+"resultView_angleFormat" = "%.0f° ke bawah";
+"resultView_angleNotCalculated" = "Sudut Tidak Dikira";
+"resultView_angleUnlockInfo" = "Pukul lebih laju daripada 100 km/j untuk membuka kunci analisis sudut.";
+"resultView_maxSpeedTitle" = "Kelajuan Maksimum";
+"resultView_signInPrompt" = "Ingin simpan keputusan anda? Daftar Masuk";
+"resultView_smashAngleLabel" = "Sudut Pukulan:";
+"resultView_speedUnit" = "km/j";
+
+/* Review */
+"review_alert_interpolation_message" = "Interpolasi mengisi kotak sempadan yang hilang secara automatik. Jika anda mempunyai bingkai dengan kotak, kemudian jurang bingkai tanpa kotak, diikuti oleh bingkai lain dengan kotak, alat ini akan melukis garisan lurus untuk mengisi jurang tersebut.";
+"review_alert_interpolation_title" = "Apakah Interpolasi?";
+"review_alert_manual_message" = "Gunakan kawalan ini untuk membetulkan ralat yang dibuat oleh AI. Anda boleh menambah kotak jika AI terlepas bulu tangkis, membuang kotak jika pengesanan salah, atau menganjak/mengubah saiz kotak sedia ada untuk ketepatan yang lebih baik.";
+"review_alert_manual_title" = "Pelarasan Manual";
+"review_alert_speedCalc_message" = "Kelajuan dikira menggunakan jarak yang dilalui oleh bulu tangkis antara bingkai, digabungkan dengan kadar bingkai video (fps).\n\n1. AI menjejaki titik tengah bulu tangkis dalam piksel.\n2. Jarak yang dialihkan (dalam piksel) didarab dengan kadar bingkai untuk mendapatkan piksel/saat.\n3. Faktor skala (meter/piksel), yang ditentukan daripada dimensi gelanggang yang diketahui, menukarkannya kepada meter/saat.\n4. Hasilnya ditukar kepada km/j.";
+"review_alert_speedCalc_title" = "Bagaimana Kelajuan Dikira?";
+"review_box_addButton" = "Tambah Kotak";
+"review_box_nudgePicker" = "Anjak";
+"review_box_removeButton" = "Buang Kotak";
+"review_box_resizePicker" = "Ubah Saiz";
+"review_finishButton" = "Selesai & Simpan Analisis";
+"review_guidance_dontShowAgain" = "Jangan tunjukkan ini lagi";
+"review_guidance_message" = "Gunakan peluncur untuk menyemak pengesanan pada setiap bingkai. Laraskan kotak seperti yang diperlukan untuk ketepatan terbaik.";
+"review_guidance_title" = "Petua: Semak Semua Bingkai";
+"review_interp_gapWarning_message" = "Gunakan 'Interpolasi' untuk memastikan keputusan kelajuan yang tepat.";
+"review_interp_gapWarning_title" = "Jurang Dikesan dalam Penjejakan";
+"review_interp_interpolateButton" = "Interpolasi Bingkai yang Hilang";
+"review_interp_whatIsButton" = "Apakah Interpolasi?";
+"review_manual_sectionTitle" = "PELARASAN MANUAL";
+"review_nav_aiWarning" = "Pengesanan AI masih di peringkat awal, penalaan manual selalunya diperlukan.";
+"review_nav_hideManualControls" = "Sembunyi Kawalan Manual";
+"review_nav_sectionTitle" = "NAVIGASI BINGKAI";
+"review_nav_showManualControls" = "Tunjuk Kawalan Manual";
+"review_nav_speedLabel" = "Kelajuan pada bingkai ini:";
+"review_recalibrateButton" = "Tentukur Semula Jarak";
+"review_topBar_frameCountFormat" = "Bingkai %d daripada %d";
+"review_topBar_noFrames" = "Tiada Bingkai";
+"review_speedWithUnitFormat" = "%.1f km/j";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° ke bawah";
+"share_image_generatedBy" = "Dihasilkan oleh Smashspeed";
+"share_image_smashAngleLabel" = "Sudut Pukulan";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Kongsi Sekarang";
+"share_preview_title" = "Pratonton Imej Boleh Kongsi";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "Potong klip di bawah 0.8s (~%d bingkai), hanya menunjukkan pukulan. Bulu tangkis mesti kelihatan dalam setiap bingkai.";
+"trimView_alert_tooLong_title" = "Klip Terlalu Panjang";
+"trimView_confirmButton" = "Sahkan Potongan";
+"trimView_description" = "Asingkan detik hentaman. Klip akhir harus sangat pendek (~0.25 saat), dan bulu tangkis harus kelihatan jelas dalam setiap bingkai.";
+"trimView_durationFormat" = "Tempoh Dipilih: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "Potong pada Pukulan";
+
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "Akaun";
+"tab_detect" = "Kesan";
+"tab_results" = "Keputusan";
+"account_navTitle" = "Akaun";
+
+/* Update Alert */
+"updateAlert_button" = "Kemas Kini Sekarang";
+"updateAlert_message" = "Versi baharu aplikasi tersedia. Sila kemas kini untuk terus menggunakan aplikasi.";
+"updateAlert_title" = "Kemas Kini Diperlukan";

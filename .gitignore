@@ -1,7 +1,6 @@
 # Project-specific ignores
 smashspeed_ios/AuroraBackgroundView.swift
 smashspeed_ios/GoogleService-Info.plist
-smashspeed_ios/best.mlpackage
 
 # Test targets
 smashspeed_iosTests/

@@ -5,3 +5,233 @@
 //  Created by Diwen Huang on 2025-08-15.
 //
 
+// =================================================================
+// French (fr.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "Voulez-vous vraiment supprimer votre compte ? Cette action est permanente et ne peut être annulée.";
+"account_alert_delete_title" = "Supprimer le compte";
+"account_alert_signOut_message" = "Voulez-vous vraiment vous déconnecter ?";
+"account_loggedIn_accountActions" = "Actions du compte";
+"account_loggedIn_appearance" = "Apparence";
+"account_loggedIn_appearanceDark" = "Sombre";
+"account_loggedIn_appearanceLight" = "Clair";
+"account_loggedIn_appearanceSystem" = "Système";
+"account_loggedIn_changePassword" = "Changer le mot de passe";
+"account_loggedIn_communitySupport" = "Communauté et support";
+"account_loggedIn_contactSupport" = "Contacter le support";
+"account_loggedIn_deleteAccount" = "Supprimer le compte";
+"account_loggedIn_followInstagram" = "Suivre sur Instagram";
+"account_loggedIn_memberSinceFormat" = "Membre depuis %@";
+"account_loggedIn_noEmail" = "Aucun e-mail trouvé";
+"account_loggedIn_officialWebsite" = "Site web officiel";
+"account_loggedIn_settingsTitle" = "Réglages";
+"account_loggedIn_signOut" = "Se déconnecter";
+"account_loggedIn_viewTutorial" = "Voir le tutoriel";
+"account_menu_contact" = "Nous contacter";
+"account_menu_faq" = "FAQ";
+"account_menu_privacy" = "Politique de confidentialité";
+"account_menu_terms" = "Conditions d'utilisation";
+"account_navTitle_myAccount" = "Mon Compte";
+"account_navTitle_welcome" = "Bienvenue";
+"auth_alreadyHaveAccount" = "Vous avez déjà un compte ? Se connecter";
+"auth_createAccountButton" = "Créer un compte";
+"auth_createAccountTitle" = "Créer un compte";
+"auth_dontHaveAccount" = "Vous n'avez pas de compte ? S'inscrire";
+"auth_forgotPassword" = "Mot de passe oublié ?";
+"auth_orDivider" = "Ou";
+"auth_passwordMismatch" = "Les mots de passe ne correspondent pas.";
+"auth_signInButton" = "Se connecter";
+"auth_signInPrompt" = "Connectez-vous pour accéder à plus de fonctionnalités, personnaliser les réglages et suivre vos progrès.";
+"auth_signInTitle" = "Se connecter";
+"auth_signInWithGoogle" = "Se connecter avec Google";
+"auth_termsAgreement" = "J'ai lu et j'accepte les [Conditions d'utilisation](https://smashspeed.ca/terms-of-service) et la [Politique de confidentialité](https://smashspeed.ca/privacy-policy).";
+"changePwd_cancelButton" = "Annuler";
+"changePwd_confirmPwdField" = "Confirmer le nouveau mot de passe";
+"changePwd_navTitle" = "Changer le mot de passe";
+"changePwd_newPwdField" = "Nouveau mot de passe";
+"changePwd_updateButton" = "Mettre à jour le mot de passe";
+
+/* Calibration */
+"calib_instruction1" = "Placez un point sur la ligne de service avant et l'autre sur la ligne de service longue de double (ligne de flick).";
+"calib_instruction2" = "Astuce : Faites glisser depuis la zone autour d'un point pour éviter de le couvrir avec votre doigt.";
+"calib_refLengthDescription" = "Entrez la distance réelle entre les deux points.";
+"calib_refLengthLabel" = "Longueur de référence";
+"calib_startButton" = "Démarrer l'analyse";
+"calib_title" = "Calibration";
+
+/* Common */
+"common_cancel" = "Annuler";
+"common_delete" = "Supprimer";
+"common_done" = "Terminé";
+"common_email" = "E-mail";
+"common_error" = "Erreur";
+"common_height" = "Hauteur";
+"common_kmh" = "km/h";
+"common_meters" = "mètres";
+"common_notAvailable" = "N/A";
+"common_ok" = "OK";
+"common_password" = "Mot de passe";
+"common_smashAngle" = "Angle du smash :";
+"common_speed" = "Vitesse";
+"common_tryAgain" = "Réessayer";
+"common_width" = "Largeur";
+
+/* Errors */
+"error_couldNotLoadVideo" = "Impossible de charger la vidéo sélectionnée.";
+"error_genericVideoSelection" = "Une erreur est survenue lors de la sélection de la vidéo.";
+"error_recordLandscape" = "Veuillez enregistrer en mode paysage. Les vidéos en mode portrait ne sont pas prises en charge.";
+"error_selectLandscape" = "Veuillez sélectionner une vidéo en mode paysage. Les vidéos en mode portrait ne sont pas prises en charge.";
+
+/* History & Details */
+"details_liveSpeed" = "Vitesse en direct :";
+"details_navTitle" = "Détails du smash";
+"details_peakSpeed" = "Vitesse de pointe";
+"details_speedHeader" = "Vitesse";
+"details_timeHeader" = "Temps";
+"details_timestampTitle" = "Données temporelles";
+"history_alert_delete_message" = "Voulez-vous vraiment supprimer ce résultat ? Cette action ne peut pas être annulée.";
+"history_alert_delete_title" = "Confirmer la suppression";
+"history_chart_noData" = "Pas assez de données avec les filtres actuels pour dessiner un graphique.";
+"history_chart_selectedDataFormat" = "Vitesse max le %@ : %.1f km/h";
+"history_chart_subtitleFormat" = "Vitesse max par jour (%@)";
+"history_chart_title" = "Progression dans le temps";
+"history_empty_message" = "Vos smashs analysés apparaîtront ici.";
+"history_empty_title" = "Aucun résultat";
+"history_filters_filterBySpeed" = "Filtrer par vitesse";
+"history_filters_minSpeed" = "Vitesse min :";
+"history_filters_timeRange" = "Période";
+"history_filters_title" = "Filtres";
+"history_list_noResults" = "Aucun résultat ne correspond à vos filtres actuels.";
+"history_list_title" = "Historique";
+"history_loggedOut_message" = "Veuillez vous connecter pour voir les résultats.";
+"history_loggedOut_title" = "Connexion requise";
+"history_navTitle" = "Résultats";
+"history_range_all" = "Tout";
+"history_range_month" = "Mois dernier";
+"history_range_week" = "Semaine dernière";
+"history_stats_avgSpeed" = "Vitesse moyenne";
+"history_stats_title" = "Statistiques filtrées";
+"history_stats_topSpeed" = "Vitesse maximale";
+"history_stats_totalSmashes" = "Total des smashs";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Choisir depuis la bibliothèque";
+"inputSelector_landscapeOnlyWarning" = "Seules les vidéos en mode paysage sont prises en charge.";
+"inputSelector_recordNewButton" = "Enregistrer une nouvelle vidéo";
+"inputSelector_title" = "Analyser un smash";
+"mainView_howToRecordButton" = "Comment enregistrer";
+"mainView_prompt" = "Sélectionnez une vidéo pour commencer";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "Résultat de l'analyse";
+"navTitle_calibration" = "Calibration";
+"navTitle_detect" = "Détecter";
+"navTitle_recordingGuide" = "Guide d'enregistrement";
+"navTitle_reviewAdjust" = "Vérifier et ajuster";
+"navTitle_trimVideo" = "Couper la vidéo";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "Commencer";
+"onboarding_slide1_instruction1" = "Placez la caméra sur la ligne de côté, face au terrain. Les lignes du court doivent être parallèles au cadre.";
+"onboarding_slide1_instruction2" = "Gardez le volant visible — évitez les reflets ou les arrière-plans chargés.";
+"onboarding_slide1_instruction3" = "Utilisez une vidéo normale. Évitez le ralenti ou les filtres.";
+"onboarding_slide1_instruction4" = "Coupez la vidéo pour ne garder que le smash — moins d'une seconde (~10 images).";
+"onboarding_slide1_title" = "1. Enregistrez votre smash";
+"onboarding_slide2_instruction1" = "Marquez la ligne de service avant et la ligne de service de double — distantes de 3,87 m.";
+"onboarding_slide2_instruction2" = "Placez la ligne directement sous le joueur.";
+"onboarding_slide2_instruction3" = "Gardez 3,87 m sauf si vous utilisez d'autres lignes — cela pourrait réduire la précision.";
+"onboarding_slide2_title" = "2. Marquez une distance connue";
+"onboarding_slide3_instruction1" = "Utilisez le curseur ou les flèches pour parcourir les images et voir la vitesse du volant.";
+"onboarding_slide3_instruction2" = "Utilisez l'outil 'Interpoler' pour combler automatiquement les lacunes entre les bonnes détections. C'est fortement recommandé.";
+"onboarding_slide3_instruction3" = "Pour un réglage fin, utilisez les commandes manuelles pour déplacer, redimensionner, ajouter ou supprimer une boîte de détection.";
+"onboarding_slide3_instruction4" = "Si vous faites une erreur, utilisez les boutons annuler/rétablir en haut à gauche.";
+"onboarding_slide3_title" = "3. Vérifiez la détection";
+"onboarding_swipePrompt" = "Glissez pour commencer";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Vous voulez savoir à quelle vitesse vous smashez vraiment ?";
+"onboarding_welcome_title" = "Bienvenue sur";
+
+/* Processing States */
+"processing_analyzingVideo" = "Analyse de la vidéo...";
+"processing_preparingVideo" = "Préparation de la vidéo...";
+"processing_trimmingVideo" = "Découpage de la vidéo...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**Caméra :** Utilisez le mode paysage avec un zoom 0.5x pour garder le volant dans le cadre.";
+"recordingGuide_frameRateTip" = "**Images par seconde :** 30 FPS c'est bien, 60 FPS c'est mieux.";
+"recordingGuide_recorderTip" = "**Joueur A (Filmeur) :** Tenez-vous dans les couloirs latéraux.";
+"recordingGuide_smasherTip" = "**Joueur B (Smasheur) :** Smashez depuis la moitié opposée du terrain.";
+"recordingGuide_title" = "Comment enregistrer pour de meilleurs résultats";
+"recordingGuide_visitWebsite" = "Pour un tutoriel vidéo, visitez smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "Analyser une autre vidéo";
+"resultView_angleFormat" = "%.0f° vers le bas";
+"resultView_angleNotCalculated" = "Angle non calculé";
+"resultView_angleUnlockInfo" = "Smashez à plus de 100 km/h pour débloquer l'analyse de l'angle.";
+"resultView_maxSpeedTitle" = "Vitesse maximale";
+"resultView_signInPrompt" = "Vous voulez sauvegarder votre résultat ? Connectez-vous";
+"resultView_smashAngleLabel" = "Angle du smash :";
+"resultView_speedUnit" = "km/h";
+
+/* Review */
+"review_alert_interpolation_message" = "L'interpolation remplit automatiquement les boîtes de délimitation manquantes. Si vous avez une image avec une boîte, puis un écart d'images sans boîte, suivi d'une autre image avec une boîte, cet outil tracera une ligne droite pour combler l'écart.";
+"review_alert_interpolation_title" = "Qu'est-ce que l'interpolation ?";
+"review_alert_manual_message" = "Utilisez ces commandes pour corriger les erreurs de l'IA. Vous pouvez ajouter une boîte si l'IA a manqué le volant, en supprimer une si la détection est fausse, ou ajuster/redimensionner une boîte existante pour plus de précision.";
+"review_alert_manual_title" = "Ajustement manuel";
+"review_alert_speedCalc_message" = "La vitesse est calculée à l'aide de la distance parcourue par le volant entre les images, combinée à la fréquence d'images (fps) de la vidéo.\n\n1. L'IA suit le point central du volant en pixels.\n2. La distance déplacée (en pixels) est multipliée par la fréquence d'images pour obtenir des pixels/seconde.\n3. Un facteur d'échelle (mètres/pixel), déterminé à partir des dimensions connues du court, convertit cela en mètres/seconde.\n4. Le résultat est converti en km/h.";
+"review_alert_speedCalc_title" = "Comment la vitesse est-elle calculée ?";
+"review_box_addButton" = "Ajouter une boîte";
+"review_box_nudgePicker" = "Ajuster";
+"review_box_removeButton" = "Supprimer la boîte";
+"review_box_resizePicker" = "Redimensionner";
+"review_finishButton" = "Terminer et enregistrer l'analyse";
+"review_guidance_dontShowAgain" = "Ne plus afficher ce message";
+"review_guidance_message" = "Utilisez le curseur pour examiner la détection sur chaque image. Ajustez les boîtes si nécessaire pour une précision optimale.";
+"review_guidance_title" = "Conseil : Vérifiez toutes les images";
+"review_interp_gapWarning_message" = "Utilisez 'Interpoler' pour garantir des résultats de vitesse précis.";
+"review_interp_gapWarning_title" = "Écarts détectés dans le suivi";
+"review_interp_interpolateButton" = "Interpoler les images manquantes";
+"review_interp_whatIsButton" = "Qu'est-ce que l'interpolation ?";
+"review_manual_sectionTitle" = "AJUSTEMENT MANUEL";
+"review_nav_aiWarning" = "La détection par IA est à un stade précoce, un réglage manuel est souvent nécessaire.";
+"review_nav_hideManualControls" = "Masquer les commandes manuelles";
+"review_nav_sectionTitle" = "NAVIGATION ENTRE LES IMAGES";
+"review_nav_showManualControls" = "Afficher les commandes manuelles";
+"review_nav_speedLabel" = "Vitesse sur cette image :";
+"review_recalibrateButton" = "Recalibrer la distance";
+"review_topBar_frameCountFormat" = "Image %d sur %d";
+"review_topBar_noFrames" = "Aucune image";
+"review_speedWithUnitFormat" = "%.1f km/h";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° vers le bas";
+"share_image_generatedBy" = "Généré par Smashspeed";
+"share_image_smashAngleLabel" = "Angle du smash";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Partager maintenant";
+"share_preview_title" = "Aperçu de l'image partageable";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "Coupez le clip à moins de 0,8 s (~%d images), en ne montrant que le smash. Le volant doit être visible dans chaque image.";
+"trimView_alert_tooLong_title" = "Clip trop long";
+"trimView_confirmButton" = "Confirmer le découpage";
+"trimView_description" = "Isolez le moment de l'impact. Le clip final doit être très court (~0,25 secondes) et le volant doit être clairement visible dans chaque image.";
+"trimView_durationFormat" = "Durée sélectionnée : %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "Isolez le smash";
+
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "Compte";
+"tab_detect" = "Détecter";
+"tab_results" = "Résultats";
+"account_navTitle" = "Compte";
+
+/* Update Alert */
+"updateAlert_button" = "Mettre à jour";
+"updateAlert_message" = "Une nouvelle version de l'application est disponible. Veuillez mettre à jour pour continuer à utiliser l'application.";
+"updateAlert_title" = "Mise à jour requise";

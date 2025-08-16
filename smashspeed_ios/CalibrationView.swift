@@ -34,9 +34,9 @@ struct CalibrationView: View {
                 .offset(x: 150, y: 150)
 
             VStack(spacing: 0) {
-                // MODIFIED: The top bar now uses an overlay to guarantee a centered title.
                 HStack {
-                    Button("Cancel", action: onCancel).padding()
+                    // LOCALIZED
+                    Button("common_cancel", action: onCancel).padding()
                     Spacer()
                     Button {
                         showInfoSheet = true
@@ -45,9 +45,10 @@ struct CalibrationView: View {
                     }
                     .padding()
                 }
-                .frame(height: 44) // A standard height for the bar
+                .frame(height: 44)
                 .overlay(
-                    Text("Calibration").font(.headline) // This text is perfectly centered.
+                    // LOCALIZED
+                    Text("calib_title").font(.headline)
                 )
                 .background(.ultraThinMaterial)
 
@@ -90,7 +91,8 @@ struct CalibrationView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.accentColor)
                                 .padding(.top, 2)
-                            Text("Place one point on the front service line and the other on the doubles long service (flick) line.")
+                            // LOCALIZED
+                            Text("calib_instruction1")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -101,7 +103,8 @@ struct CalibrationView: View {
                             .font(.subheadline)
                             .foregroundColor(.accentColor)
                             .padding(.top, 2)
-                        Text("Tip: Drag from the area around a point to avoid covering it with your finger.")
+                        // LOCALIZED
+                        Text("calib_instruction2")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -110,24 +113,28 @@ struct CalibrationView: View {
                     
                     VStack {
                         HStack {
-                            Label("Reference Length", systemImage: "ruler")
+                            // LOCALIZED
+                            Label("calib_refLengthLabel", systemImage: "ruler")
                             Spacer()
                             TextField("3.87", text: $referenceLength)
                                 .keyboardType(.decimalPad)
                                 .textFieldStyle(.plain)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 80)
-                            Text("meters")
+                            // LOCALIZED
+                            Text("common_meters")
                                 .foregroundColor(.secondary)
                         }
                         Divider()
-                        Text("Enter the real-world distance between the two points.")
+                        // LOCALIZED
+                        Text("calib_refLengthDescription")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
-                    Button("Start Analysis", action: calculateAndProceed)
+                    // LOCALIZED
+                    Button("calib_startButton", action: calculateAndProceed)
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .frame(maxWidth: .infinity)
@@ -142,15 +149,16 @@ struct CalibrationView: View {
         .onAppear(perform: loadFirstFrame)
         .sheet(isPresented: $showInfoSheet) {
             OnboardingSheetContainerView {
+                // LOCALIZED
                 OnboardingInstructionView(
                     slideIndex: 0,
                     currentTab: .constant(0),
                     imageNames: ["OnboardingSlide2.1","OnboardingSlide2.2","OnboardingSlide2.3"],
-                    title: "2. Mark a Known Distance",
+                    titleKey: "onboarding_slide2_title",
                     instructions: [
-                        (icon: "scope", text: "Mark the front service line and doubles service line — 3.87 m apart."),
-                        (icon: "person.fill", text: "Place the line directly under the player."),
-                        (icon: "ruler.fill", text: "Keep 3.87 m unless using different lines — changing it may reduce accuracy.")
+                        (icon: "scope", textKey: "onboarding_slide2_instruction1"),
+                        (icon: "person.fill", textKey: "onboarding_slide2_instruction2"),
+                        (icon: "ruler.fill", textKey: "onboarding_slide2_instruction3")
                     ]
                 )
             }
@@ -228,7 +236,8 @@ private struct OnboardingSheetContainerView<Content: View>: View {
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    // LOCALIZED
+                    Button("common_done") {
                         dismiss()
                     }
                 }

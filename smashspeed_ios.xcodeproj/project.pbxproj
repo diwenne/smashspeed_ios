@@ -49,6 +49,7 @@
 		4E472AF82E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "smashspeed_ios" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"/Localized: Localizable.strings",
 				"View+Snapshot.swift",
 			);
 			target = 4E439D662E106B1C0034BCBB /* smashspeed_ios */;
@@ -63,6 +64,13 @@
 				"View+Snapshot.swift",
 			);
 		};
+		4E6E7C1D2E50340600B632AB /* Exceptions for "smashspeed_ios" folder in "Compile Sources" phase from "smashspeed_ios" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 4E439D632E106B1C0034BCBB /* Sources */;
+			membershipExceptions = (
+				"/Localized: Localizable.strings",
+			);
+		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -70,6 +78,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				4E472AF82E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "smashspeed_ios" target */,
+				4E6E7C1D2E50340600B632AB /* Exceptions for "smashspeed_ios" folder in "Compile Sources" phase from "smashspeed_ios" target */,
 				4E472AF92E245B3400946609 /* Exceptions for "smashspeed_ios" folder in "Copy Bundle Resources" phase from "smashspeed_ios" target */,
 			);
 			path = smashspeed_ios;
@@ -263,6 +272,10 @@
 			knownRegions = (
 				en,
 				Base,
+				vi,
+				th,
+				ms,
+				fr,
 			);
 			mainGroup = 4E439D5E2E106B1C0034BCBB;
 			minimizedProjectReferenceProxies = 1;
@@ -471,7 +484,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -492,7 +505,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -508,7 +521,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -529,7 +542,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

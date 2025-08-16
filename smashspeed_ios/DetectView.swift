@@ -47,7 +47,6 @@ struct DetectView: View {
                 switch viewModel.appState {
 
                 case .idle:
-                    // MODIFIED: .navigationTitle and .toolbar are moved to the parent ZStack
                     MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide)
                         .onChange(of: selectedItem) {
                             guard let item = selectedItem else { return }
@@ -57,7 +56,8 @@ struct DetectView: View {
                             Task {
                                 do {
                                     guard let videoFile = try await item.loadTransferable(type: VideoFile.self) else {
-                                        viewModel.appState = .error("Could not load the selected video.")
+                                        // LOCALIZED
+                                        viewModel.appState = .error(NSLocalizedString("error_couldNotLoadVideo", comment: "Error message"))
                                         return
                                     }
 
@@ -65,10 +65,12 @@ struct DetectView: View {
                                     if await isVideoLandscape(url: url) {
                                         viewModel.videoSelected(url: url)
                                     } else {
-                                        viewModel.appState = .error("Please select a landscape video. Portrait videos are not supported.")
+                                        // LOCALIZED
+                                        viewModel.appState = .error(NSLocalizedString("error_selectLandscape", comment: "Error message"))
                                     }
                                 } catch {
-                                    viewModel.appState = .error("An error occurred while selecting the video.")
+                                    // LOCALIZED
+                                    viewModel.appState = .error(NSLocalizedString("error_genericVideoSelection", comment: "Error message"))
                                 }
                             }
                         }
@@ -81,14 +83,15 @@ struct DetectView: View {
                                 if await isVideoLandscape(url: url) {
                                     viewModel.videoSelected(url: url)
                                 } else {
-                                    viewModel.appState = .error("Please record in landscape mode. Portrait videos are not supported.")
+                                    // LOCALIZED
+                                    viewModel.appState = .error(NSLocalizedString("error_recordLandscape", comment: "Error message"))
                                 }
                             }
                         }
                 
-                // New case to handle the pre-trimming loading state
                 case .preparing:
-                    ProcessingView(message: "Preparing Video...") { viewModel.reset() }
+                    // LOCALIZED
+                    ProcessingView(message: NSLocalizedString("processing_preparingVideo", comment: "Status message")) { viewModel.reset() }
 
                 case .trimming(let videoURL):
                     TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
@@ -125,7 +128,6 @@ struct DetectView: View {
                 }
             }
             .toolbar {
-                // Conditionally display toolbar items based on the current state
                 if case .idle = viewModel.appState {
                     ToolbarItem(placement: .topBarLeading) { AppLogoView() }
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -134,8 +136,6 @@ struct DetectView: View {
                         }
                     }
                 }
-                
-                // You can add `else if` blocks here for other states if they need toolbars
             }
         }
         .sheet(isPresented: $showInputSelector) {
@@ -147,7 +147,7 @@ struct DetectView: View {
             .presentationDetents([.height(260)])
             .background(ClearBackgroundView())
         }
-        .sheet(isPresented: $showRecordingGuide) { // Added sheet for the recording guide
+        .sheet(isPresented: $showRecordingGuide) {
             RecordingGuideView()
         }
         .fullScreenCover(isPresented: $showCamera) {
@@ -157,23 +157,23 @@ struct DetectView: View {
         .sheet(isPresented: $showOnboarding) { OnboardingView { showOnboarding = false } }
     }
     
-    // ADDED: A helper computed property to manage the title
+    // LOCALIZED: This helper now returns localization keys instead of hardcoded strings.
     private var navigationTitleForState: String {
         switch viewModel.appState {
         case .idle:
-            return "Detect"
+            return "navTitle_detect"
         case .trimming:
-            return "Trim Video"
+            return "navTitle_trimVideo"
         case .review:
-            return "Review & Adjust"
+            return "navTitle_reviewAdjust"
         case .awaitingCalibration:
-            return "Calibration"
+            return "navTitle_calibration"
         case .completed:
-            return "Analysis Result"
+            return "navTitle_analysisResult"
         case .error:
-            return "Error"
+            return "common_error"
         default:
-            return "" // For .preparing, .processing
+            return ""
         }
     }
 }
@@ -190,7 +190,8 @@ struct RecordingGuideView: View {
 
                 VStack(spacing: 20) {
                     
-                    Text("For a video tutorial, visit smashspeed.ca")
+                    // LOCALIZED
+                    Text("recordingGuide_visitWebsite")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .padding(.top, 5)
@@ -205,33 +206,38 @@ struct RecordingGuideView: View {
                         .padding(.horizontal)
 
                     VStack(alignment: .leading, spacing: 15) {
-                        Text("How to Record for Best Results")
+                        // LOCALIZED
+                        Text("recordingGuide_title")
                             .font(.title3.bold())
                             .padding(.bottom, 5)
 
                         Label {
-                            Text("**Player A (Recorder):** Stand in the side tram lines.")
+                            // LOCALIZED
+                            Text("recordingGuide_recorderTip")
                                 .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "video.fill")
                         }
 
                         Label {
-                            Text("**Player B (Smasher):** Smash from the opposite half of the court.")
+                            // LOCALIZED
+                            Text("recordingGuide_smasherTip")
                                 .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "figure.badminton")
                         }
 
                         Label {
-                            Text("**Camera:** Use landscape mode with 0.5x zoom to keep the shuttle in frame.")
+                            // LOCALIZED
+                            Text("recordingGuide_cameraTip")
                                 .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "camera.viewfinder")
                         }
 
                         Label {
-                            Text("**Frame Rate:** 30 FPS is fine, 60 FPS is better.")
+                            // LOCALIZED
+                            Text("recordingGuide_frameRateTip")
                                 .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "film.stack")
@@ -246,11 +252,13 @@ struct RecordingGuideView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Recording Guide")
+            // LOCALIZED
+            .navigationTitle(Text("navTitle_recordingGuide"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                    // LOCALIZED
+                    Button("common_done") { dismiss() }
                 }
             }
         }
@@ -286,7 +294,8 @@ struct TrimmingView: View {
                 VStack(spacing: 20) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("Trimming Video...")
+                    // LOCALIZED
+                    Text("processing_trimmingVideo")
                         .font(.title2)
                         .fontWeight(.bold)
                 }
@@ -296,10 +305,12 @@ struct TrimmingView: View {
                 .padding()
             } else {
                 VStack(spacing: 20) {
-                    Text("Trim to the Smash")
+                    // LOCALIZED
+                    Text("trimView_title")
                         .font(.largeTitle.bold())
 
-                    Text("Isolate the moment of impact. The final clip should be very short (~0.25 seconds), and the birdie should be clearly visible in each frame.")
+                    // LOCALIZED
+                    Text("trimView_description")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -322,11 +333,14 @@ struct TrimmingView: View {
                         .frame(height: 60)
 
                         HStack {
-                            Text(String(format: "%.2fs", startTime))
+                            // LOCALIZED
+                            Text(String(format: NSLocalizedString("trimView_timeFormat", comment: ""), startTime))
                             Spacer()
-                            Text("Selected Duration: \(max(0, endTime - startTime), specifier: "%.2f")s")
+                            // LOCALIZED
+                            Text(String(format: NSLocalizedString("trimView_durationFormat", comment: ""), max(0, endTime - startTime)))
                             Spacer()
-                            Text(String(format: "%.2fs", endTime))
+                            // LOCALIZED
+                            Text(String(format: NSLocalizedString("trimView_timeFormat", comment: ""), endTime))
                         }
                         .font(.caption.monospaced())
                         .foregroundColor(.secondary)
@@ -336,11 +350,13 @@ struct TrimmingView: View {
                     Spacer()
 
                     HStack {
-                        Button("Cancel", role: .cancel, action: onCancel)
+                        // LOCALIZED
+                        Button("common_cancel", role: .cancel, action: onCancel)
                             .buttonStyle(.bordered)
                             .controlSize(.large)
-
-                        Button("Confirm Trim") {
+                        
+                        // LOCALIZED
+                        Button("trimView_confirmButton") {
                             validateAndProceed()
                         }
                         .buttonStyle(.borderedProminent)
@@ -351,11 +367,14 @@ struct TrimmingView: View {
                 }
                 .padding(.top, 40)
                 .onAppear(perform: loadVideoDetails)
-                .alert("Clip Too Long", isPresented: $showTooLongAlert) {
-                    Button("OK", role: .cancel) { }
+                // LOCALIZED
+                .alert(Text("trimView_alert_tooLong_title"), isPresented: $showTooLongAlert) {
+                    // LOCALIZED
+                    Button("common_ok", role: .cancel) { }
                 } message: {
                     let maxFrames = Int(0.8 * Double(frameRate))
-                    Text("Trim the clip to under 0.8s (~\(maxFrames) frames), showing only the smash. The shuttle should be visible in every frame.")
+                    // LOCALIZED
+                    Text(String(format: NSLocalizedString("trimView_alert_tooLong_message", comment: ""), maxFrames))
                 }
             }
         }
@@ -424,6 +443,8 @@ struct TrimmingView: View {
         }
     }
 }
+
+// NOTE: RangeSliderView has no user-facing text to localize.
 
 private struct RangeSliderView: View {
     @Binding var startTime: Double
@@ -515,11 +536,9 @@ struct MainView: View {
         VStack(spacing: 20) {
             Spacer()
 
-            // Main CTA
             Button(action: { showInputSelector = true }) {
                 let circle = Circle()
                 ZStack {
-                    // 1. Bright frosty base — always light, even over dark bg
                     circle
                         .fill(
                             LinearGradient(
@@ -532,7 +551,6 @@ struct MainView: View {
                             )
                         )
 
-                    // 2. Frosted blur layer (glass look)
                     circle
                         .fill(.ultraThinMaterial)
                         .background(
@@ -550,7 +568,6 @@ struct MainView: View {
                                 .blur(radius: 8)
                         )
 
-                    // 3. Highlight stroke
                     circle
                         .strokeBorder(
                             LinearGradient(
@@ -565,7 +582,6 @@ struct MainView: View {
                         )
                         .blendMode(.overlay)
 
-                    // 4. Icon
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.system(size: 70, weight: .thin))
                         .foregroundColor(.white.opacity(0.95))
@@ -578,16 +594,16 @@ struct MainView: View {
             .clipShape(Circle())
             .buttonStyle(ScaleAndOpacityButtonStyle())
 
-            // CTA label
-            Text("Select a video to begin")
+            // LOCALIZED
+            Text("mainView_prompt")
                 .font(.headline)
                 .fontWeight(.semibold)
                 .foregroundColor(.secondary)
                 .shadow(color: .black.opacity(0.1), radius: 1, y: 1)
 
-            // Recording guide button
             Button(action: { showRecordingGuide = true }) {
-                Label("How to Record", systemImage: "questionmark.circle")
+                // LOCALIZED
+                Label("mainView_howToRecordButton", systemImage: "questionmark.circle")
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -604,9 +620,11 @@ struct InputSourceSelectorView: View {
     @Binding var selectedItem: PhotosPickerItem?
     var body: some View {
         VStack(spacing: 15) {
-            Text("Analyze a Smash").font(.headline).padding(.top)
+            // LOCALIZED
+            Text("inputSelector_title").font(.headline).padding(.top)
             Label {
-                Text("Only landscape videos are supported.")
+                // LOCALIZED
+                Text("inputSelector_landscapeOnlyWarning")
                     .fontWeight(.medium)
             } icon: {
                 Image(systemName: "exclamationmark.triangle")
@@ -616,11 +634,15 @@ struct InputSourceSelectorView: View {
                 Button {
                     isPresented = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { showCamera = true }
-                } label: { Label("Record New Video", systemImage: "camera.fill").font(.headline).fontWeight(.semibold).frame(maxWidth: .infinity) }
+                } label: {
+                    // LOCALIZED
+                    Label("inputSelector_recordNewButton", systemImage: "camera.fill").font(.headline).fontWeight(.semibold).frame(maxWidth: .infinity)
+                }
                 .controlSize(.large).buttonStyle(.borderedProminent)
 
                 PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
-                    Label("Choose from Library", systemImage: "photo.on.rectangle.angled").font(.headline).fontWeight(.semibold).frame(maxWidth: .infinity)
+                    // LOCALIZED
+                    Label("inputSelector_chooseLibraryButton", systemImage: "photo.on.rectangle.angled").font(.headline).fontWeight(.semibold).frame(maxWidth: .infinity)
                 }.controlSize(.large).buttonStyle(.bordered).onChange(of: selectedItem) { isPresented = false }
 
             }.padding(30).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
@@ -628,18 +650,20 @@ struct InputSourceSelectorView: View {
     }
 }
 
-// MODIFIED: This view now accepts a custom message.
 struct ProcessingView: View {
-    var message: String = "Analyzing Video..."
+    // LOCALIZED: Default message is now a key.
+    var message: String = NSLocalizedString("processing_analyzingVideo", comment: "Default processing message")
     let onCancel: () -> Void
     var body: some View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
+            // LOCALIZED: This now displays the localized message passed to it.
             Text(message)
                 .font(.title2)
                 .fontWeight(.bold)
-            Button("Cancel", role: .destructive, action: onCancel)
+            // LOCALIZED
+            Button("common_cancel", role: .destructive, action: onCancel)
         }
         .padding(40)
         .background(GlassPanel())
@@ -656,7 +680,8 @@ struct ErrorView: View {
         VStack(spacing: 20) {
             Image(systemName: "exclamationmark.triangle.fill").font(.largeTitle).foregroundColor(.red)
             Text(message).multilineTextAlignment(.center).padding()
-            Button("Try Again", action: onReset).buttonStyle(.borderedProminent)
+            // LOCALIZED
+            Button("common_tryAgain", action: onReset).buttonStyle(.borderedProminent)
         }.padding(40).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous)).padding()
     }
 }
@@ -674,7 +699,8 @@ struct ResultView: View {
                 Spacer()
 
                 VStack(spacing: 15) {
-                    Text("Maximum Speed")
+                    // LOCALIZED
+                    Text("resultView_maxSpeedTitle")
                         .font(.title)
                         .foregroundColor(.secondary)
 
@@ -682,7 +708,8 @@ struct ResultView: View {
                         .font(.system(size: 80, weight: .bold, design: .rounded))
                         .foregroundColor(.accentColor)
 
-                    Text("km/h")
+                    // LOCALIZED
+                    Text("resultView_speedUnit")
                         .font(.title2)
                         .foregroundColor(.secondary)
                         .offset(y: -10)
@@ -690,11 +717,13 @@ struct ResultView: View {
                     if let angle = angle {
                         Divider().padding(.horizontal)
                         HStack {
-                            Text("Smash Angle:")
+                            // LOCALIZED
+                            Text("resultView_smashAngleLabel")
                                 .font(.title3)
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Text(String(format: "%.0f° downward", angle))
+                            // LOCALIZED
+                            Text(String(format: NSLocalizedString("resultView_angleFormat", comment: ""), angle))
                                 .font(.title3)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.primary)
@@ -703,10 +732,12 @@ struct ResultView: View {
                     } else {
                         Divider().padding(.horizontal)
                         VStack(spacing: 5) {
-                            Text("Angle Not Calculated")
+                            // LOCALIZED
+                            Text("resultView_angleNotCalculated")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            Text("Smash faster than 100 km/h to unlock angle analysis.")
+                            // LOCALIZED
+                            Text("resultView_angleUnlockInfo")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -720,12 +751,14 @@ struct ResultView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
 
                 if viewModel.authState != .signedIn {
-                    NavigationLink(destination: AccountView()) { Text("Want to save your result? Sign In") }.padding(.top, 10)
+                    // LOCALIZED
+                    NavigationLink(destination: AccountView()) { Text("resultView_signInPrompt") }.padding(.top, 10)
                 }
 
                 Spacer()
-
-                Button(action: onReset) { Label("Analyze Another Video", systemImage: "arrow.uturn.backward.circle") }
+                
+                // LOCALIZED
+                Button(action: onReset) { Label("resultView_analyzeAnotherButton", systemImage: "arrow.uturn.backward.circle") }
                 .buttonStyle(.bordered).controlSize(.large)
                 
             }
@@ -743,7 +776,6 @@ struct ResultView: View {
 
     @MainActor
     private func renderImageForSharing() {
-        // UPDATED: Pass the angle to the ShareableView
         let shareView = ShareableView(speed: self.speed, angle: self.angle)
         self.shareableImage = shareView.snapshot()
     }

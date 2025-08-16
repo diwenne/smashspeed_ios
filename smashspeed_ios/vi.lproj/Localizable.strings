@@ -5,3 +5,234 @@
 //  Created by Diwen Huang on 2025-08-15.
 //
 
+// =================================================================
+// Vietnamese (vi.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "Bạn có chắc chắn muốn xóa tài khoản của mình không? Hành động này là vĩnh viễn và không thể hoàn tác.";
+"account_alert_delete_title" = "Xóa tài khoản";
+"account_alert_signOut_message" = "Bạn có chắc chắn muốn đăng xuất không?";
+"account_loggedIn_accountActions" = "Hành động tài khoản";
+"account_loggedIn_appearance" = "Giao diện";
+"account_loggedIn_appearanceDark" = "Tối";
+"account_loggedIn_appearanceLight" = "Sáng";
+"account_loggedIn_appearanceSystem" = "Hệ thống";
+"account_loggedIn_changePassword" = "Đổi mật khẩu";
+"account_loggedIn_communitySupport" = "Cộng đồng & Hỗ trợ";
+"account_loggedIn_contactSupport" = "Liên hệ hỗ trợ";
+"account_loggedIn_deleteAccount" = "Xóa tài khoản";
+"account_loggedIn_followInstagram" = "Theo dõi trên Instagram";
+"account_loggedIn_memberSinceFormat" = "Thành viên từ %@";
+"account_loggedIn_noEmail" = "Không tìm thấy email";
+"account_loggedIn_officialWebsite" = "Trang web chính thức";
+"account_loggedIn_settingsTitle" = "Cài đặt";
+"account_loggedIn_signOut" = "Đăng xuất";
+"account_loggedIn_viewTutorial" = "Xem hướng dẫn";
+"account_menu_contact" = "Liên hệ chúng tôi";
+"account_menu_faq" = "Câu hỏi thường gặp";
+"account_menu_privacy" = "Chính sách bảo mật";
+"account_menu_terms" = "Điều khoản dịch vụ";
+"account_navTitle_myAccount" = "Tài khoản của tôi";
+"account_navTitle_welcome" = "Chào mừng";
+"auth_alreadyHaveAccount" = "Đã có tài khoản? Đăng nhập";
+"auth_createAccountButton" = "Tạo tài khoản";
+"auth_createAccountTitle" = "Tạo tài khoản";
+"auth_dontHaveAccount" = "Chưa có tài khoản? Đăng ký";
+"auth_forgotPassword" = "Quên mật khẩu?";
+"auth_orDivider" = "Hoặc";
+"auth_passwordMismatch" = "Mật khẩu không khớp.";
+"auth_signInButton" = "Đăng nhập";
+"auth_signInPrompt" = "Đăng nhập để truy cập nhiều tính năng hơn, tùy chỉnh cài đặt và theo dõi tiến trình của bạn.";
+"auth_signInTitle" = "Đăng nhập";
+"auth_signInWithGoogle" = "Đăng nhập bằng Google";
+"auth_termsAgreement" = "Tôi đã đọc và đồng ý với [Điều khoản dịch vụ](https://smashspeed.ca/terms-of-service) và [Chính sách bảo mật](https://smashspeed.ca/privacy-policy).";
+"changePwd_cancelButton" = "Hủy";
+"changePwd_confirmPwdField" = "Xác nhận mật khẩu mới";
+"changePwd_navTitle" = "Đổi mật khẩu";
+"changePwd_newPwdField" = "Mật khẩu mới";
+"changePwd_updateButton" = "Cập nhật mật khẩu";
+
+/* Calibration */
+"calib_instruction1" = "Đặt một điểm trên vạch giao cầu ngắn và điểm còn lại trên vạch giao cầu dài cho đánh đôi.";
+"calib_instruction2" = "Mẹo: Kéo từ khu vực xung quanh một điểm để tránh che nó bằng ngón tay của bạn.";
+"calib_refLengthDescription" = "Nhập khoảng cách thực tế giữa hai điểm.";
+"calib_refLengthLabel" = "Chiều dài tham chiếu";
+"calib_startButton" = "Bắt đầu phân tích";
+"calib_title" = "Hiệu chỉnh";
+
+/* Common */
+"common_cancel" = "Hủy";
+"common_delete" = "Xóa";
+"common_done" = "Xong";
+"common_email" = "Email";
+"common_error" = "Lỗi";
+"common_height" = "Chiều cao";
+"common_kmh" = "km/h";
+"common_meters" = "mét";
+"common_notAvailable" = "Không có";
+"common_ok" = "OK";
+"common_password" = "Mật khẩu";
+"common_smashAngle" = "Góc đập:";
+"common_speed" = "Tốc độ";
+"common_tryAgain" = "Thử lại";
+"common_width" = "Chiều rộng";
+
+/* Errors */
+"error_couldNotLoadVideo" = "Không thể tải video đã chọn.";
+"error_genericVideoSelection" = "Đã xảy ra lỗi khi chọn video.";
+"error_recordLandscape" = "Vui lòng ghi hình ở chế độ ngang. Video quay dọc không được hỗ trợ.";
+"error_selectLandscape" = "Vui lòng chọn video quay ngang. Video quay dọc không được hỗ trợ.";
+
+/* History & Details */
+"details_liveSpeed" = "Tốc độ trực tiếp:";
+"details_navTitle" = "Chi tiết cú đập";
+"details_peakSpeed" = "Tốc độ đỉnh";
+"details_speedHeader" = "Tốc độ";
+"details_timeHeader" = "Thời gian";
+"details_timestampTitle" = "Dữ liệu thời gian";
+"history_alert_delete_message" = "Bạn có chắc chắn muốn xóa kết quả này không? Hành động này không thể hoàn tác.";
+"history_alert_delete_title" = "Xác nhận xóa";
+"history_chart_noData" = "Không đủ dữ liệu với bộ lọc hiện tại để vẽ biểu đồ.";
+"history_chart_selectedDataFormat" = "Tốc độ cao nhất vào %@: %.1f km/h";
+"history_chart_subtitleFormat" = "Tốc độ cao nhất mỗi ngày (%@)";
+"history_chart_title" = "Tiến trình theo thời gian";
+"history_empty_message" = "Các cú đập đã phân tích của bạn sẽ xuất hiện ở đây.";
+"history_empty_title" = "Không có kết quả";
+"history_filters_filterBySpeed" = "Lọc theo tốc độ";
+"history_filters_minSpeed" = "Tốc độ tối thiểu:";
+"history_filters_timeRange" = "Phạm vi thời gian";
+"history_filters_title" = "Bộ lọc";
+"history_list_noResults" = "Không có kết quả nào khớp với bộ lọc hiện tại của bạn.";
+"history_list_title" = "Lịch sử";
+"history_loggedOut_message" = "Vui lòng đăng nhập để xem kết quả.";
+"history_loggedOut_title" = "Yêu cầu đăng nhập";
+"history_navTitle" = "Kết quả";
+"history_range_all" = "Toàn bộ";
+"history_range_month" = "Tháng qua";
+"history_range_week" = "Tuần qua";
+"history_stats_avgSpeed" = "Tốc độ trung bình";
+"history_stats_title" = "Thống kê đã lọc";
+"history_stats_topSpeed" = "Tốc độ cao nhất";
+"history_stats_totalSmashes" = "Tổng số cú đập";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Chọn từ thư viện";
+"inputSelector_landscapeOnlyWarning" = "Chỉ hỗ trợ video quay ngang.";
+"inputSelector_recordNewButton" = "Quay video mới";
+"inputSelector_title" = "Phân tích một cú đập";
+"mainView_howToRecordButton" = "Hướng dẫn quay";
+"mainView_prompt" = "Chọn một video để bắt đầu";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "Kết quả phân tích";
+"navTitle_calibration" = "Hiệu chỉnh";
+"navTitle_detect" = "Phát hiện";
+"navTitle_recordingGuide" = "Hướng dẫn quay phim";
+"navTitle_reviewAdjust" = "Xem lại & Điều chỉnh";
+"navTitle_trimVideo" = "Cắt video";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "Bắt đầu";
+"onboarding_slide1_instruction1" = "Đặt máy quay ở đường biên, hướng thẳng qua. Các đường sân phải song song với khung hình.";
+"onboarding_slide1_instruction2" = "Giữ quả cầu luôn trong tầm nhìn — tránh ánh sáng chói hoặc nền lộn xộn.";
+"onboarding_slide1_instruction3" = "Sử dụng video thông thường. Tránh quay chậm hoặc dùng bộ lọc.";
+"onboarding_slide1_instruction4" = "Cắt video chỉ còn đoạn đập cầu — dưới 1 giây (~10 khung hình).";
+"onboarding_slide1_title" = "1. Quay cú đập của bạn";
+"onboarding_slide2_instruction1" = "Đánh dấu vạch giao cầu ngắn và vạch giao cầu đôi — cách nhau 3,87 m.";
+"onboarding_slide2_instruction2" = "Đặt đường kẻ ngay dưới người chơi.";
+"onboarding_slide2_instruction3" = "Giữ 3,87 m trừ khi sử dụng các vạch khác — thay đổi có thể làm giảm độ chính xác.";
+"onboarding_slide2_title" = "2. Đánh dấu một khoảng cách đã biết";
+"onboarding_slide3_instruction1" = "Sử dụng thanh trượt hoặc các phím mũi tên để xem qua các khung hình và tốc độ quả cầu.";
+"onboarding_slide3_instruction2" = "Sử dụng công cụ 'Nội suy' để tự động lấp đầy khoảng trống giữa các phát hiện tốt. Điều này rất được khuyến khích.";
+"onboarding_slide3_instruction3" = "Để tinh chỉnh, sử dụng các điều khiển thủ công để di chuyển, thay đổi kích thước, thêm hoặc xóa hộp phát hiện.";
+"onboarding_slide3_instruction4" = "Nếu bạn mắc lỗi, hãy sử dụng các nút hoàn tác/làm lại ở trên cùng bên trái.";
+"onboarding_slide3_title" = "3. Xem lại phát hiện";
+"onboarding_swipePrompt" = "Vuốt để bắt đầu";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Bạn có muốn biết mình đập cầu nhanh đến mức nào không?";
+"onboarding_welcome_title" = "Chào mừng đến với";
+
+/* Processing States */
+"processing_analyzingVideo" = "Đang phân tích video...";
+"processing_preparingVideo" = "Đang chuẩn bị video...";
+"processing_trimmingVideo" = "Đang cắt video...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**Máy quay :** Sử dụng chế độ ngang với zoom 0.5x để giữ quả cầu trong khung hình.";
+"recordingGuide_frameRateTip" = "**Tốc độ khung hình :** 30 FPS là ổn, 60 FPS thì tốt hơn.";
+"recordingGuide_recorderTip" = "**Người chơi A (Người quay) :** Đứng ở đường biên dọc.";
+"recordingGuide_smasherTip" = "**Người chơi B (Người đập) :** Đập cầu từ nửa sân đối diện.";
+"recordingGuide_title" = "Cách quay để có kết quả tốt nhất";
+"recordingGuide_visitWebsite" = "Để xem video hướng dẫn, hãy truy cập smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "Phân tích video khác";
+"resultView_angleFormat" = "%.0f° hướng xuống";
+"resultView_angleNotCalculated" = "Góc chưa được tính";
+"resultView_angleUnlockInfo" = "Đập cầu nhanh hơn 100 km/h để mở khóa phân tích góc.";
+"resultView_maxSpeedTitle" = "Tốc độ tối đa";
+"resultView_signInPrompt" = "Bạn muốn lưu kết quả? Đăng nhập";
+"resultView_smashAngleLabel" = "Góc đập cầu:";
+"resultView_speedUnit" = "km/h";
+
+/* Review */
+"review_alert_interpolation_message" = "Nội suy tự động điền vào các hộp giới hạn bị thiếu. Nếu bạn có một khung hình có hộp, sau đó là một khoảng trống các khung hình không có hộp, theo sau là một khung hình khác có hộp, công cụ này sẽ vẽ một đường thẳng để lấp đầy khoảng trống.";
+"review_alert_interpolation_title" = "Nội suy là gì?";
+"review_alert_manual_message" = "Sử dụng các điều khiển này để sửa lỗi do AI gây ra. Bạn có thể thêm hộp nếu AI bỏ lỡ quả cầu, xóa hộp nếu phát hiện sai, hoặc di chuyển/thay đổi kích thước hộp hiện có để có độ chính xác tốt hơn.";
+"review_alert_manual_title" = "Điều chỉnh thủ công";
+"review_alert_speedCalc_message" = "Tốc độ được tính bằng khoảng cách quả cầu di chuyển giữa các khung hình, kết hợp với tốc độ khung hình (fps) của video.\n\n1. AI theo dõi điểm trung tâm của quả cầu bằng pixel.\n2. Khoảng cách di chuyển (tính bằng pixel) được nhân với tốc độ khung hình để có pixel/giây.\n3. Một hệ số tỷ lệ (mét/pixel), được xác định từ kích thước đã biết của sân, chuyển đổi điều này thành mét/giây.\n4. Kết quả được chuyển đổi thành km/h.";
+"review_alert_speedCalc_title" = "Tốc độ được tính như thế nào?";
+"review_box_addButton" = "Thêm hộp";
+"review_box_nudgePicker" = "Di chuyển";
+"review_box_removeButton" = "Xóa hộp";
+"review_box_resizePicker" = "Đổi kích thước";
+"review_finishButton" = "Hoàn tất & Lưu phân tích";
+"review_guidance_dontShowAgain" = "Không hiển thị lại";
+"review_guidance_message" = "Sử dụng thanh trượt để xem lại phát hiện trên mỗi khung hình. Điều chỉnh các hộp khi cần để có độ chính xác tốt nhất.";
+"review_guidance_title" = "Mẹo: Kiểm tra tất cả các khung hình";
+"review_interp_gapWarning_message" = "Sử dụng 'Nội suy' để đảm bảo kết quả tốc độ chính xác.";
+"review_interp_gapWarning_title" = "Phát hiện có khoảng trống trong theo dõi";
+"review_interp_interpolateButton" = "Nội suy các khung hình bị thiếu";
+"review_interp_whatIsButton" = "Nội suy là gì?";
+"review_manual_sectionTitle" = "ĐIỀU CHỈNH THỦ CÔNG";
+"review_nav_aiWarning" = "Phát hiện của AI đang ở giai đoạn đầu, thường cần điều chỉnh thủ công.";
+"review_nav_hideManualControls" = "Ẩn điều khiển thủ công";
+"review_nav_sectionTitle" = "DUYỆT KHUNG HÌNH";
+"review_nav_showManualControls" = "Hiển thị điều khiển thủ công";
+"review_nav_speedLabel" = "Tốc độ tại khung hình này:";
+"review_recalibrateButton" = "Hiệu chỉnh lại khoảng cách";
+"review_topBar_frameCountFormat" = "Khung hình %d / %d";
+"review_topBar_noFrames" = "Không có khung hình";
+"review_speedWithUnitFormat" = "%.1f km/h";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° hướng xuống";
+"share_image_generatedBy" = "Tạo bởi Smashspeed";
+"share_image_smashAngleLabel" = "Góc đập";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Chia sẻ ngay";
+"share_preview_title" = "Xem trước ảnh có thể chia sẻ";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "Hãy cắt clip dưới 0,8 giây (~%d khung hình), chỉ hiển thị cú đập. Quả cầu phải được nhìn thấy trong mọi khung hình.";
+"trimView_alert_tooLong_title" = "Clip quá dài";
+"trimView_confirmButton" = "Xác nhận cắt";
+"trimView_description" = "Tách riêng khoảnh khắc va chạm. Clip cuối cùng nên rất ngắn (~0,25 giây) và quả cầu phải nhìn thấy rõ trong mỗi khung hình.";
+"trimView_durationFormat" = "Thời lượng đã chọn: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "Cắt đến đoạn đập cầu";
+
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "Tài khoản";
+"tab_detect" = "Phát hiện";
+"tab_results" = "Kết quả";
+"account_navTitle" = "Tài khoản";
+
+/* Update Alert */
+"updateAlert_button" = "Cập nhật ngay";
+"updateAlert_message" = "Đã có phiên bản mới của ứng dụng. Vui lòng cập nhật để tiếp tục sử dụng.";
+"updateAlert_title" = "Yêu cầu cập nhật";
+

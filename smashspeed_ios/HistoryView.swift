@@ -1,11 +1,3 @@
-//
-//  HistoryView.swift
-//  smashspeed_ios
-//
-//  Created by Diwen Huang on 2025-07-05.
-//
-
-
 import SwiftUI
 import FirebaseFirestore
 import Combine
@@ -17,15 +9,22 @@ import CoreGraphics
 
 // MARK: - Helper Types for History View
 
-/// Enum for selecting the time range for filters.
+// LOCALIZED: Added a helper to get the localization key for each enum case.
 enum TimeRange: String, CaseIterable, Identifiable {
     case week = "Past Week"
     case month = "Past Month"
     case all = "All Time"
     var id: Self { self }
+
+    var localizedKey: String {
+        switch self {
+        case .week: return "history_range_week"
+        case .month: return "history_range_month"
+        case .all: return "history_range_all"
+        }
+    }
 }
 
-/// A struct to hold aggregated data for the chart.
 struct DailyTopSpeed: Identifiable {
     let id = UUID()
     let date: Date
@@ -39,12 +38,10 @@ struct HistoryView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @StateObject private var historyViewModel = HistoryViewModel()
     
-    // --- STATE FOR FILTERS ---
     @State private var selectedRange: TimeRange = .week
     @State private var speedFilterEnabled = false
     @State private var minimumSpeed: Double = 150.0
     
-    // --- STATE FOR UI ---
     @State private var showDeleteConfirmation = false
     @State private var resultToDelete: DetectionResult?
     @State private var selectedDataPoint: DailyTopSpeed?
@@ -54,7 +51,6 @@ struct HistoryView: View {
         NavigationStack {
             ZStack {
                 Color(.systemBackground).ignoresSafeArea()
-                
                 Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
                 Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
                 
@@ -65,29 +61,31 @@ struct HistoryView: View {
                         loggedOutView
                     }
                 }
-                .navigationTitle("Results")
+                // LOCALIZED
+                .navigationTitle(Text("history_navTitle"))
                 .onAppear {
                     if let userID = authViewModel.user?.uid {
                         historyViewModel.subscribe(to: userID)
                     }
                 }
-                // --- REACTIVE FILTER APPLICATION ---
                 .onChange(of: selectedRange) { _ in applyFilters() }
                 .onChange(of: speedFilterEnabled) { _ in applyFilters() }
                 .onChange(of: minimumSpeed) { _ in applyFilters() }
                 .onChange(of: historyViewModel.allResults) { _ in applyFilters() }
-                .alert("Confirm Deletion", isPresented: $showDeleteConfirmation, presenting: resultToDelete) { result in
-                    Button("Delete", role: .destructive) {
+                // LOCALIZED
+                .alert(Text("history_alert_delete_title"), isPresented: $showDeleteConfirmation, presenting: resultToDelete) { result in
+                    // LOCALIZED
+                    Button("common_delete", role: .destructive) {
                         historyViewModel.deleteResult(result)
                     }
                 } message: { result in
-                    Text("Are you sure you want to delete this result? This action cannot be undone.")
+                    // LOCALIZED
+                    Text("history_alert_delete_message")
                 }
             }
         }
     }
     
-    /// Triggers the ViewModel to re-calculate its filtered data.
     private func applyFilters() {
         historyViewModel.applyFilters(
             range: selectedRange,
@@ -96,7 +94,6 @@ struct HistoryView: View {
         )
     }
     
-    /// The main content view when the user is logged in.
     @ViewBuilder
     private func content(for userID: String) -> some View {
         if historyViewModel.allResults.isEmpty {
@@ -113,10 +110,11 @@ struct HistoryView: View {
         }
     }
 
-    /// View displayed when there are no results at all.
     private var emptyStateView: some View {
         VStack {
-             ContentUnavailableView("No Results", systemImage: "list.bullet.clipboard", description: Text("Your analyzed smashes will appear here."))
+            // LOCALIZED
+            // AFTER
+            ContentUnavailableView("history_empty_title", systemImage: "list.bullet.clipboard", description: Text("history_empty_message"))
         }
         .padding(40)
         .background(GlassPanel())
@@ -124,16 +122,19 @@ struct HistoryView: View {
         .padding()
     }
     
-    /// View for "Overall Stats" - reflects current filters.
     private var statsSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Filtered Stats").font(.headline).padding(.bottom, 5)
-                StatRow(label: "Top Speed", value: String(format: "%.1f km/h", historyViewModel.filteredTopSpeed))
+                // LOCALIZED
+                Text("history_stats_title").font(.headline).padding(.bottom, 5)
+                // LOCALIZED
+                StatRow(labelKey: "history_stats_topSpeed", value: String(format: "%.1f km/h", historyViewModel.filteredTopSpeed))
                 Divider()
-                StatRow(label: "Average Speed", value: String(format: "%.1f km/h", historyViewModel.filteredAverageSpeed))
+                // LOCALIZED
+                StatRow(labelKey: "history_stats_avgSpeed", value: String(format: "%.1f km/h", historyViewModel.filteredAverageSpeed))
                 Divider()
-                StatRow(label: "Total Smashes", value: "\(historyViewModel.filteredDetectionCount)")
+                // LOCALIZED
+                StatRow(labelKey: "history_stats_totalSmashes", value: "\(historyViewModel.filteredDetectionCount)")
             }
             .padding(20)
             .background(GlassPanel())
@@ -142,7 +143,6 @@ struct HistoryView: View {
         .listRowStyling()
     }
     
-    /// View for the "Progress Over Time" chart.
     private var progressChartSection: some View {
         Section {
             VStack(alignment: .leading) {
@@ -159,12 +159,16 @@ struct HistoryView: View {
     private var chartHeader: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text("Progress Over Time").font(.headline)
+                // LOCALIZED
+                Text("history_chart_title").font(.headline)
                 if let selectedDataPoint, showChartValue {
-                     Text("Top Speed on \(selectedDataPoint.date, formatter: .abbreviatedDate): \(String(format: "%.1f km/h", selectedDataPoint.topSpeed))")
-                        .font(.caption).foregroundColor(.secondary)
+                    // LOCALIZED
+                    Text(String.localizedStringWithFormat(NSLocalizedString("history_chart_selectedDataFormat", comment: ""), selectedDataPoint.date.formatted(date: .abbreviated, time: .omitted), selectedDataPoint.topSpeed))
+                       .font(.caption).foregroundColor(.secondary)
                 } else {
-                    Text("Top Speed per Day (\(selectedRange.rawValue))").font(.caption).foregroundColor(.secondary)
+                    // LOCALIZED
+                    Text(String.localizedStringWithFormat(NSLocalizedString("history_chart_subtitleFormat", comment: ""), NSLocalizedString(selectedRange.localizedKey, comment: "")))
+                        .font(.caption).foregroundColor(.secondary)
                 }
             }
             Spacer()
@@ -206,21 +210,23 @@ struct HistoryView: View {
                 }
             }
         } else {
-            Text("Not enough data with current filters to draw a chart.")
+            // LOCALIZED
+            Text("history_chart_noData")
                 .font(.subheadline).foregroundColor(.secondary).padding()
                 .frame(height: 200, alignment: .center)
         }
     }
     
-    /// View for the filter controls.
     private var filterControlsSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 15) {
-                Text("Filters").font(.headline)
+                // LOCALIZED
+                Text("history_filters_title").font(.headline)
                 
-                Picker("Time Range", selection: $selectedRange) {
+                // LOCALIZED
+                Picker(LocalizedStringKey("history_filters_timeRange"), selection: $selectedRange) {
                     ForEach(TimeRange.allCases) { range in
-                        Text(range.rawValue).tag(range)
+                        Text(LocalizedStringKey(range.localizedKey)).tag(range)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -228,13 +234,15 @@ struct HistoryView: View {
                 Divider()
                 
                 Toggle(isOn: $speedFilterEnabled.animation()) {
-                    Text("Filter by Speed")
+                    // LOCALIZED
+                    Text("history_filters_filterBySpeed")
                 }
                 
                 if speedFilterEnabled {
                     VStack {
                         HStack {
-                            Text("Min Speed:")
+                            // LOCALIZED
+                            Text("history_filters_minSpeed")
                             Spacer()
                             Text("\(Int(minimumSpeed)) km/h").bold()
                         }
@@ -250,11 +258,12 @@ struct HistoryView: View {
         .listRowStyling()
     }
     
-    /// View for the list of historical results.
     private var historyListSection: some View {
-        Section(header: Text("History").padding(.leading)) {
+        // LOCALIZED
+        Section(header: Text("history_list_title").padding(.leading)) {
             if historyViewModel.filteredResults.isEmpty {
-                 Text("No results match your current filters.")
+                // LOCALIZED
+                 Text("history_list_noResults")
                      .foregroundColor(.secondary)
                      .padding()
                      .frame(maxWidth: .infinity, alignment: .center)
@@ -271,7 +280,8 @@ struct HistoryView: View {
                                 resultToDelete = result
                                 showDeleteConfirmation = true
                             } label: {
-                                Label("Delete", systemImage: "trash.fill")
+                                // LOCALIZED
+                                Label("common_delete", systemImage: "trash.fill")
                             }
                             .tint(.red)
                         }
@@ -283,10 +293,10 @@ struct HistoryView: View {
         }
     }
     
-    /// View for when a user is logged out.
     private var loggedOutView: some View {
         VStack {
-             ContentUnavailableView("Log In Required", systemImage: "person.crop.circle.badge.questionmark", description: Text("Please sign in to view results."))
+            // LOCALIZED
+            ContentUnavailableView("history_loggedOut_title", systemImage: "person.crop.circle.badge.questionmark", description: Text("history_loggedOut_message"))
         }
         .padding(40)
         .background(GlassPanel())
@@ -297,7 +307,6 @@ struct HistoryView: View {
 
 // MARK: - View Modifiers & Subviews
 
-/// A custom view modifier to reduce code repetition for list row styling.
 struct ListRowStyler: ViewModifier {
     func body(content: Content) -> some View {
         content
@@ -313,16 +322,13 @@ extension View {
     }
 }
 
-/// A view for a single row in the stats panel.
 struct StatRow: View {
-    let label: String
+    // LOCALIZED: Changed to use a key
+    let labelKey: LocalizedStringKey
     let value: String
-    var body: some View {
-        HStack { Text(label); Spacer(); Text(value).fontWeight(.bold).foregroundColor(.secondary) }
-    }
+    var body: some View { HStack { Text(labelKey); Spacer(); Text(value).fontWeight(.bold).foregroundColor(.secondary) } }
 }
 
-/// A view for a single row in the history list.
 struct HistoryRow: View {
     let result: DetectionResult
     
@@ -376,7 +382,6 @@ class ResultDetailViewModel: ObservableObject {
             self.originalAsset = AVAsset()
             self.player = AVPlayer()
         }
-        // Sort the frameData by timestamp to ensure it's in order for the table
         self.frameData = result.frameData?.sorted { $0.timestamp < $1.timestamp } ?? []
         
         Task {
@@ -415,7 +420,6 @@ struct ResultDetailView: View {
     @StateObject private var viewModel: ResultDetailViewModel
     private let result: DetectionResult
 
-    // NEW: State variable to hold the rendered image for sharing.
     @State private var shareableImage: UIImage?
 
     init(result: DetectionResult) {
@@ -438,14 +442,14 @@ struct ResultDetailView: View {
                 .padding()
             }
         }
-        .navigationTitle("Smash Details")
+        // LOCALIZED
+        .navigationTitle(Text("details_navTitle"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { viewModel.player.play() }
         .onDisappear {
             viewModel.player.pause()
             viewModel.stopObserving()
         }
-        // NEW: Add the sheet modifier to present the SharePreviewView.
         .sheet(item: $shareableImage) { image in
             SharePreviewView(image: image)
         }
@@ -478,14 +482,15 @@ struct ResultDetailView: View {
     }
 
     private var detailsSection: some View {
-        // UPDATED: Wrap the section content in a ZStack to overlay the button.
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 15) {
-                 Text("Peak Speed")
+                // LOCALIZED
+                 Text("details_peakSpeed")
                      .font(.headline)
                      .foregroundColor(.secondary)
 
-                 Text(String(format: "%.1f km/h", result.peakSpeedKph))
+                // LOCALIZED
+                 Text(String.localizedStringWithFormat(NSLocalizedString("common_kmh", comment: ""), result.peakSpeedKph))
                      .font(.system(size: 60, weight: .bold, design: .rounded))
                      .foregroundColor(.primary)
 
@@ -493,20 +498,24 @@ struct ResultDetailView: View {
 
                  if let angle = result.angle {
                      HStack {
-                         Text("Smash Angle:")
+                         // LOCALIZED
+                         Text("common_smashAngle")
                              .font(.callout).foregroundColor(.secondary)
                          Spacer()
-                         Text(String(format: "%.0f° downward", angle))
+                         // LOCALIZED
+                         Text(String.localizedStringWithFormat(NSLocalizedString("resultView_angleFormat", comment: ""), angle))
                              .font(.callout).fontWeight(.semibold)
                      }
                      .padding(.horizontal)
                  }
 
                  HStack {
-                     Text("Live Speed:")
+                     // LOCALIZED
+                     Text("details_liveSpeed")
                          .font(.callout).foregroundColor(.secondary)
                      Spacer()
-                     Text(String(format: "%.1f km/h", viewModel.currentSpeed))
+                     // LOCALIZED
+                     Text(String.localizedStringWithFormat(NSLocalizedString("common_kmh", comment: ""), viewModel.currentSpeed))
                          .font(.callout).fontWeight(.semibold)
                  }
                  .padding(.horizontal)
@@ -515,7 +524,6 @@ struct ResultDetailView: View {
              .background(GlassPanel())
              .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
 
-            // NEW: The share button itself.
             Button(action: renderImageForSharing) {
                 Image(systemName: "square.and.arrow.up")
                     .font(.title2)
@@ -526,7 +534,6 @@ struct ResultDetailView: View {
         }
     }
 
-    // NEW: Function to render the ShareableView into an image.
     @MainActor
     private func renderImageForSharing() {
         let shareView = ShareableView(speed: result.peakSpeedKph, angle: result.angle)
@@ -537,15 +544,17 @@ struct ResultDetailView: View {
     private var timestampTableSection: some View {
         if !viewModel.frameData.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Timestamp Data")
+                // LOCALIZED
+                Text("details_timestampTitle")
                     .font(.headline)
                     .padding([.horizontal, .top])
-
-                // Table Header
+                
                 HStack {
-                    Text("Time").fontWeight(.bold)
+                    // LOCALIZED
+                    Text("details_timeHeader").fontWeight(.bold)
                     Spacer()
-                    Text("Speed").fontWeight(.bold)
+                    // LOCALIZED
+                    Text("details_speedHeader").fontWeight(.bold)
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -553,12 +562,12 @@ struct ResultDetailView: View {
 
                 Divider().padding(.horizontal)
 
-                // Table Rows
                 ForEach(viewModel.frameData, id: \.timestamp) { frame in
                     HStack {
                         Text(String(format: "%.2f s", frame.timestamp))
                         Spacer()
-                        Text(String(format: "%.1f km/h", frame.speedKPH))
+                        // LOCALIZED
+                        Text(String.localizedStringWithFormat(NSLocalizedString("common_kmh", comment: ""), frame.speedKPH))
                     }
                     .font(.system(.body, design: .monospaced))
                     .padding(.horizontal)
@@ -574,6 +583,7 @@ struct ResultDetailView: View {
         }
     }
 }
+
 // MARK: - History View Model
 @MainActor
 class HistoryViewModel: ObservableObject {

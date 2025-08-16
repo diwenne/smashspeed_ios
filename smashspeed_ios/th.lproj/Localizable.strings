@@ -5,3 +5,233 @@
 //  Created by Diwen Huang on 2025-08-15.
 //
 
+// =================================================================
+// Thai (th.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีของคุณ? การกระทำนี้เป็นการถาวรและไม่สามารถยกเลิกได้";
+"account_alert_delete_title" = "ลบบัญชี";
+"account_alert_signOut_message" = "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?";
+"account_loggedIn_accountActions" = "การดำเนินการบัญชี";
+"account_loggedIn_appearance" = "ลักษณะที่ปรากฏ";
+"account_loggedIn_appearanceDark" = "มืด";
+"account_loggedIn_appearanceLight" = "สว่าง";
+"account_loggedIn_appearanceSystem" = "ระบบ";
+"account_loggedIn_changePassword" = "เปลี่ยนรหัสผ่าน";
+"account_loggedIn_communitySupport" = "ชุมชนและการสนับสนุน";
+"account_loggedIn_contactSupport" = "ติดต่อฝ่ายสนับสนุน";
+"account_loggedIn_deleteAccount" = "ลบบัญชี";
+"account_loggedIn_followInstagram" = "ติดตามบน Instagram";
+"account_loggedIn_memberSinceFormat" = "สมาชิกตั้งแต่ %@";
+"account_loggedIn_noEmail" = "ไม่พบอีเมล";
+"account_loggedIn_officialWebsite" = "เว็บไซต์ทางการ";
+"account_loggedIn_settingsTitle" = "การตั้งค่า";
+"account_loggedIn_signOut" = "ออกจากระบบ";
+"account_loggedIn_viewTutorial" = "ดูวิธีการใช้งาน";
+"account_menu_contact" = "ติดต่อเรา";
+"account_menu_faq" = "คำถามที่พบบ่อย";
+"account_menu_privacy" = "นโยบายความเป็นส่วนตัว";
+"account_menu_terms" = "ข้อกำหนดในการให้บริการ";
+"account_navTitle_myAccount" = "บัญชีของฉัน";
+"account_navTitle_welcome" = "ยินดีต้อนรับ";
+"auth_alreadyHaveAccount" = "มีบัญชีอยู่แล้ว? ลงชื่อเข้าใช้";
+"auth_createAccountButton" = "สร้างบัญชี";
+"auth_createAccountTitle" = "สร้างบัญชี";
+"auth_dontHaveAccount" = "ไม่มีบัญชี? สมัครสมาชิก";
+"auth_forgotPassword" = "ลืมรหัสผ่าน?";
+"auth_orDivider" = "หรือ";
+"auth_passwordMismatch" = "รหัสผ่านไม่ตรงกัน";
+"auth_signInButton" = "ลงชื่อเข้าใช้";
+"auth_signInPrompt" = "ลงชื่อเข้าใช้เพื่อเข้าถึงคุณสมบัติเพิ่มเติม ปรับแต่งการตั้งค่า และติดตามความคืบหน้าของคุณ";
+"auth_signInTitle" = "ลงชื่อเข้าใช้";
+"auth_signInWithGoogle" = "ลงชื่อเข้าใช้ด้วย Google";
+"auth_termsAgreement" = "ฉันได้อ่านและยอมรับ [ข้อกำหนดในการให้บริการ](https://smashspeed.ca/terms-of-service) และ [นโยบายความเป็นส่วนตัว](https://smashspeed.ca/privacy-policy) แล้ว";
+"changePwd_cancelButton" = "ยกเลิก";
+"changePwd_confirmPwdField" = "ยืนยันรหัสผ่านใหม่";
+"changePwd_navTitle" = "เปลี่ยนรหัสผ่าน";
+"changePwd_newPwdField" = "รหัสผ่านใหม่";
+"changePwd_updateButton" = "อัปเดตรหัสผ่าน";
+
+/* Calibration */
+"calib_instruction1" = "วางจุดหนึ่งบนเส้นเสิร์ฟหน้า และอีกจุดหนึ่งบนเส้นเสิร์ฟยาวของประเภทคู่ (เส้นเสิร์ฟหลัง)";
+"calib_instruction2" = "เคล็ดลับ: ลากจากบริเวณรอบๆ จุดเพื่อหลีกเลี่ยงการบังด้วยนิ้วของคุณ";
+"calib_refLengthDescription" = "ป้อนระยะห่างจริงระหว่างสองจุด";
+"calib_refLengthLabel" = "ความยาวอ้างอิง";
+"calib_startButton" = "เริ่มการวิเคราะห์";
+"calib_title" = "การปรับเทียบ";
+
+/* Common */
+"common_cancel" = "ยกเลิก";
+"common_delete" = "ลบ";
+"common_done" = "เสร็จสิ้น";
+"common_email" = "อีเมล";
+"common_error" = "ข้อผิดพลาด";
+"common_height" = "ความสูง";
+"common_kmh" = "กม./ชม.";
+"common_meters" = "เมตร";
+"common_notAvailable" = "ไม่มีข้อมูล";
+"common_ok" = "ตกลง";
+"common_password" = "รหัสผ่าน";
+"common_smashAngle" = "มุมตบ:";
+"common_speed" = "ความเร็ว";
+"common_tryAgain" = "ลองอีกครั้ง";
+"common_width" = "ความกว้าง";
+
+/* Errors */
+"error_couldNotLoadVideo" = "ไม่สามารถโหลดวิดีโอที่เลือกได้";
+"error_genericVideoSelection" = "เกิดข้อผิดพลาดขณะเลือกวิดีโอ";
+"error_recordLandscape" = "โปรดบันทึกในโหมดแนวนอน ไม่รองรับวิดีโอแนวตั้ง";
+"error_selectLandscape" = "โปรดเลือกวิดีโอแนวนอน ไม่รองรับวิดีโอแนวตั้ง";
+
+/* History & Details */
+"details_liveSpeed" = "ความเร็วสด:";
+"details_navTitle" = "รายละเอียดการตบ";
+"details_peakSpeed" = "ความเร็วสูงสุด";
+"details_speedHeader" = "ความเร็ว";
+"details_timeHeader" = "เวลา";
+"details_timestampTitle" = "ข้อมูลเวลา";
+"history_alert_delete_message" = "คุณแน่ใจหรือไม่ว่าต้องการลบผลลัพธ์นี้? การกระทำนี้ไม่สามารถยกเลิกได้";
+"history_alert_delete_title" = "ยืนยันการลบ";
+"history_chart_noData" = "ข้อมูลไม่เพียงพอสำหรับตัวกรองปัจจุบันในการวาดแผนภูมิ";
+"history_chart_selectedDataFormat" = "ความเร็วสูงสุดในวันที่ %@: %.1f กม./ชม.";
+"history_chart_subtitleFormat" = "ความเร็วสูงสุดต่อวัน (%@)";
+"history_chart_title" = "ความคืบหน้าเมื่อเวลาผ่านไป";
+"history_empty_message" = "การตบที่วิเคราะห์แล้วของคุณจะปรากฏที่นี่";
+"history_empty_title" = "ไม่มีผลลัพธ์";
+"history_filters_filterBySpeed" = "กรองตามความเร็ว";
+"history_filters_minSpeed" = "ความเร็วขั้นต่ำ:";
+"history_filters_timeRange" = "ช่วงเวลา";
+"history_filters_title" = "ตัวกรอง";
+"history_list_noResults" = "ไม่มีผลลัพธ์ที่ตรงกับตัวกรองปัจจุบันของคุณ";
+"history_list_title" = "ประวัติ";
+"history_loggedOut_message" = "กรุณาลงชื่อเข้าใช้เพื่อดูผลลัพธ์";
+"history_loggedOut_title" = "จำเป็นต้องลงชื่อเข้าใช้";
+"history_navTitle" = "ผลลัพธ์";
+"history_range_all" = "ทั้งหมด";
+"history_range_month" = "เดือนที่แล้ว";
+"history_range_week" = "สัปดาห์ที่แล้ว";
+"history_stats_avgSpeed" = "ความเร็วเฉลี่ย";
+"history_stats_title" = "สถิติที่กรองแล้ว";
+"history_stats_topSpeed" = "ความเร็วสูงสุด";
+"history_stats_totalSmashes" = "จำนวนการตบทั้งหมด";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "เลือกจากคลัง";
+"inputSelector_landscapeOnlyWarning" = "รองรับเฉพาะวิดีโอแนวนอนเท่านั้น";
+"inputSelector_recordNewButton" = "บันทึกวิดีโอใหม่";
+"inputSelector_title" = "วิเคราะห์การตบ";
+"mainView_howToRecordButton" = "วิธีบันทึก";
+"mainView_prompt" = "เลือกวิดีโอเพื่อเริ่มต้น";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "ผลการวิเคราะห์";
+"navTitle_calibration" = "การปรับเทียบ";
+"navTitle_detect" = "ตรวจจับ";
+"navTitle_recordingGuide" = "คู่มือการบันทึก";
+"navTitle_reviewAdjust" = "ตรวจสอบและปรับแก้";
+"navTitle_trimVideo" = "ตัดวิดีโอ";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "เริ่มต้นใช้งาน";
+"onboarding_slide1_instruction1" = "ตั้งกล้องไว้ที่เส้นข้าง หันหน้าตรง เส้นสนามควรขนานกับกรอบภาพ";
+"onboarding_slide1_instruction2" = "ให้ลูกขนไก่อยู่ในสายตาเสมอ — หลีกเลี่ยงแสงจ้าหรือพื้นหลังที่รก";
+"onboarding_slide1_instruction3" = "ใช้วิดีโอปกติ หลีกเลี่ยงโหมดสโลว์โมชั่นหรือฟิลเตอร์";
+"onboarding_slide1_instruction4" = "ตัดวิดีโอให้เหลือเฉพาะจังหวะตบ — ไม่เกิน 1 วินาที (~10 เฟรม)";
+"onboarding_slide1_title" = "1. บันทึกการตบของคุณ";
+"onboarding_slide2_instruction1" = "ทำเครื่องหมายที่เส้นเสิร์ฟหน้าและเส้นเสิร์ฟคู่ — ห่างกัน 3.87 เมตร";
+"onboarding_slide2_instruction2" = "วางเส้นไว้ใต้ผู้เล่นโดยตรง";
+"onboarding_slide2_instruction3" = "รักษาระยะ 3.87 เมตร เว้นแต่จะใช้เส้นอื่น — การเปลี่ยนแปลงอาจลดความแม่นยำ";
+"onboarding_slide2_title" = "2. ทำเครื่องหมายระยะทางที่ทราบ";
+"onboarding_slide3_instruction1" = "ใช้แถบเลื่อนหรือปุ่มลูกศรเพื่อเลื่อนดูเฟรมและดูความเร็วของลูกขนไก่";
+"onboarding_slide3_instruction2" = "ใช้เครื่องมือ 'Interpolate' เพื่อเติมช่องว่างระหว่างการตรวจจับที่ดีโดยอัตโนมัติ ขอแนะนำอย่างยิ่ง";
+"onboarding_slide3_instruction3" = "สำหรับการปรับแต่งอย่างละเอียด ให้ใช้ส่วนควบคุมด้วยตนเองเพื่อย้าย,ปรับขนาด,เพิ่ม,หรือลบกรอบตรวจจับ";
+"onboarding_slide3_instruction4" = "หากคุณทำผิดพลาด ให้ใช้ปุ่มเลิกทำ/ทำซ้ำที่ด้านบนซ้าย";
+"onboarding_slide3_title" = "3. ตรวจสอบการตรวจจับ";
+"onboarding_swipePrompt" = "ปัดเพื่อเริ่มต้น";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "อยากรู้ไหมว่าคุณตบได้เร็วแค่ไหน?";
+"onboarding_welcome_title" = "ยินดีต้อนรับสู่";
+
+/* Processing States */
+"processing_analyzingVideo" = "กำลังวิเคราะห์วิดีโอ...";
+"processing_preparingVideo" = "กำลังเตรียมวิดีโอ...";
+"processing_trimmingVideo" = "กำลังตัดต่อวิดีโอ...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**กล้อง:** ใช้โหมดแนวนอนพร้อมซูม 0.5x เพื่อให้ลูกขนไก่อยู่ในเฟรม";
+"recordingGuide_frameRateTip" = "**อัตราเฟรม:** 30 FPS ก็ใช้ได้, 60 FPS จะดีกว่า";
+"recordingGuide_recorderTip" = "**ผู้เล่น A (ผู้บันทึก):** ยืนในเส้นข้าง";
+"recordingGuide_smasherTip" = "**ผู้เล่น B (ผู้ตบ):** ตบจากครึ่งสนามฝั่งตรงข้าม";
+"recordingGuide_title" = "วิธีบันทึกเพื่อให้ได้ผลลัพธ์ที่ดีที่สุด";
+"recordingGuide_visitWebsite" = "สำหรับวิดีโอสอนการใช้งาน ไปที่ smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "วิเคราะห์วิดีโออื่น";
+"resultView_angleFormat" = "%.0f° ทํามุมลง";
+"resultView_angleNotCalculated" = "ยังไม่ได้คำนวณมุม";
+"resultView_angleUnlockInfo" = "ตบให้เร็วกว่า 100 กม./ชม. เพื่อปลดล็อกการวิเคราะห์มุม";
+"resultView_maxSpeedTitle" = "ความเร็วสูงสุด";
+"resultView_signInPrompt" = "ต้องการบันทึกผลลัพธ์ของคุณหรือไม่? ลงชื่อเข้าใช้";
+"resultView_smashAngleLabel" = "มุมตบ:";
+"resultView_speedUnit" = "กม./ชม.";
+
+/* Review */
+"review_alert_interpolation_message" = "การประมาณค่าในช่วงจะเติมกรอบล้อมรอบที่หายไปโดยอัตโนมัติ หากคุณมีเฟรมที่มีกรอบ จากนั้นมีช่องว่างของเฟรมที่ไม่มีกรอบ ตามด้วยเฟรมอื่นที่มีกรอบ เครื่องมือนี้จะวาดเส้นตรงเพื่อเติมช่องว่าง";
+"review_alert_interpolation_title" = "การประมาณค่าในช่วง (Interpolation) คืออะไร?";
+"review_alert_manual_message" = "ใช้ส่วนควบคุมเหล่านี้เพื่อแก้ไขข้อผิดพลาดที่เกิดจาก AI คุณสามารถเพิ่มกรอบได้หาก AI พลาดลูกขนไก่, ลบกรอบหากการตรวจจับผิด, หรือขยับ/ปรับขนาดกรอบที่มีอยู่เพื่อความแม่นยำที่ดีขึ้น";
+"review_alert_manual_title" = "การปรับด้วยตนเอง";
+"review_alert_speedCalc_message" = "ความเร็วคำนวณจากระยะทางที่ลูกขนไก่เคลื่อนที่ระหว่างเฟรม รวมกับอัตราเฟรมของวิดีโอ (fps)\n\n1. AI ติดตามจุดศูนย์กลางของลูกขนไก่เป็นพิกเซล\n2. ระยะทางที่เคลื่อนที่ (เป็นพิกเซล) ถูกคูณด้วยอัตราเฟรมเพื่อให้ได้พิกเซล/วินาที\n3. ปัจจัยมาตราส่วน (เมตร/พิกเซล) ซึ่งกำหนดจากขนาดที่ทราบของสนาม จะแปลงค่านี้เป็นเมตร/วินาที\n4. ผลลัพธ์จะถูกแปลงเป็น กม./ชม.";
+"review_alert_speedCalc_title" = "ความเร็วคำนวณอย่างไร?";
+"review_box_addButton" = "เพิ่มกรอบ";
+"review_box_nudgePicker" = "ขยับ";
+"review_box_removeButton" = "ลบกรอบ";
+"review_box_resizePicker" = "ปรับขนาด";
+"review_finishButton" = "เสร็จสิ้นและบันทึกการวิเคราะห์";
+"review_guidance_dontShowAgain" = "ไม่ต้องแสดงอีก";
+"review_guidance_message" = "ใช้แถบเลื่อนเพื่อตรวจสอบการตรวจจับในแต่ละเฟรม ปรับกรอบตามต้องการเพื่อความแม่นยำสูงสุด";
+"review_guidance_title" = "เคล็ดลับ: ตรวจสอบทุกเฟรม";
+"review_interp_gapWarning_message" = "ใช้ 'Interpolate' เพื่อให้แน่ใจว่าผลลัพธ์ความเร็วถูกต้อง";
+"review_interp_gapWarning_title" = "ตรวจพบช่องว่างในการติดตาม";
+"review_interp_interpolateButton" = "ประมาณค่าเฟรมที่หายไป";
+"review_interp_whatIsButton" = "Interpolation คืออะไร?";
+"review_manual_sectionTitle" = "การปรับด้วยตนเอง";
+"review_nav_aiWarning" = "การตรวจจับ AI อยู่ในระยะเริ่มต้น การปรับแต่งด้วยตนเองมักมีความจำเป็น";
+"review_nav_hideManualControls" = "ซ่อนการควบคุมด้วยตนเอง";
+"review_nav_sectionTitle" = "การนำทางเฟรม";
+"review_nav_showManualControls" = "แสดงการควบคุมด้วยตนเอง";
+"review_nav_speedLabel" = "ความเร็วในเฟรมนี้:";
+"review_recalibrateButton" = "ปรับเทียบระยะทางใหม่";
+"review_topBar_frameCountFormat" = "เฟรมที่ %d จาก %d";
+"review_topBar_noFrames" = "ไม่มีเฟรม";
+"review_speedWithUnitFormat" = "%.1f กม./ชม.";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° ทํามุมลง";
+"share_image_generatedBy" = "สร้างโดย Smashspeed";
+"share_image_smashAngleLabel" = "มุมตบ";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "แชร์ทันที";
+"share_preview_title" = "ตัวอย่างรูปภาพที่แชร์ได้";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "ตัดคลิปให้สั้นกว่า 0.8 วินาที (~%d เฟรม) โดยแสดงเฉพาะจังหวะตบ ต้องเห็นลูกขนไก่ในทุกเฟรม";
+"trimView_alert_tooLong_title" = "คลิปยาวเกินไป";
+"trimView_confirmButton" = "ยืนยันการตัด";
+"trimView_description" = "แยกช่วงเวลาที่กระทบ คลิปสุดท้ายควรสั้นมาก (~0.25 วินาที) และลูกขนไก่ต้องมองเห็นได้ชัดเจนในทุกเฟรม";
+"trimView_durationFormat" = "ระยะเวลาที่เลือก: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "ตัดส่วนที่ตบ";
+
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "บัญชี";
+"tab_detect" = "ตรวจจับ";
+"tab_results" = "ผลลัพธ์";
+"account_navTitle" = "บัญชี";
+
+/* Update Alert */
+"updateAlert_button" = "อัปเดตตอนนี้";
+"updateAlert_message" = "มีแอปเวอร์ชันใหม่ให้ใช้งานแล้ว โปรดอัปเดตเพื่อใช้งานแอปต่อไป";
+"updateAlert_title" = "ต้องการอัปเดต";

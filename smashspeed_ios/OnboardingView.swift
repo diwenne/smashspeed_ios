@@ -1,23 +1,17 @@
 import SwiftUI
 
 // MARK: - View State Management
-/// This class holds the animation state. Using an ObservableObject ensures the
-/// state persists even if SwiftUI recreates the view struct, fixing animation glitches.
 fileprivate class ViewState: ObservableObject {
     @Published var showContent = false
 }
 
 // MARK: - Main Onboarding Container
-/// A view that presents a swipeable, multi-page onboarding experience with a glassmorphism design.
 struct OnboardingView: View {
-    /// The action to perform when the user taps the final "Get Started" button.
     let onComplete: () -> Void
     
-    // Properties to track the current tab for showing the 'X' button.
     @State private var currentTab = 0
     private let lastSlideIndex = 3
     
-    /// Custom initializer to style the page control dots for the TabView.
     init(onComplete: @escaping () -> Void) {
         self.onComplete = onComplete
         UIPageControl.appearance().currentPageIndicatorTintColor = .systemBlue
@@ -26,69 +20,58 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            // A monochromatic blue aurora background to reinforce the accent color.
-            Color(.systemBackground)
-                .ignoresSafeArea()
+            Color(.systemBackground).ignoresSafeArea()
             
-            Circle()
-                .fill(Color.blue.opacity(0.8))
-                .blur(radius: 150)
-                .offset(x: -150, y: -200)
-
-            Circle()
-                .fill(Color.blue.opacity(0.5))
-                .blur(radius: 180)
-                .offset(x: 150, y: 150)
+            Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
+            Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
                 
-            // A TabView with a page style creates the swipeable carousel interface.
             TabView(selection: $currentTab) {
-                // --- Slide 1: Welcome ---
                 OnboardingWelcomeView(
                     slideIndex: 0,
                     currentTab: $currentTab
                 )
                 .tag(0)
                 
-                // --- Slide 2: How to Record ---
+                // LOCALIZED: The title and instructions now use keys.
                 OnboardingInstructionView(
                     slideIndex: 1,
                     currentTab: $currentTab,
                     imageNames: ["OnboardingSlide1.2", "OnboardingSlide1.1"],
-                    title: "1. Record Your Smash",
+                    titleKey: "onboarding_slide1_title",
                     instructions: [
-                        (icon: "arrow.left.and.right.square.fill", text: "Set the camera on the sideline, facing straight across. Court lines should look parallel to the frame."),
-                        (icon: "bird.fill", text: "Keep the shuttle visible — avoid glare or busy backgrounds."),
-                        (icon: "video.slash.fill", text: "Use regular video. Avoid Slo-Mo or filters."),
-                        (icon: "scissors", text: "Trim to just the smash — under 1 second (~10 frames).")
+                        (icon: "arrow.left.and.right.square.fill", textKey: "onboarding_slide1_instruction1"),
+                        (icon: "bird.fill", textKey: "onboarding_slide1_instruction2"),
+                        (icon: "video.slash.fill", textKey: "onboarding_slide1_instruction3"),
+                        (icon: "scissors", textKey: "onboarding_slide1_instruction4")
                     ]
                 )
                 .tag(1)
                 
-                // --- Slide 3: How to Put Reference Line ---
+                // LOCALIZED: The title and instructions now use keys.
                 OnboardingInstructionView(
                     slideIndex: 2,
                     currentTab: $currentTab,
                     imageNames: ["OnboardingSlide2.1", "OnboardingSlide2.2", "OnboardingSlide2.3"],
-                    title: "2. Mark a Known Distance",
+                    titleKey: "onboarding_slide2_title",
                     instructions: [
-                        (icon: "scope", text: "Mark the front service line and doubles service line — 3.87 m apart."),
-                        (icon: "person.fill", text: "Place the line directly under the player."),
-                        (icon: "ruler.fill", text: "Keep 3.87 m unless using different lines — changing it may reduce accuracy.")
+                        (icon: "scope", textKey: "onboarding_slide2_instruction1"),
+                        (icon: "person.fill", textKey: "onboarding_slide2_instruction2"),
+                        (icon: "ruler.fill", textKey: "onboarding_slide2_instruction3")
                     ]
                 )
                 .tag(2)
                 
-                // --- Slide 4: Reviewing the frames ---
+                // LOCALIZED: The title and instructions now use keys.
                 OnboardingInstructionView(
                     slideIndex: 3,
                     currentTab: $currentTab,
                     imageNames: ["OnboardingSlide3.1", "OnboardingSlide3.2"],
-                    title: "3. Review Detection",
+                    titleKey: "onboarding_slide3_title",
                     instructions: [
-                        (icon: "arrow.left.and.right.circle.fill", text: "Use ← and → keys to step through frames and see shuttle speed per frame."),
-                        (icon: "rectangle.dashed", text: "If detection is off, adjust the red box to fit the shuttle tightly."),
-                        (icon: "slider.horizontal.3", text: "Use the controls below to move, resize, or fine-tune the box."),
-                        (icon: "checkmark.circle.fill", text: "Most videos don’t need manual correction—just review and continue.")
+                        (icon: "arrow.left.and.right.circle.fill", textKey: "onboarding_slide3_instruction1"),
+                        (icon: "rectangle.dashed", textKey: "onboarding_slide3_instruction2"),
+                        (icon: "slider.horizontal.3", textKey: "onboarding_slide3_instruction3"),
+                        (icon: "checkmark.circle.fill", textKey: "onboarding_slide3_instruction4")
                     ],
                     isLastSlide: true,
                     onComplete: onComplete
@@ -96,8 +79,6 @@ struct OnboardingView: View {
                 .tag(lastSlideIndex)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
-            
-            // 'X' Button Overlay
             .overlay(alignment: .topTrailing) {
                 if currentTab == lastSlideIndex {
                     Button(action: onComplete) {
@@ -116,7 +97,6 @@ struct OnboardingView: View {
 
 // MARK: - Welcome Slide
 struct OnboardingWelcomeView: View {
-    // Properties to track the active slide
     let slideIndex: Int
     @Binding var currentTab: Int
     
@@ -136,19 +116,22 @@ struct OnboardingWelcomeView: View {
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.4), value: viewState.showContent)
             
                 VStack(spacing: 15) {
-                    Text("Welcome to")
+                    // LOCALIZED
+                    Text("onboarding_welcome_title")
                         .font(.title2)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    Text("Smashspeed")
+                    // LOCALIZED
+                    Text("onboarding_welcome_brand")
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                         .foregroundColor(.accentColor)
                 }
                 .opacity(viewState.showContent ? 1 : 0)
                 .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.5), value: viewState.showContent)
                 
-                Text("Wanna know how fast you really smash?")
+                // LOCALIZED
+                Text("onboarding_welcome_prompt")
                     .font(.headline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -167,7 +150,8 @@ struct OnboardingWelcomeView: View {
             
             Spacer()
             
-            Label("Swipe to get started", systemImage: "chevron.right")
+            // LOCALIZED
+            Label("onboarding_swipePrompt", systemImage: "chevron.right")
                 .fontWeight(.semibold)
                 .foregroundColor(.secondary)
                 .symbolEffect(.bounce, options: .repeating.speed(0.8))
@@ -194,15 +178,14 @@ struct OnboardingWelcomeView: View {
 }
 
 // MARK: - Instructional Slide
+// LOCALIZED: Modified this struct to accept localization keys.
 struct OnboardingInstructionView: View {
-    // Properties to track the active slide
     let slideIndex: Int
     @Binding var currentTab: Int
     
-    // Content properties
     let imageNames: [String]
-    let title: String
-    let instructions: [(icon: String, text: String)]
+    let titleKey: LocalizedStringKey
+    let instructions: [(icon: String, textKey: LocalizedStringKey)]
     var isLastSlide: Bool = false
     var onComplete: (() -> Void)? = nil
     
@@ -214,7 +197,8 @@ struct OnboardingInstructionView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                Text(title)
+                // LOCALIZED
+                Text(titleKey)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
@@ -256,13 +240,14 @@ struct OnboardingInstructionView: View {
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3), value: viewState.showContent)
                     
                     VStack(alignment: .leading, spacing: 25) {
-                        ForEach(instructions, id: \.text) { item in
+                        // LOCALIZED
+                        ForEach(instructions, id: \.icon) { item in
                             HStack(alignment: .top, spacing: 16) {
                                 Image(systemName: item.icon)
                                     .font(.title2)
                                     .foregroundColor(.accentColor)
                                     .frame(width: 30)
-                                Text(item.text)
+                                Text(item.textKey)
                                     .font(.headline)
                                     .foregroundColor(.secondary)
                             }
@@ -280,7 +265,8 @@ struct OnboardingInstructionView: View {
                 .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: viewState.showContent)
                 
                 if isLastSlide {
-                    Button("Get Started", action: { onComplete?() })
+                    // LOCALIZED
+                    Button("onboarding_getStartedButton", action: { onComplete?() })
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .padding(.top, 10)
