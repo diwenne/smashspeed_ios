@@ -1,0 +1,229 @@
+// =================================================================
+// Khmer (km.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "តើ​អ្នក​ប្រាកដ​ថា​ចង់​លុប​គណនី​របស់​អ្នក​មែន​ទេ? សកម្មភាព​នេះ​គឺ​ជា​អចិន្ត្រៃយ៍ ហើយ​មិន​អាច​មិន​ធ្វើ​វិញ​បាន​ទេ។";
+"account_alert_delete_title" = "លុបគណនី";
+"account_alert_signOut_message" = "តើ​អ្នក​ប្រាកដ​ថា​ចង់​ចេញ​ពី​គណនី​មែន​ទេ?";
+"account_loggedIn_accountActions" = "សកម្មភាពគណនី";
+"account_loggedIn_appearance" = "រូបរាង";
+"account_loggedIn_appearanceDark" = "ងងឹត";
+"account_loggedIn_appearanceLight" = "ភ្លឺ";
+"account_loggedIn_appearanceSystem" = "ប្រព័ន្ធ";
+"account_loggedIn_changePassword" = "ផ្លាស់ប្តូរពាក្យសម្ងាត់";
+"account_loggedIn_communitySupport" = "សហគមន៍ និងការគាំទ្រ";
+"account_loggedIn_contactSupport" = "ទាក់ទងផ្នែកគាំទ្រ";
+"account_loggedIn_deleteAccount" = "លុបគណនី";
+"account_loggedIn_followInstagram" = "តាមដាននៅលើ Instagram";
+"account_loggedIn_memberSinceFormat" = "សមាជិកតាំងពី %@";
+"account_loggedIn_noEmail" = "រកមិនឃើញអ៊ីមែល";
+"account_loggedIn_officialWebsite" = "គេហទំព័រផ្លូវការ";
+"account_loggedIn_settingsTitle" = "ការកំណត់";
+"account_loggedIn_signOut" = "ចេញពីគណនី";
+"account_loggedIn_viewTutorial" = "មើលការបង្រៀន";
+"account_menu_contact" = "ទាក់ទង​មក​ពួក​យើង";
+"account_menu_faq" = "សំណួរដែលសួរញឹកញាប់";
+"account_menu_privacy" = "គោលការណ៍​ភាព​ឯកជន";
+"account_menu_terms" = "លក្ខខណ្ឌ​នៃ​សេវាកម្ម";
+"account_navTitle_myAccount" = "គណនី​របស់ខ្ញុំ";
+"account_navTitle_welcome" = "សូមស្វាគមន៍";
+"auth_alreadyHaveAccount" = "មានគណនីរួចហើយ? ចូលគណនី";
+"auth_createAccountButton" = "បង្កើតគណនី";
+"auth_createAccountTitle" = "បង្កើតគណនីមួយ";
+"auth_dontHaveAccount" = "មិនទាន់មានគណនី? ចុះឈ្មោះ";
+"auth_forgotPassword" = "ភ្លេចពាក្យសម្ងាត់?";
+"auth_orDivider" = "ឬ";
+"auth_passwordMismatch" = "ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ។";
+"auth_signInButton" = "ចូលគណនី";
+"auth_signInPrompt" = "ចូលគណនីដើម្បីចូលប្រើមុខងារបន្ថែម កែសម្រួលការកំណត់ និងតាមដានវឌ្ឍនភាពរបស់អ្នកតាមពេលវេលា។";
+"auth_signInTitle" = "ចូលគណនី";
+"auth_signInWithGoogle" = "ចូលគណនីជាមួយ Google";
+"auth_termsAgreement" = "ខ្ញុំបានអាន និងយល់ព្រមតាម លក្ខខណ្ឌនៃសេវាកម្ម និង គោលការណ៍ឯកជនភាព។";
+"changePwd_cancelButton" = "បោះបង់";
+"changePwd_confirmPwdField" = "បញ្ជាក់ពាក្យសម្ងាត់ថ្មី";
+"changePwd_navTitle" = "ផ្លាស់ប្តូរពាក្យសម្ងាត់";
+"changePwd_newPwdField" = "ពាក្យសម្ងាត់ថ្មី";
+"changePwd_updateButton" = "ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់";
+
+/* Calibration */
+"calib_instruction1" = "ដាក់ចំណុចមួយនៅលើបន្ទាត់សេវាខាងមុខ និងចំណុចមួយទៀតនៅលើបន្ទាត់សេវាយូរទ្វេ (flick)។";
+"calib_instruction2" = "គន្លឹះ៖ អូសពីតំបន់ជុំវិញចំណុច ដើម្បីជៀសវាងការបាំងវាដោយម្រាមដៃរបស់អ្នក។";
+"calib_refLengthDescription" = "បញ្ចូល​ចម្ងាយ​ជាក់ស្តែង​រវាង​ចំណុច​ទាំងពីរ។";
+"calib_refLengthLabel" = "ប្រវែងយោង";
+"calib_startButton" = "ចាប់ផ្តើមវិភាគ";
+"calib_title" = "ការក្រិតតាមខ្នាត";
+
+/* Common */
+"common_cancel" = "បោះបង់";
+"common_delete" = "លុប";
+"common_done" = "រួចរាល់";
+"common_email" = "អ៊ីមែល";
+"common_error" = "កំហុស";
+"common_height" = "កម្ពស់";
+"common_kmh" = "គ.ម/ម៉";
+"common_meters" = "ម៉ែត្រ";
+"common_notAvailable" = "មិនមាន";
+"common_ok" = "យល់ព្រម";
+"common_password" = "ពាក្យសម្ងាត់";
+"common_smashAngle" = "មុំវាយសេវា៖";
+"common_speed" = "ល្បឿន";
+"common_tryAgain" = "ព្យាយាម​ម្តង​ទៀត";
+"common_width" = "ទទឹង";
+
+/* Errors */
+"error_couldNotLoadVideo" = "មិនអាចផ្ទុកវីដេអូដែលបានជ្រើសរើសបានទេ។";
+"error_genericVideoSelection" = "មានកំហុសកើតឡើងនៅពេលជ្រើសរើសវីដេអូ។";
+"error_recordLandscape" = "សូមថតវីដេអូក្នុងទម្រង់ផ្ដេក។ វីដេអូទម្រង់បញ្ឈរមិនត្រូវបានគាំទ្រទេ។";
+"error_selectLandscape" = "សូមជ្រើសរើសវីដេអូទម្រង់ផ្ដេក។ វីដេអូទម្រង់បញ្ឈរមិនត្រូវបានគាំទ្រទេ។";
+
+/* History & Details */
+"details_liveSpeed" = "ល្បឿនបច្ចុប្បន្ន៖";
+"details_navTitle" = "ព័ត៌មានលម្អិតនៃការវាយ";
+"details_peakSpeed" = "ល្បឿន​កំពូល";
+"details_speedHeader" = "ល្បឿន";
+"details_timeHeader" = "ពេលវេលា";
+"details_timestampTitle" = "ទិន្នន័យត្រាពេលវេលា";
+"history_alert_delete_message" = "តើអ្នកប្រាកដថាចង់លុបលទ្ធផលនេះទេ? សកម្មភាពនេះមិនអាចមិនធ្វើវិញបានទេ។";
+"history_alert_delete_title" = "បញ្ជាក់ការលុប";
+"history_chart_noData" = "មិនមានទិន្នន័យគ្រប់គ្រាន់ជាមួយតម្រងបច្ចុប្បន្នដើម្បីគូរតារាងទេ។";
+"history_chart_selectedDataFormat" = "ល្បឿនកំពូលនៅថ្ងៃទី %@៖ %.1f គ.ម/ម៉";
+"history_chart_subtitleFormat" = "ល្បឿនកំពូលក្នុងមួយថ្ងៃ (%@)";
+"history_chart_title" = "វឌ្ឍនភាព​តាម​ពេលវេលា";
+"history_empty_message" = "ការវាយដែលបានវិភាគរបស់អ្នកនឹងបង្ហាញនៅទីនេះ។";
+"history_empty_title" = "គ្មានលទ្ធផល";
+"history_filters_filterBySpeed" = "ត្រងតាមល្បឿន";
+"history_filters_minSpeed" = "ល្បឿនអប្បបរមា៖";
+"history_filters_timeRange" = "ចន្លោះពេល";
+"history_filters_title" = "តម្រង";
+"history_list_noResults" = "គ្មានលទ្ធផលត្រូវនឹងតម្រងបច្ចុប្បន្នរបស់អ្នកទេ។";
+"history_list_title" = "ប្រវត្តិ";
+"history_loggedOut_message" = "សូមចូលគណនីដើម្បីមើលលទ្ធផល។";
+"history_loggedOut_title" = "តម្រូវ​ឲ្យ​ចូល​គណនី";
+"history_navTitle" = "លទ្ធផល";
+"history_range_all" = "គ្រប់ពេល";
+"history_range_month" = "ខែមុន";
+"history_range_week" = "សប្តាហ៍មុន";
+"history_stats_avgSpeed" = "ល្បឿនមធ្យម";
+"history_stats_title" = "ស្ថិតិដែលបានត្រង";
+"history_stats_topSpeed" = "ល្បឿន​កំពូល";
+"history_stats_totalSmashes" = "ការវាយសរុប";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "ជ្រើសរើសពីបណ្ណាល័យ";
+"inputSelector_landscapeOnlyWarning" = "គាំទ្រតែវីដេអូទម្រង់ផ្ដេកប៉ុណ្ណោះ។";
+"inputSelector_recordNewButton" = "ថតវីដេអូថ្មី";
+"inputSelector_title" = "វិភាគការវាយ";
+"mainView_howToRecordButton" = "របៀបថត";
+"mainView_prompt" = "ជ្រើសរើសវីដេអូដើម្បីចាប់ផ្តើម";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "លទ្ធផលនៃការវិភាគ";
+"navTitle_calibration" = "ការក្រិតតាមខ្នាត";
+"navTitle_detect" = "រកមើល";
+"navTitle_recordingGuide" = "មគ្គុទ្ទេសក៍ថត";
+"navTitle_reviewAdjust" = "ពិនិត្យ និងកែតម្រូវ";
+"navTitle_trimVideo" = "កាត់តវីដេអូ";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "ចាប់ផ្ដើម";
+"onboarding_slide1_instruction1" = "ដាក់កាមេរ៉ានៅលើបន្ទាត់ចំហៀង ដោយបែរមុខត្រង់។ បន្ទាត់តារាងគួរតែមើលទៅស្របនឹងស៊ុម។";
+"onboarding_slide1_instruction2" = "រក្សាសីឱ្យមើលឃើញ — ជៀសវាងពន្លឺចាំង ឬផ្ទៃខាងក្រោយរញ៉េរញ៉ៃ។";
+"onboarding_slide1_instruction3" = "ប្រើវីដេអូធម្មតា។ ជៀសវាងការថតយឺតៗ ឬតម្រង។";
+"onboarding_slide1_instruction4" = "កាត់តត្រឹមតែការវាយ — ក្រោម 1 វិនាទី (~10 ស៊ុម)។";
+"onboarding_slide1_title" = "1. ថតការវាយរបស់អ្នក";
+"onboarding_slide2_instruction1" = "សម្គាល់បន្ទាត់សេវាខាងមុខ និងបន្ទាត់សេវាទ្វេ — គម្លាត 3.87 ម៉ែត្រ។";
+"onboarding_slide2_instruction2" = "ដាក់បន្ទាត់ដោយផ្ទាល់នៅក្រោមអ្នកលេង។";
+"onboarding_slide2_instruction3" = "រក្សាគម្លាត 3.87 ម៉ែត្រ លុះត្រាតែប្រើបន្ទាត់ផ្សេង — ការផ្លាស់ប្តូរវាអាចកាត់បន្ថយភាពត្រឹមត្រូវ។";
+"onboarding_slide2_title" = "2. សម្គាល់ចម្ងាយដែលគេស្គាល់";
+"onboarding_slide3_instruction1" = "ប្រើគ្រាប់រំកិល ឬគ្រាប់ចុចព្រួញ ដើម្បីផ្លាស់ទីតាមស៊ុមនីមួយៗ និងមើលល្បឿនសី។";
+"onboarding_slide3_instruction2" = "ប្រើឧបករណ៍ 'Interpolate' ដើម្បីបំពេញចន្លោះដោយស្វ័យប្រវត្តិរវាងការរកឃើញល្អៗ។ នេះត្រូវបានណែនាំយ៉ាងខ្លាំង។";
+"onboarding_slide3_instruction3" = "សម្រាប់ការកែតម្រូវល្អិតល្អន់ សូមប្រើការបញ្ជាដោយដៃដើម្បីផ្លាស់ទី ប្តូរទំហំ បន្ថែម ឬដកប្រអប់រកឃើញ។";
+"onboarding_slide3_instruction4" = "ប្រសិនបើអ្នកធ្វើខុស សូមប្រើប៊ូតុងមិនធ្វើវិញ/ធ្វើវិញនៅផ្នែកខាងលើឆ្វេង។";
+"onboarding_slide3_title" = "3. ពិនិត្យការរកឃើញ";
+"onboarding_swipePrompt" = "អូសដើម្បីចាប់ផ្តើម";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "ចង់ដឹងថាអ្នកពិតជាវាយលឿនប៉ុណ្ណាទេ?";
+"onboarding_welcome_title" = "សូមស្វាគមន៍មកកាន់";
+
+/* Processing States */
+"processing_analyzingVideo" = "កំពុងវិភាគវីដេអូ...";
+"processing_preparingVideo" = "កំពុងរៀបចំវីដេអូ...";
+"processing_trimmingVideo" = "កំពុងកាត់តវីដេអូ...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "កាមេរ៉ា៖ ប្រើទម្រង់ផ្ដេកជាមួយការពង្រីក 0.5x ដើម្បីរក្សាសីនៅក្នុងស៊ុម។";
+"recordingGuide_frameRateTip" = "អត្រាស៊ុម៖ 30 FPS គឺល្អ, 60 FPS កាន់តែប្រសើរ។";
+"recordingGuide_recorderTip" = "អ្នកលេង A (អ្នកថត)៖ ឈរនៅបន្ទាត់ចំហៀង។";
+"recordingGuide_smasherTip" = "អ្នកលេង B (អ្នកវាយ)៖ វាយពីផ្នែកម្ខាងទៀតនៃតារាង។";
+"recordingGuide_title" = "របៀបថតដើម្បីទទួលបានលទ្ធផលល្អបំផុត";
+"recordingGuide_visitWebsite" = "សម្រាប់ការបង្រៀនជាវីដេអូ សូមចូលទៅកាន់ smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "វិភាគវីដេអូមួយទៀត";
+"resultView_angleFormat" = "%.0f° ចុះក្រោម";
+"resultView_angleNotCalculated" = "មុំមិនត្រូវបានគណនា";
+"resultView_angleUnlockInfo" = "វាយលឿនជាង 100 គ.ម/ម៉ ដើម្បីដោះសោការវិភាគមុំ។";
+"resultView_maxSpeedTitle" = "ល្បឿនអតិបរមា";
+"resultView_signInPrompt" = "ចង់រក្សាទុកលទ្ធផលរបស់អ្នក? ចូលគណនី";
+"resultView_smashAngleLabel" = "មុំវាយសេវា៖";
+"resultView_speedUnit" = "គ.ម/ម៉";
+
+/* Review */
+"review_alert_interpolation_message" = "Interpolation បំពេញប្រអប់កំណត់ដែលបាត់ដោយស្វ័យប្រវត្តិ។ ប្រសិនបើអ្នកមានស៊ុមមួយដែលមានប្រអប់ បន្ទាប់មកមានចន្លោះស៊ុមដែលគ្មានប្រអប់ តាមដោយស៊ុមមួយទៀតដែលមានប្រអប់ ឧបករណ៍នេះនឹងគូសបន្ទាត់ត្រង់ដើម្បីបំពេញចន្លោះ។";
+"review_alert_interpolation_title" = "តើ Interpolation ជាអ្វី?";
+"review_alert_manual_message" = "ប្រើការបញ្ជាទាំងនេះដើម្បីកែកំហុសដែលបង្កើតដោយ AI។ អ្នកអាចបន្ថែមប្រអប់ប្រសិនបើ AI រកសីមិនឃើញ ដកប្រអប់ចេញប្រសិនបើការរកឃើញខុស ឬរុញ/ប្តូរទំហំប្រអប់ដែលមានស្រាប់ដើម្បីភាពត្រឹមត្រូវកាន់តែប្រសើរ។";
+"review_alert_manual_title" = "ការកែតម្រូវដោយដៃ";
+"review_alert_speedCalc_message" = "ល្បឿនត្រូវបានគណនាដោយប្រើចម្ងាយដែលសីធ្វើដំណើររវាងស៊ុម រួមផ្សំជាមួយអត្រាស៊ុមរបស់វីដេអូ (fps)។\n\n1. AI តាមដានចំណុចកណ្តាលរបស់សីជាភីកសែល។\n2. ចម្ងាយដែលបានផ្លាស់ទី (គិតជាភីកសែល) ត្រូវបានគុណនឹងអត្រាស៊ុម ដើម្បីទទួលបានភីកសែល/វិនាទី។\n3. កត្តាមាត្រដ្ឋាន (ម៉ែត្រ/ភីកសែល) ដែលកំណត់ពីវិមាត្រដែលគេស្គាល់របស់តារាង បំប្លែងវាទៅជាម៉ែត្រ/វិនាទី។\n4. លទ្ធផលត្រូវបានបំប្លែងទៅជា គ.ម/ម៉។";
+"review_alert_speedCalc_title" = "តើល្បឿនត្រូវបានគណនាយ៉ាងដូចម្តេច?";
+"review_box_addButton" = "បន្ថែមប្រអប់";
+"review_box_nudgePicker" = "រុញ";
+"review_box_removeButton" = "ដកប្រអប់ចេញ";
+"review_box_resizePicker" = "ប្តូរទំហំ";
+"review_finishButton" = "បញ្ចប់ និងរក្សាទុកការវិភាគ";
+"review_guidance_dontShowAgain" = "កុំបង្ហាញសារនេះម្តងទៀត";
+"review_guidance_message" = "ប្រើគ្រាប់រំកិលដើម្បីពិនិត្យមើលការរកឃើញនៅលើស៊ុមនីមួយៗ។ កែតម្រូវប្រអប់តាមតម្រូវការដើម្បីភាពត្រឹមត្រូវបំផុត។";
+"review_guidance_title" = "គន្លឹះ៖ ពិនិត្យមើលស៊ុមទាំងអស់";
+"review_interp_gapWarning_message" = "ប្រើ 'Interpolate' ដើម្បីធានាលទ្ធផលល្បឿនត្រឹមត្រូវ។";
+"review_interp_gapWarning_title" = "រកឃើញចន្លោះក្នុងការតាមដាន";
+"review_interp_interpolateButton" = "បំពេញស៊ុមដែលបាត់";
+"review_interp_whatIsButton" = "តើ Interpolation ជាអ្វី?";
+"review_manual_sectionTitle" = "ការកែតម្រូវដោយដៃ";
+"review_nav_aiWarning" = "ការរកឃើញដោយ AI គឺនៅដំណាក់កាលដំបូង ការកែតម្រូវដោយដៃគឺត្រូវការជាញឹកញាប់។";
+"review_nav_hideManualControls" = "លាក់ការបញ្ជាដោយដៃ";
+"review_nav_sectionTitle" = "ការរុករកស៊ុម";
+"review_nav_showManualControls" = "បង្ហាញការបញ្ជាដោយដៃ";
+"review_nav_speedLabel" = "ល្បឿននៅស៊ុមនេះ៖";
+"review_recalibrateButton" = "ក្រិតចម្ងាយឡើងវិញ";
+"review_topBar_frameCountFormat" = "ស៊ុម %d នៃ %d";
+"review_topBar_noFrames" = "គ្មានស៊ុម";
+"review_speedWithUnitFormat" = "%.1f គ.ម/ម៉";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° ចុះក្រោម";
+"share_image_generatedBy" = "បង្កើតដោយ Smashspeed";
+"share_image_smashAngleLabel" = "មុំវាយសេវា";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "ចែករំលែកឥឡូវនេះ";
+"share_preview_title" = "ការមើលរូបភាពជាមុនសម្រាប់ចែករំលែក";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "កាត់តឃ្លីបឱ្យតិចជាង 0.8 វិនាទី (~%d ស៊ុម) ដោយបង្ហាញតែការវាយប៉ុណ្ណោះ។ សីគួរតែអាចមើលឃើញនៅគ្រប់ស៊ុម។";
+"trimView_alert_tooLong_title" = "ឃ្លីបវែងពេក";
+"trimView_confirmButton" = "បញ្ជាក់ការកាត់ត";
+"trimView_description" = "ញែកពេលប៉ះទង្គិច។ ឃ្លីបចុងក្រោយគួរតែខ្លីណាស់ (~0.25 វិនាទី) ហើយសីគួរតែអាចមើលឃើញយ៉ាងច្បាស់នៅគ្រប់ស៊ុម។";
+"trimView_durationFormat" = "រយៈពេលដែលបានជ្រើសរើស៖ %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "កាត់តទៅការវាយ";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "គណនី";
+"tab_detect" = "រកមើល";
+"tab_results" = "លទ្ធផល";
+"account_navTitle" = "គណនី";
+
+/* Update Alert */
+"updateAlert_button" = "ធ្វើបច្ចុប្បន្នភាពឥឡូវនេះ";
+"updateAlert_message" = "មានកំណែថ្មីនៃកម្មវិធី។ សូមធ្វើបច្ចុប្បន្នភាពដើម្បីបន្តប្រើប្រាស់កម្មវិធី។";
+"updateAlert_title" = "តម្រូវ​ឲ្យ​ធ្វើ​បច្ចុប្បន្នភាព";

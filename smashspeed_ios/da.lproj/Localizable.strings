@@ -1,0 +1,229 @@
+// =================================================================
+// Danish (da.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "Er du sikker på, at du vil slette din konto? Denne handling er permanent og kan ikke fortrydes.";
+"account_alert_delete_title" = "Slet konto";
+"account_alert_signOut_message" = "Er du sikker på, at du vil logge ud?";
+"account_loggedIn_accountActions" = "Konto-handlinger";
+"account_loggedIn_appearance" = "Udseende";
+"account_loggedIn_appearanceDark" = "Mørk";
+"account_loggedIn_appearanceLight" = "Lys";
+"account_loggedIn_appearanceSystem" = "System";
+"account_loggedIn_changePassword" = "Skift adgangskode";
+"account_loggedIn_communitySupport" = "Fællesskab & Support";
+"account_loggedIn_contactSupport" = "Kontakt support";
+"account_loggedIn_deleteAccount" = "Slet konto";
+"account_loggedIn_followInstagram" = "Følg på Instagram";
+"account_loggedIn_memberSinceFormat" = "Medlem siden %@";
+"account_loggedIn_noEmail" = "Ingen e-mail fundet";
+"account_loggedIn_officialWebsite" = "Officiel hjemmeside";
+"account_loggedIn_settingsTitle" = "Indstillinger";
+"account_loggedIn_signOut" = "Log ud";
+"account_loggedIn_viewTutorial" = "Se vejledning";
+"account_menu_contact" = "Kontakt os";
+"account_menu_faq" = "Ofte stillede spørgsmål";
+"account_menu_privacy" = "Privatlivspolitik";
+"account_menu_terms" = "Servicevilkår";
+"account_navTitle_myAccount" = "Min konto";
+"account_navTitle_welcome" = "Velkommen";
+"auth_alreadyHaveAccount" = "Har du allerede en konto? Log ind";
+"auth_createAccountButton" = "Opret konto";
+"auth_createAccountTitle" = "Opret en konto";
+"auth_dontHaveAccount" = "Har du ikke en konto? Tilmeld dig";
+"auth_forgotPassword" = "Glemt adgangskode?";
+"auth_orDivider" = "Eller";
+"auth_passwordMismatch" = "Adgangskoderne stemmer ikke overens.";
+"auth_signInButton" = "Log ind";
+"auth_signInPrompt" = "Log ind for at få adgang til flere funktioner, tilpasse indstillinger og følge dine fremskridt over tid.";
+"auth_signInTitle" = "Log ind";
+"auth_signInWithGoogle" = "Log ind med Google";
+"auth_termsAgreement" = "Jeg har læst og accepterer [Servicevilkårene](https://smashspeed.ca/terms-of-service) og [Privatlivspolitikken](https://smashspeed.ca/privacy-policy).";
+"changePwd_cancelButton" = "Annuller";
+"changePwd_confirmPwdField" = "Bekræft ny adgangskode";
+"changePwd_navTitle" = "Skift adgangskode";
+"changePwd_newPwdField" = "Ny adgangskode";
+"changePwd_updateButton" = "Opdater adgangskode";
+
+/* Calibration */
+"calib_instruction1" = "Placer et punkt på den forreste servelinje og det andet på den lange servelinje for double (flick-linjen).";
+"calib_instruction2" = "Tip: Træk fra området omkring et punkt for at undgå at dække det med din finger.";
+"calib_refLengthDescription" = "Indtast den virkelige afstand mellem de to punkter.";
+"calib_refLengthLabel" = "Referencelængde";
+"calib_startButton" = "Start analyse";
+"calib_title" = "Kalibrering";
+
+/* Common */
+"common_cancel" = "Annuller";
+"common_delete" = "Slet";
+"common_done" = "Færdig";
+"common_email" = "E-mail";
+"common_error" = "Fejl";
+"common_height" = "Højde";
+"common_kmh" = "km/t";
+"common_meters" = "meter";
+"common_notAvailable" = "I/T";
+"common_ok" = "OK";
+"common_password" = "Adgangskode";
+"common_smashAngle" = "Smash-vinkel:";
+"common_speed" = "Hastighed";
+"common_tryAgain" = "Prøv igen";
+"common_width" = "Bredde";
+
+/* Errors */
+"error_couldNotLoadVideo" = "Kunne ikke indlæse den valgte video.";
+"error_genericVideoSelection" = "Der opstod en fejl under valg af video.";
+"error_recordLandscape" = "Optag venligst i liggende format. Stående videoer understøttes ikke.";
+"error_selectLandscape" = "Vælg venligst en video i liggende format. Stående videoer understøttes ikke.";
+
+/* History & Details */
+"details_liveSpeed" = "Live hastighed:";
+"details_navTitle" = "Smash-detaljer";
+"details_peakSpeed" = "Tophastighed";
+"details_speedHeader" = "Hastighed";
+"details_timeHeader" = "Tid";
+"details_timestampTitle" = "Tidsstempel-data";
+"history_alert_delete_message" = "Er du sikker på, at du vil slette dette resultat? Handlingen kan ikke fortrydes.";
+"history_alert_delete_title" = "Bekræft sletning";
+"history_chart_noData" = "Ikke nok data med de nuværende filtre til at tegne et diagram.";
+"history_chart_selectedDataFormat" = "Tophastighed den %@: %.1f km/t";
+"history_chart_subtitleFormat" = "Tophastighed pr. dag (%@)";
+"history_chart_title" = "Fremskridt over tid";
+"history_empty_message" = "Dine analyserede smash vil blive vist her.";
+"history_empty_title" = "Ingen resultater";
+"history_filters_filterBySpeed" = "Filtrer efter hastighed";
+"history_filters_minSpeed" = "Min. hastighed:";
+"history_filters_timeRange" = "Tidsperiode";
+"history_filters_title" = "Filtre";
+"history_list_noResults" = "Ingen resultater matcher dine nuværende filtre.";
+"history_list_title" = "Historik";
+"history_loggedOut_message" = "Log venligst ind for at se resultater.";
+"history_loggedOut_title" = "Login påkrævet";
+"history_navTitle" = "Resultater";
+"history_range_all" = "Altid";
+"history_range_month" = "Sidste måned";
+"history_range_week" = "Sidste uge";
+"history_stats_avgSpeed" = "Gns. hastighed";
+"history_stats_title" = "Filtrerede statistikker";
+"history_stats_topSpeed" = "Tophastighed";
+"history_stats_totalSmashes" = "Antal smash";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Vælg fra bibliotek";
+"inputSelector_landscapeOnlyWarning" = "Kun videoer i liggende format understøttes.";
+"inputSelector_recordNewButton" = "Optag ny video";
+"inputSelector_title" = "Analyser et smash";
+"mainView_howToRecordButton" = "Sådan optager du";
+"mainView_prompt" = "Vælg en video for at starte";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "Analyseresultat";
+"navTitle_calibration" = "Kalibrering";
+"navTitle_detect" = "Registrer";
+"navTitle_recordingGuide" = "Optagevejledning";
+"navTitle_reviewAdjust" = "Gennemse & juster";
+"navTitle_trimVideo" = "Beskær video";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "Kom i gang";
+"onboarding_slide1_instruction1" = "Placer kameraet på sidelinjen, vendt lige over. Banens linjer skal se parallelle ud med rammen.";
+"onboarding_slide1_instruction2" = "Hold fjerbolden synlig — undgå blænding eller travle baggrunde.";
+"onboarding_slide1_instruction3" = "Brug almindelig video. Undgå slowmotion eller filtre.";
+"onboarding_slide1_instruction4" = "Beskær til kun smashet — under 1 sekund (~10 billeder).";
+"onboarding_slide1_title" = "1. Optag dit smash";
+"onboarding_slide2_instruction1" = "Marker den forreste servelinje og double-servelinjen — 3,87 m fra hinanden.";
+"onboarding_slide2_instruction2" = "Placer linjen direkte under spilleren.";
+"onboarding_slide2_instruction3" = "Hold 3,87 m, medmindre du bruger andre linjer — ændring kan reducere nøjagtigheden.";
+"onboarding_slide2_title" = "2. Marker en kendt afstand";
+"onboarding_slide3_instruction1" = "Brug skyderen eller piletasterne til at bevæge dig gennem hvert billede og se fjerboldens hastighed.";
+"onboarding_slide3_instruction2" = "Brug 'Interpoler'-værktøjet til automatisk at udfylde huller mellem gode registreringer. Dette anbefales kraftigt.";
+"onboarding_slide3_instruction3" = "For finjustering, brug de manuelle kontroller til at flytte, ændre størrelse, tilføje eller fjerne en registreringsboks.";
+"onboarding_slide3_instruction4" = "Hvis du laver en fejl, skal du bruge fortryd/gentag-knapperne øverst til venstre.";
+"onboarding_slide3_title" = "3. Gennemse registrering";
+"onboarding_swipePrompt" = "Swipe for at starte";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Vil du vide, hvor hurtigt du egentlig smasher?";
+"onboarding_welcome_title" = "Velkommen til";
+
+/* Processing States */
+"processing_analyzingVideo" = "Analyserer video...";
+"processing_preparingVideo" = "Forbereder video...";
+"processing_trimmingVideo" = "Beskærer video...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**Kamera:** Brug liggende format med 0,5x zoom for at holde fjerbolden i billedet.";
+"recordingGuide_frameRateTip" = "**Billedfrekvens:** 30 FPS er fint, 60 FPS er bedre.";
+"recordingGuide_recorderTip" = "**Spiller A (Optager):** Stå i de yderste sidelinjer.";
+"recordingGuide_smasherTip" = "**Spiller B (Smasher):** Smash fra den modsatte banehalvdel.";
+"recordingGuide_title" = "Sådan optager du for de bedste resultater";
+"recordingGuide_visitWebsite" = "For en videovejledning, besøg smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "Analyser en anden video";
+"resultView_angleFormat" = "%.0f° nedadgående";
+"resultView_angleNotCalculated" = "Vinkel ikke beregnet";
+"resultView_angleUnlockInfo" = "Smash hurtigere end 100 km/t for at låse op for vinkelanalyse.";
+"resultView_maxSpeedTitle" = "Maksimal hastighed";
+"resultView_signInPrompt" = "Vil du gemme dit resultat? Log ind";
+"resultView_smashAngleLabel" = "Smash-vinkel:";
+"resultView_speedUnit" = "km/t";
+
+/* Review */
+"review_alert_interpolation_message" = "Interpolation udfylder automatisk manglende afgrænsningskasser. Hvis du har et billede med en kasse, derefter et hul af billeder uden en kasse, efterfulgt af et andet billede med en kasse, vil dette værktøj tegne en lige linje for at udfylde hullet.";
+"review_alert_interpolation_title" = "Hvad er interpolation?";
+"review_alert_manual_message" = "Brug disse kontroller til at rette fejl lavet af AI'en. Du kan tilføje en kasse, hvis AI'en missede fjerbolden, fjerne en kasse, hvis registreringen er forkert, eller skubbe/ændre størrelsen på en eksisterende kasse for bedre nøjagtighed.";
+"review_alert_manual_title" = "Manuel justering";
+"review_alert_speedCalc_message" = "Hastighed beregnes ved hjælp af den afstand, fjerbolden tilbagelægger mellem billeder, kombineret med videoens billedfrekvens (fps).\n\n1. AI sporer fjerboldens midtpunkt i pixels.\n2. Den tilbagelagte afstand (i pixels) ganges med billedfrekvensen for at få pixels/sekund.\n3. En skaleringsfaktor (meter/pixel), bestemt ud fra banens kendte dimensioner, konverterer dette til meter/sekund.\n4. Resultatet konverteres til km/t.";
+"review_alert_speedCalc_title" = "Hvordan beregnes hastighed?";
+"review_box_addButton" = "Tilføj boks";
+"review_box_nudgePicker" = "Skub";
+"review_box_removeButton" = "Fjern boks";
+"review_box_resizePicker" = "Ændr størrelse";
+"review_finishButton" = "Afslut & gem analyse";
+"review_guidance_dontShowAgain" = "Vis ikke igen";
+"review_guidance_message" = "Brug skyderen til at gennemgå registreringen på hvert billede. Juster kasserne efter behov for den bedste nøjagtighed.";
+"review_guidance_title" = "Tip: Tjek alle billeder";
+"review_interp_gapWarning_message" = "Brug 'Interpoler' for at sikre nøjagtige hastighedsresultater.";
+"review_interp_gapWarning_title" = "Huller opdaget i sporing";
+"review_interp_interpolateButton" = "Interpoler manglende billeder";
+"review_interp_whatIsButton" = "Hvad er interpolation?";
+"review_manual_sectionTitle" = "MANUEL JUSTERING";
+"review_nav_aiWarning" = "AI-registrering er i en tidlig fase, manuel justering er ofte nødvendig.";
+"review_nav_hideManualControls" = "Skjul manuelle kontroller";
+"review_nav_sectionTitle" = "BILLEDSNAVIGATION";
+"review_nav_showManualControls" = "Vis manuelle kontroller";
+"review_nav_speedLabel" = "Hastighed i dette billede:";
+"review_recalibrateButton" = "Genkalibrer afstand";
+"review_topBar_frameCountFormat" = "Billede %d af %d";
+"review_topBar_noFrames" = "Ingen billeder";
+"review_speedWithUnitFormat" = "%.1f km/t";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° nedadgående";
+"share_image_generatedBy" = "Genereret af Smashspeed";
+"share_image_smashAngleLabel" = "Smash-vinkel";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Del nu";
+"share_preview_title" = "Forhåndsvisning af deleligt billede";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "Beskær klippet til under 0,8s (~%d billeder), og vis kun smashet. Fjerbolden skal være synlig i hvert billede.";
+"trimView_alert_tooLong_title" = "Klip for langt";
+"trimView_confirmButton" = "Bekræft beskæring";
+"trimView_description" = "Isoler øjeblikket for træf. Det endelige klip skal være meget kort (~0,25 sekunder), og fjerbolden skal være tydeligt synlig i hvert billede.";
+"trimView_durationFormat" = "Valgt varighed: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "Beskær til smash";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "Konto";
+"tab_detect" = "Registrer";
+"tab_results" = "Resultater";
+"account_navTitle" = "Konto";
+
+/* Update Alert */
+"updateAlert_button" = "Opdater nu";
+"updateAlert_message" = "En ny version af appen er tilgængelig. Opdater venligst for at fortsætte med at bruge appen.";
+"updateAlert_title" = "Opdatering kræves";

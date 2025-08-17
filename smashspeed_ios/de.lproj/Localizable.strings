@@ -1,0 +1,230 @@
+// =================================================================
+// German (de.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "Sind Sie sicher, dass Sie Ihr Konto löschen möchten? Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.";
+"account_alert_delete_title" = "Konto löschen";
+"account_alert_signOut_message" = "Sind Sie sicher, dass Sie sich abmelden möchten?";
+"account_loggedIn_accountActions" = "Kontoaktionen";
+"account_loggedIn_appearance" = "Erscheinungsbild";
+"account_loggedIn_appearanceDark" = "Dunkel";
+"account_loggedIn_appearanceLight" = "Hell";
+"account_loggedIn_appearanceSystem" = "System";
+"account_loggedIn_changePassword" = "Passwort ändern";
+"account_loggedIn_communitySupport" = "Community & Support";
+"account_loggedIn_contactSupport" = "Support kontaktieren";
+"account_loggedIn_deleteAccount" = "Konto löschen";
+"account_loggedIn_followInstagram" = "Auf Instagram folgen";
+"account_loggedIn_memberSinceFormat" = "Mitglied seit %@";
+"account_loggedIn_noEmail" = "Keine E-Mail gefunden";
+"account_loggedIn_officialWebsite" = "Offizielle Website";
+"account_loggedIn_settingsTitle" = "Einstellungen";
+"account_loggedIn_signOut" = "Abmelden";
+"account_loggedIn_viewTutorial" = "Anleitung ansehen";
+"account_menu_contact" = "Kontakt";
+"account_menu_faq" = "FAQ";
+"account_menu_privacy" = "Datenschutzrichtlinie";
+"account_menu_terms" = "Nutzungsbedingungen";
+"account_navTitle_myAccount" = "Mein Konto";
+"account_navTitle_welcome" = "Willkommen";
+"auth_alreadyHaveAccount" = "Haben Sie bereits ein Konto? Anmelden";
+"auth_createAccountButton" = "Konto erstellen";
+"auth_createAccountTitle" = "Konto erstellen";
+"auth_dontHaveAccount" = "Haben Sie kein Konto? Registrieren";
+"auth_forgotPassword" = "Passwort vergessen?";
+"auth_orDivider" = "Oder";
+"auth_passwordMismatch" = "Passwörter stimmen nicht überein.";
+"auth_signInButton" = "Anmelden";
+"auth_signInPrompt" = "Melden Sie sich an, um auf weitere Funktionen zuzugreifen, Einstellungen anzupassen und Ihren Fortschritt zu verfolgen.";
+"auth_signInTitle" = "Anmelden";
+"auth_signInWithGoogle" = "Mit Google anmelden";
+"auth_termsAgreement" = "Ich habe die [Nutzungsbedingungen](https://smashspeed.ca/terms-of-service) und die [Datenschutzrichtlinie](https://smashspeed.ca/privacy-policy) gelesen und stimme ihnen zu.";
+"changePwd_cancelButton" = "Abbrechen";
+"changePwd_confirmPwdField" = "Neues Passwort bestätigen";
+"changePwd_navTitle" = "Passwort ändern";
+"changePwd_newPwdField" = "Neues Passwort";
+"changePwd_updateButton" = "Passwort aktualisieren";
+
+/* Calibration */
+"calib_instruction1" = "Platzieren Sie einen Punkt auf der vorderen Aufschlaglinie und den anderen auf der langen Doppel-Aufschlaglinie (Flick-Linie).";
+"calib_instruction2" = "Tipp: Ziehen Sie vom Bereich um einen Punkt, um ihn nicht mit dem Finger zu verdecken.";
+"calib_refLengthDescription" = "Geben Sie den realen Abstand zwischen den beiden Punkten ein.";
+"calib_refLengthLabel" = "Referenzlänge";
+"calib_startButton" = "Analyse starten";
+"calib_title" = "Kalibrierung";
+
+/* Common */
+"common_cancel" = "Abbrechen";
+"common_delete" = "Löschen";
+"common_done" = "Fertig";
+"common_email" = "E-Mail";
+"common_error" = "Fehler";
+"common_height" = "Höhe";
+"common_kmh" = "km/h";
+"common_meters" = "Meter";
+"common_notAvailable" = "N/A";
+"common_ok" = "OK";
+"common_password" = "Passwort";
+"common_smashAngle" = "Smash-Winkel:";
+"common_speed" = "Geschwindigkeit";
+"common_tryAgain" = "Erneut versuchen";
+"common_width" = "Breite";
+
+/* Errors */
+"error_couldNotLoadVideo" = "Ausgewähltes Video konnte nicht geladen werden.";
+"error_genericVideoSelection" = "Beim Auswählen des Videos ist ein Fehler aufgetreten.";
+"error_recordLandscape" = "Bitte im Querformat aufnehmen. Hochformatvideos werden nicht unterstützt.";
+"error_selectLandscape" = "Bitte wählen Sie ein Video im Querformat. Hochformatvideos werden nicht unterstützt.";
+
+/* History & Details */
+"details_liveSpeed" = "Live-Geschwindigkeit:";
+"details_navTitle" = "Smash-Details";
+"details_peakSpeed" = "Höchstgeschwindigkeit";
+"details_speedHeader" = "Geschwindigkeit";
+"details_timeHeader" = "Zeit";
+"details_timestampTitle" = "Zeitstempeldaten";
+"history_alert_delete_message" = "Sind Sie sicher, dass Sie dieses Ergebnis löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.";
+"history_alert_delete_title" = "Löschen bestätigen";
+"history_chart_noData" = "Nicht genügend Daten mit aktuellen Filtern, um ein Diagramm zu zeichnen.";
+"history_chart_selectedDataFormat" = "Höchstgeschwindigkeit am %@: %.1f km/h";
+"history_chart_subtitleFormat" = "Tägliche Höchstgeschwindigkeit (%@)";
+"history_chart_title" = "Fortschritt im Zeitverlauf";
+"history_empty_message" = "Ihre analysierten Smashes werden hier angezeigt.";
+"history_empty_title" = "Keine Ergebnisse";
+"history_filters_filterBySpeed" = "Nach Geschwindigkeit filtern";
+"history_filters_minSpeed" = "Min. Geschwindigkeit:";
+"history_filters_timeRange" = "Zeitraum";
+"history_filters_title" = "Filter";
+"history_list_noResults" = "Keine Ergebnisse entsprechen Ihren aktuellen Filtern.";
+"history_list_title" = "Verlauf";
+"history_loggedOut_message" = "Bitte melden Sie sich an, um Ergebnisse anzuzeigen.";
+"history_loggedOut_title" = "Anmeldung erforderlich";
+"history_navTitle" = "Ergebnisse";
+"history_range_all" = "Gesamt";
+"history_range_month" = "Letzter Monat";
+"history_range_week" = "Letzte Woche";
+"history_stats_avgSpeed" = "Durchschnittsgeschw.";
+"history_stats_title" = "Gefilterte Statistiken";
+"history_stats_topSpeed" = "Höchstgeschwindigkeit";
+"history_stats_totalSmashes" = "Smashes gesamt";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Aus Bibliothek wählen";
+"inputSelector_landscapeOnlyWarning" = "Nur Videos im Querformat werden unterstützt.";
+"inputSelector_recordNewButton" = "Neues Video aufnehmen";
+"inputSelector_title" = "Smash analysieren";
+"mainView_howToRecordButton" = "Aufnahmeanleitung";
+"mainView_prompt" = "Video zum Starten auswählen";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "Analyseergebnis";
+"navTitle_calibration" = "Kalibrierung";
+"navTitle_detect" = "Erkennen";
+"navTitle_recordingGuide" = "Aufnahmeanleitung";
+"navTitle_reviewAdjust" = "Prüfen & Anpassen";
+"navTitle_trimVideo" = "Video schneiden";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "Los geht's";
+"onboarding_slide1_instruction1" = "Stellen Sie die Kamera an der Seitenlinie auf, geradeaus gerichtet. Die Linien des Feldes sollten parallel zum Bildrand verlaufen.";
+"onboarding_slide1_instruction2" = "Halten Sie den Federball sichtbar – vermeiden Sie Blendung oder unruhige Hintergründe.";
+"onboarding_slide1_instruction3" = "Verwenden Sie ein normales Video. Vermeiden Sie Zeitlupe oder Filter.";
+"onboarding_slide1_instruction4" = "Schneiden Sie nur den Smash – unter 1 Sekunde (~10 Bilder).";
+"onboarding_slide1_title" = "1. Nehmen Sie Ihren Smash auf";
+"onboarding_slide2_instruction1" = "Markieren Sie die vordere Aufschlaglinie und die Doppel-Aufschlaglinie – 3,87 m Abstand.";
+"onboarding_slide2_instruction2" = "Platzieren Sie die Linie direkt unter dem Spieler.";
+"onboarding_slide2_instruction3" = "Behalten Sie 3,87 m bei, es sei denn, Sie verwenden andere Linien – eine Änderung kann die Genauigkeit verringern.";
+"onboarding_slide2_title" = "2. Markieren Sie eine bekannte Distanz";
+"onboarding_slide3_instruction1" = "Verwenden Sie den Schieberegler oder die Pfeiltasten, um durch die Bilder zu gehen und die Geschwindigkeit des Federballs zu sehen.";
+"onboarding_slide3_instruction2" = "Verwenden Sie das 'Interpolieren'-Werkzeug, um Lücken zwischen guten Erkennungen automatisch zu füllen. Dies wird dringend empfohlen.";
+"onboarding_slide3_instruction3" = "Für die Feinabstimmung verwenden Sie die manuellen Steuerelemente, um ein Erkennungsfeld zu verschieben, dessen Größe zu ändern, es hinzuzufügen oder zu entfernen.";
+"onboarding_slide3_instruction4" = "Wenn Sie einen Fehler machen, verwenden Sie die Rückgängig/Wiederholen-Schaltflächen oben links.";
+"onboarding_slide3_title" = "3. Erkennung überprüfen";
+"onboarding_swipePrompt" = "Wischen, um zu starten";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Wollen Sie wissen, wie schnell Sie wirklich schmettern?";
+"onboarding_welcome_title" = "Willkommen bei";
+
+/* Processing States */
+"processing_analyzingVideo" = "Video wird analysiert...";
+"processing_preparingVideo" = "Video wird vorbereitet...";
+"processing_trimmingVideo" = "Video wird geschnitten...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**Kamera:** Verwenden Sie den Querformatmodus mit 0,5x Zoom, um den Federball im Bild zu halten.";
+"recordingGuide_frameRateTip" = "**Bildrate:** 30 FPS sind in Ordnung, 60 FPS sind besser.";
+"recordingGuide_recorderTip" = "**Spieler A (Aufnehmer):** Stehen Sie in den seitlichen Tramlinien.";
+"recordingGuide_smasherTip" = "**Spieler B (Schmetterer):** Schmettern Sie aus der gegenüberliegenden Spielfeldhälfte.";
+"recordingGuide_title" = "Anleitung für beste Aufnahmeergebnisse";
+"recordingGuide_visitWebsite" = "Für ein Video-Tutorial besuchen Sie smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "Weiteres Video analysieren";
+"resultView_angleFormat" = "%.0f° abwärts";
+"resultView_angleNotCalculated" = "Winkel nicht berechnet";
+"resultView_angleUnlockInfo" = "Schmettern Sie schneller als 100 km/h, um die Winkelanalyse freizuschalten.";
+"resultView_maxSpeedTitle" = "Höchstgeschwindigkeit";
+"resultView_signInPrompt" = "Möchten Sie Ihr Ergebnis speichern? Anmelden";
+"resultView_smashAngleLabel" = "Smash-Winkel:";
+"resultView_speedUnit" = "km/h";
+
+/* Review */
+"review_alert_interpolation_message" = "Die Interpolation füllt fehlende Begrenzungsrahmen automatisch aus. Wenn Sie ein Bild mit einem Rahmen haben, dann eine Lücke von Bildern ohne Rahmen, gefolgt von einem weiteren Bild mit einem Rahmen, zeichnet dieses Werkzeug eine gerade Linie, um die Lücke zu füllen.";
+"review_alert_interpolation_title" = "Was ist Interpolation?";
+"review_alert_manual_message" = "Verwenden Sie diese Steuerelemente, um von der KI gemachte Fehler zu korrigieren. Sie können einen Rahmen hinzufügen, wenn die KI den Federball verfehlt hat, einen Rahmen entfernen, wenn die Erkennung falsch ist, oder einen vorhandenen Rahmen für eine bessere Genauigkeit verschieben/anpassen.";
+"review_alert_manual_title" = "Manuelle Anpassung";
+"review_alert_speedCalc_message" = "Die Geschwindigkeit wird anhand der Entfernung berechnet, die der Federball zwischen den Bildern zurücklegt, kombiniert mit der Bildrate (fps) des Videos.\n\n1. Die KI verfolgt den Mittelpunkt des Federballs in Pixeln.\n2. Die zurückgelegte Entfernung (in Pixeln) wird mit der Bildrate multipliziert, um Pixel/Sekunde zu erhalten.\n3. Ein Skalierungsfaktor (Meter/Pixel), der aus den bekannten Abmessungen des Spielfelds bestimmt wird, wandelt dies in Meter/Sekunde um.\n4. Das Ergebnis wird in km/h umgerechnet.";
+"review_alert_speedCalc_title" = "Wie wird die Geschwindigkeit berechnet?";
+"review_box_addButton" = "Rahmen hinzufügen";
+"review_box_nudgePicker" = "Verschieben";
+"review_box_removeButton" = "Rahmen entfernen";
+"review_box_resizePicker" = "Größe ändern";
+"review_finishButton" = "Analyse beenden & speichern";
+"review_guidance_dontShowAgain" = "Nicht erneut anzeigen";
+"review_guidance_message" = "Verwenden Sie den Schieberegler, um die Erkennung in jedem Bild zu überprüfen. Passen Sie die Rahmen bei Bedarf an, um die beste Genauigkeit zu erzielen.";
+"review_guidance_title" = "Tipp: Alle Bilder überprüfen";
+"review_interp_gapWarning_message" = "Verwenden Sie 'Interpolieren', um genaue Geschwindigkeitsergebnisse zu gewährleisten.";
+"review_interp_gapWarning_title" = "Lücken in der Verfolgung erkannt";
+"review_interp_interpolateButton" = "Fehlende Bilder interpolieren";
+"review_interp_whatIsButton" = "Was ist Interpolation?";
+"review_manual_sectionTitle" = "MANUELLE ANPASSUNG";
+"review_nav_aiWarning" = "Die KI-Erkennung befindet sich im Frühstadium, eine manuelle Abstimmung ist oft erforderlich.";
+"review_nav_hideManualControls" = "Manuelle Steuerung ausblenden";
+"review_nav_sectionTitle" = "BILDNAVIGATION";
+"review_nav_showManualControls" = "Manuelle Steuerung anzeigen";
+"review_nav_speedLabel" = "Geschwindigkeit in diesem Bild:";
+"review_recalibrateButton" = "Distanz neu kalibrieren";
+"review_topBar_frameCountFormat" = "Bild %d von %d";
+"review_topBar_noFrames" = "Keine Bilder";
+"review_speedWithUnitFormat" = "%.1f km/h";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° abwärts";
+"share_image_generatedBy" = "Erstellt von Smashspeed";
+"share_image_smashAngleLabel" = "Smash-Winkel";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Jetzt teilen";
+"share_preview_title" = "Vorschau des teilbaren Bildes";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "Schneiden Sie den Clip auf unter 0,8 s (~%d Bilder) und zeigen Sie nur den Smash. Der Federball muss in jedem Bild sichtbar sein.";
+"trimView_alert_tooLong_title" = "Clip zu lang";
+"trimView_confirmButton" = "Schnitt bestätigen";
+"trimView_description" = "Isolieren Sie den Moment des Aufpralls. Der endgültige Clip sollte sehr kurz sein (~0,25 Sekunden), und der Federball sollte in jedem Bild deutlich sichtbar sein.";
+"trimView_durationFormat" = "Ausgewählte Dauer: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "Auf den Smash zuschneiden";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "Konto";
+"tab_detect" = "Erkennen";
+"tab_results" = "Ergebnisse";
+"account_navTitle" = "Konto";
+
+/* Update Alert */
+"updateAlert_button" = "Jetzt aktualisieren";
+"updateAlert_message" = "Eine neue Version der App ist verfügbar. Bitte aktualisieren Sie, um die App weiterhin zu nutzen.";
+"updateAlert_title" = "Update erforderlich";
+

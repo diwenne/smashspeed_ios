@@ -1,0 +1,229 @@
+// =================================================================
+// Chinese, Traditional (zh-Hant.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "您確定要刪除您的帳戶嗎？此操作為永久性，無法復原。";
+"account_alert_delete_title" = "刪除帳戶";
+"account_alert_signOut_message" = "您確定要登出嗎？";
+"account_loggedIn_accountActions" = "帳戶操作";
+"account_loggedIn_appearance" = "外觀";
+"account_loggedIn_appearanceDark" = "深色";
+"account_loggedIn_appearanceLight" = "淺色";
+"account_loggedIn_appearanceSystem" = "系統";
+"account_loggedIn_changePassword" = "更改密碼";
+"account_loggedIn_communitySupport" = "社群與支援";
+"account_loggedIn_contactSupport" = "聯繫支援";
+"account_loggedIn_deleteAccount" = "刪除帳戶";
+"account_loggedIn_followInstagram" = "在 Instagram 上關注";
+"account_loggedIn_memberSinceFormat" = "會員始於 %@";
+"account_loggedIn_noEmail" = "找不到電子郵件";
+"account_loggedIn_officialWebsite" = "官方網站";
+"account_loggedIn_settingsTitle" = "設定";
+"account_loggedIn_signOut" = "登出";
+"account_loggedIn_viewTutorial" = "查看教學";
+"account_menu_contact" = "聯繫我們";
+"account_menu_faq" = "常見問題";
+"account_menu_privacy" = "隱私政策";
+"account_menu_terms" = "服務條款";
+"account_navTitle_myAccount" = "我的帳戶";
+"account_navTitle_welcome" = "歡迎";
+"auth_alreadyHaveAccount" = "已經有帳戶了？登入";
+"auth_createAccountButton" = "建立帳戶";
+"auth_createAccountTitle" = "建立帳戶";
+"auth_dontHaveAccount" = "還沒有帳戶？註冊";
+"auth_forgotPassword" = "忘記密碼？";
+"auth_orDivider" = "或";
+"auth_passwordMismatch" = "密碼不符。";
+"auth_signInButton" = "登入";
+"auth_signInPrompt" = "登入以存取更多功能、自訂設定並追蹤您的進度。";
+"auth_signInTitle" = "登入";
+"auth_signInWithGoogle" = "使用 Google 登入";
+"auth_termsAgreement" = "我已閱讀並同意[服務條款](https://smashspeed.ca/terms-of-service)和[隱私政策](https://smashspeed.ca/privacy-policy)。";
+"changePwd_cancelButton" = "取消";
+"changePwd_confirmPwdField" = "確認新密碼";
+"changePwd_navTitle" = "更改密碼";
+"changePwd_newPwdField" = "新密碼";
+"changePwd_updateButton" = "更新密碼";
+
+/* Calibration */
+"calib_instruction1" = "將一個點放在前發球線上，另一個點放在雙打長發球線（挑球線）上。";
+"calib_instruction2" = "提示：從點周圍的區域拖動，以避免手指遮擋。";
+"calib_refLengthDescription" = "輸入兩點之間的實際距離。";
+"calib_refLengthLabel" = "參考長度";
+"calib_startButton" = "開始分析";
+"calib_title" = "校準";
+
+/* Common */
+"common_cancel" = "取消";
+"common_delete" = "刪除";
+"common_done" = "完成";
+"common_email" = "電子郵件";
+"common_error" = "錯誤";
+"common_height" = "高度";
+"common_kmh" = "公里/小時";
+"common_meters" = "公尺";
+"common_notAvailable" = "無";
+"common_ok" = "確定";
+"common_password" = "密碼";
+"common_smashAngle" = "殺球角度：";
+"common_speed" = "速度";
+"common_tryAgain" = "再試一次";
+"common_width" = "寬度";
+
+/* Errors */
+"error_couldNotLoadVideo" = "無法載入所選影片。";
+"error_genericVideoSelection" = "選擇影片時發生錯誤。";
+"error_recordLandscape" = "請以橫向模式錄製。不支援直向影片。";
+"error_selectLandscape" = "請選擇橫向影片。不支援直向影片。";
+
+/* History & Details */
+"details_liveSpeed" = "即時速度：";
+"details_navTitle" = "殺球詳情";
+"details_peakSpeed" = "最高速度";
+"details_speedHeader" = "速度";
+"details_timeHeader" = "時間";
+"details_timestampTitle" = "時間戳數據";
+"history_alert_delete_message" = "您確定要刪除此結果嗎？此操作無法復原。";
+"history_alert_delete_title" = "確認刪除";
+"history_chart_noData" = "目前篩選條件下沒有足夠的數據來繪製圖表。";
+"history_chart_selectedDataFormat" = "%@ 的最高速度：%.1f 公里/小時";
+"history_chart_subtitleFormat" = "每日最高速度 (%@)";
+"history_chart_title" = "進度趨勢";
+"history_empty_message" = "您分析過的殺球將會顯示在這裡。";
+"history_empty_title" = "沒有結果";
+"history_filters_filterBySpeed" = "按速度篩選";
+"history_filters_minSpeed" = "最低速度：";
+"history_filters_timeRange" = "時間範圍";
+"history_filters_title" = "篩選";
+"history_list_noResults" = "沒有符合您目前篩選條件的結果。";
+"history_list_title" = "歷史紀錄";
+"history_loggedOut_message" = "請登入以查看結果。";
+"history_loggedOut_title" = "需要登入";
+"history_navTitle" = "結果";
+"history_range_all" = "所有時間";
+"history_range_month" = "過去一個月";
+"history_range_week" = "過去一週";
+"history_stats_avgSpeed" = "平均速度";
+"history_stats_title" = "篩選後統計";
+"history_stats_topSpeed" = "最高速度";
+"history_stats_totalSmashes" = "總殺球數";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "從圖庫中選擇";
+"inputSelector_landscapeOnlyWarning" = "僅支援橫向影片。";
+"inputSelector_recordNewButton" = "錄製新影片";
+"inputSelector_title" = "分析殺球";
+"mainView_howToRecordButton" = "如何錄製";
+"mainView_prompt" = "選擇一個影片開始";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "分析結果";
+"navTitle_calibration" = "校準";
+"navTitle_detect" = "偵測";
+"navTitle_recordingGuide" = "錄製指南";
+"navTitle_reviewAdjust" = "檢視與調整";
+"navTitle_trimVideo" = "修剪影片";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "開始使用";
+"onboarding_slide1_instruction1" = "將相機放在邊線上，直直朝向對面。場地線應與畫面平行。";
+"onboarding_slide1_instruction2" = "保持羽球可見 — 避免眩光或繁忙的背景。";
+"onboarding_slide1_instruction3" = "使用一般影片。避免慢動作或濾鏡。";
+"onboarding_slide1_instruction4" = "只修剪殺球部分 — 不到 1 秒（約 10 幀）。";
+"onboarding_slide1_title" = "1. 錄製您的殺球";
+"onboarding_slide2_instruction1" = "標記前發球線和雙打發球線 — 相距 3.87 公尺。";
+"onboarding_slide2_instruction2" = "將線直接放在球員下方。";
+"onboarding_slide2_instruction3" = "除非使用不同的線，否則保持 3.87 公尺 — 更改可能會降低準確性。";
+"onboarding_slide2_title" = "2. 標記已知距離";
+"onboarding_slide3_instruction1" = "使用滑塊或方向鍵逐幀移動，並查看羽球速度。";
+"onboarding_slide3_instruction2" = "使用「內插」工具自動填補良好偵測之間的空白。強烈建議使用。";
+"onboarding_slide3_instruction3" = "若要微調，請使用手動控制來移動、調整大小、新增或移除偵測框。";
+"onboarding_slide3_instruction4" = "如果您出錯了，請使用左上角的復原/重做按鈕。";
+"onboarding_slide3_title" = "3. 檢視偵測";
+"onboarding_swipePrompt" = "滑動開始";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "想知道您殺球到底有多快嗎？";
+"onboarding_welcome_title" = "歡迎來到";
+
+/* Processing States */
+"processing_analyzingVideo" = "正在分析影片...";
+"processing_preparingVideo" = "正在準備影片...";
+"processing_trimmingVideo" = "正在修剪影片...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**相機：** 使用橫向模式和 0.5 倍變焦，以確保羽球在畫面內。";
+"recordingGuide_frameRateTip" = "**幀率：** 30 FPS 即可，60 FPS 更佳。";
+"recordingGuide_recorderTip" = "**球員 A（錄影者）：** 站在邊線。";
+"recordingGuide_smasherTip" = "**球員 B（殺球者）：** 從球場的另一半殺球。";
+"recordingGuide_title" = "如何錄製以獲得最佳效果";
+"recordingGuide_visitWebsite" = "如需影片教學，請訪問 smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "分析另一支影片";
+"resultView_angleFormat" = "%.0f° 向下";
+"resultView_angleNotCalculated" = "未計算角度";
+"resultView_angleUnlockInfo" = "殺球速度超過 100 公里/小時以解鎖角度分析。";
+"resultView_maxSpeedTitle" = "最高速度";
+"resultView_signInPrompt" = "想要儲存您的結果嗎？登入";
+"resultView_smashAngleLabel" = "殺球角度：";
+"resultView_speedUnit" = "公里/小時";
+
+/* Review */
+"review_alert_interpolation_message" = "內插會自動填補遺失的邊界框。如果您有一個有框的幀，然後是一段沒有框的幀，接著是另一個有框的幀，此工具將畫一條直線來填補空白。";
+"review_alert_interpolation_title" = "什麼是內插？";
+"review_alert_manual_message" = "使用這些控制項來修正 AI 犯的錯誤。如果 AI 錯過了羽球，您可以新增一個框；如果偵測錯誤，可以移除一個框；或者微調/調整現有框的大小以提高準確性。";
+"review_alert_manual_title" = "手動調整";
+"review_alert_speedCalc_message" = "速度是根據羽球在幀之間移動的距離，結合影片的幀率 (fps) 計算的。\n\n1. AI 以像素為單位追蹤羽球的中心點。\n2. 移動的距離（以像素為單位）乘以幀率，得到像素/秒。\n3. 一個比例因子（公尺/像素），由球場的已知尺寸確定，將其轉換為公尺/秒。\n4. 結果被轉換為公里/小時。";
+"review_alert_speedCalc_title" = "速度是如何計算的？";
+"review_box_addButton" = "新增框";
+"review_box_nudgePicker" = "微調";
+"review_box_removeButton" = "移除框";
+"review_box_resizePicker" = "調整大小";
+"review_finishButton" = "完成並儲存分析";
+"review_guidance_dontShowAgain" = "不要再顯示";
+"review_guidance_message" = "使用滑塊檢視每一幀的偵測。根據需要調整框以獲得最佳準確性。";
+"review_guidance_title" = "提示：檢查所有幀";
+"review_interp_gapWarning_message" = "使用「內插」以確保準確的速度結果。";
+"review_interp_gapWarning_title" = "在追蹤中偵測到間隙";
+"review_interp_interpolateButton" = "內插遺失的幀";
+"review_interp_whatIsButton" = "什麼是內插？";
+"review_manual_sectionTitle" = "手動調整";
+"review_nav_aiWarning" = "AI 偵測處於早期階段，通常需要手動調整。";
+"review_nav_hideManualControls" = "隱藏手動控制項";
+"review_nav_sectionTitle" = "幀導覽";
+"review_nav_showManualControls" = "顯示手動控制項";
+"review_nav_speedLabel" = "此幀的速度：";
+"review_recalibrateButton" = "重新校準距離";
+"review_topBar_frameCountFormat" = "第 %d 幀，共 %d 幀";
+"review_topBar_noFrames" = "沒有幀";
+"review_speedWithUnitFormat" = "%.1f 公里/小時";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° 向下";
+"share_image_generatedBy" = "由 Smashspeed 生成";
+"share_image_smashAngleLabel" = "殺球角度";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "立即分享";
+"share_preview_title" = "可分享圖片預覽";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "將短片修剪至 0.8 秒以下（約 %d 幀），僅顯示殺球部分。羽球在每一幀都必須可見。";
+"trimView_alert_tooLong_title" = "短片太長";
+"trimView_confirmButton" = "確認修剪";
+"trimView_description" = "分離出撞擊的瞬間。最終的短片應該非常短（約 0.25 秒），並且羽球在每一幀都清晰可見。";
+"trimView_durationFormat" = "已選時長：%.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "修剪至殺球";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "帳戶";
+"tab_detect" = "偵測";
+"tab_results" = "結果";
+"account_navTitle" = "帳戶";
+
+/* Update Alert */
+"updateAlert_button" = "立即更新";
+"updateAlert_message" = "應用程式有新版本可用。請更新以繼續使用。";
+"updateAlert_title" = "需要更新";

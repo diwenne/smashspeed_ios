@@ -1,0 +1,229 @@
+// =================================================================
+// Korean (ko.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "정말로 계정을 삭제하시겠습니까? 이 작업은 영구적이며 되돌릴 수 없습니다.";
+"account_alert_delete_title" = "계정 삭제";
+"account_alert_signOut_message" = "정말로 로그아웃하시겠습니까?";
+"account_loggedIn_accountActions" = "계정 작업";
+"account_loggedIn_appearance" = "화면 스타일";
+"account_loggedIn_appearanceDark" = "다크 모드";
+"account_loggedIn_appearanceLight" = "라이트 모드";
+"account_loggedIn_appearanceSystem" = "시스템";
+"account_loggedIn_changePassword" = "비밀번호 변경";
+"account_loggedIn_communitySupport" = "커뮤니티 및 지원";
+"account_loggedIn_contactSupport" = "고객 지원팀에 문의";
+"account_loggedIn_deleteAccount" = "계정 삭제";
+"account_loggedIn_followInstagram" = "Instagram에서 팔로우";
+"account_loggedIn_memberSinceFormat" = "가입일: %@";
+"account_loggedIn_noEmail" = "이메일을 찾을 수 없음";
+"account_loggedIn_officialWebsite" = "공식 웹사이트";
+"account_loggedIn_settingsTitle" = "설정";
+"account_loggedIn_signOut" = "로그아웃";
+"account_loggedIn_viewTutorial" = "튜토리얼 보기";
+"account_menu_contact" = "문의하기";
+"account_menu_faq" = "자주 묻는 질문";
+"account_menu_privacy" = "개인정보 처리방침";
+"account_menu_terms" = "서비스 약관";
+"account_navTitle_myAccount" = "내 계정";
+"account_navTitle_welcome" = "환영합니다";
+"auth_alreadyHaveAccount" = "계정이 이미 있으신가요? 로그인";
+"auth_createAccountButton" = "계정 생성";
+"auth_createAccountTitle" = "계정 생성";
+"auth_dontHaveAccount" = "계정이 없으신가요? 회원가입";
+"auth_forgotPassword" = "비밀번호를 잊으셨나요?";
+"auth_orDivider" = "또는";
+"auth_passwordMismatch" = "비밀번호가 일치하지 않습니다.";
+"auth_signInButton" = "로그인";
+"auth_signInPrompt" = "로그인하여 더 많은 기능에 액세스하고, 설정을 사용자화하고, 진행 상황을 추적하세요.";
+"auth_signInTitle" = "로그인";
+"auth_signInWithGoogle" = "Google로 로그인";
+"auth_termsAgreement" = "[서비스 약관](https://smashspeed.ca/terms-of-service) 및 [개인정보 처리방침](https://smashspeed.ca/privacy-policy)을 읽고 동의합니다.";
+"changePwd_cancelButton" = "취소";
+"changePwd_confirmPwdField" = "새 비밀번호 확인";
+"changePwd_navTitle" = "비밀번호 변경";
+"changePwd_newPwdField" = "새 비밀번호";
+"changePwd_updateButton" = "비밀번호 업데이트";
+
+/* Calibration */
+"calib_instruction1" = "한 점은 앞 서비스 라인에, 다른 한 점은 복식 롱 서비스 라인(플릭 라인)에 놓습니다.";
+"calib_instruction2" = "팁: 손가락으로 가리지 않도록 점 주변 영역에서 드래그하세요.";
+"calib_refLengthDescription" = "두 점 사이의 실제 거리를 입력하세요.";
+"calib_refLengthLabel" = "참조 길이";
+"calib_startButton" = "분석 시작";
+"calib_title" = "보정";
+
+/* Common */
+"common_cancel" = "취소";
+"common_delete" = "삭제";
+"common_done" = "완료";
+"common_email" = "이메일";
+"common_error" = "오류";
+"common_height" = "높이";
+"common_kmh" = "km/h";
+"common_meters" = "미터";
+"common_notAvailable" = "해당 없음";
+"common_ok" = "확인";
+"common_password" = "비밀번호";
+"common_smashAngle" = "스매시 각도:";
+"common_speed" = "속도";
+"common_tryAgain" = "다시 시도";
+"common_width" = "너비";
+
+/* Errors */
+"error_couldNotLoadVideo" = "선택한 비디오를 로드할 수 없습니다.";
+"error_genericVideoSelection" = "비디오를 선택하는 동안 오류가 발생했습니다.";
+"error_recordLandscape" = "가로 모드로 녹화해 주세요. 세로 모드 비디오는 지원되지 않습니다.";
+"error_selectLandscape" = "가로 모드 비디오를 선택해 주세요. 세로 모드 비디오는 지원되지 않습니다.";
+
+/* History & Details */
+"details_liveSpeed" = "실시간 속도:";
+"details_navTitle" = "스매시 상세 정보";
+"details_peakSpeed" = "최고 속도";
+"details_speedHeader" = "속도";
+"details_timeHeader" = "시간";
+"details_timestampTitle" = "타임스탬프 데이터";
+"history_alert_delete_message" = "이 결과를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.";
+"history_alert_delete_title" = "삭제 확인";
+"history_chart_noData" = "현재 필터로는 차트를 그릴 데이터가 충분하지 않습니다.";
+"history_chart_selectedDataFormat" = "%@ 최고 속도: %.1f km/h";
+"history_chart_subtitleFormat" = "일일 최고 속도 (%@)";
+"history_chart_title" = "시간에 따른 진행 상황";
+"history_empty_message" = "분석된 스매시가 여기에 표시됩니다.";
+"history_empty_title" = "결과 없음";
+"history_filters_filterBySpeed" = "속도로 필터링";
+"history_filters_minSpeed" = "최소 속도:";
+"history_filters_timeRange" = "기간";
+"history_filters_title" = "필터";
+"history_list_noResults" = "현재 필터와 일치하는 결과가 없습니다.";
+"history_list_title" = "기록";
+"history_loggedOut_message" = "결과를 보려면 로그인해 주세요.";
+"history_loggedOut_title" = "로그인 필요";
+"history_navTitle" = "결과";
+"history_range_all" = "전체 기간";
+"history_range_month" = "지난 1개월";
+"history_range_week" = "지난 1주";
+"history_stats_avgSpeed" = "평균 속도";
+"history_stats_title" = "필터링된 통계";
+"history_stats_topSpeed" = "최고 속도";
+"history_stats_totalSmashes" = "총 스매시 수";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "라이브러리에서 선택";
+"inputSelector_landscapeOnlyWarning" = "가로 모드 비디오만 지원됩니다.";
+"inputSelector_recordNewButton" = "새 비디오 녹화";
+"inputSelector_title" = "스매시 분석";
+"mainView_howToRecordButton" = "녹화 방법";
+"mainView_prompt" = "시작할 비디오를 선택하세요";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "분석 결과";
+"navTitle_calibration" = "보정";
+"navTitle_detect" = "탐지";
+"navTitle_recordingGuide" = "녹화 가이드";
+"navTitle_reviewAdjust" = "검토 및 조정";
+"navTitle_trimVideo" = "비디오 자르기";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "시작하기";
+"onboarding_slide1_instruction1" = "카메라를 사이드라인에 놓고 똑바로 마주보게 설정합니다. 코트 라인은 프레임과 평행하게 보여야 합니다.";
+"onboarding_slide1_instruction2" = "셔틀콕이 보이도록 유지하세요 — 눈부심이나 복잡한 배경을 피하세요.";
+"onboarding_slide1_instruction3" = "일반 비디오를 사용하세요. 슬로우 모션이나 필터는 피하세요.";
+"onboarding_slide1_instruction4" = "스매시 부분만 자르세요 — 1초 미만 (약 10프레임).";
+"onboarding_slide1_title" = "1. 스매시 녹화하기";
+"onboarding_slide2_instruction1" = "앞 서비스 라인과 복식 서비스 라인을 표시하세요 — 3.87m 간격입니다.";
+"onboarding_slide2_instruction2" = "선수를 기준으로 바로 아래에 라인을 놓습니다.";
+"onboarding_slide2_instruction3" = "다른 라인을 사용하지 않는 한 3.87m를 유지하세요 — 변경 시 정확도가 떨어질 수 있습니다.";
+"onboarding_slide2_title" = "2. 알려진 거리 표시하기";
+"onboarding_slide3_instruction1" = "슬라이더나 화살표 키를 사용하여 각 프레임을 이동하며 셔틀콕 속도를 확인하세요.";
+"onboarding_slide3_instruction2" = "‘보간’ 도구를 사용하여 양호한 탐지 사이의 간격을 자동으로 채웁니다. 강력히 권장합니다.";
+"onboarding_slide3_instruction3" = "미세 조정을 위해 수동 컨트롤을 사용하여 탐지 상자를 이동, 크기 조정, 추가 또는 제거하세요.";
+"onboarding_slide3_instruction4" = "실수한 경우 왼쪽 상단의 실행 취소/다시 실행 버튼을 사용하세요.";
+"onboarding_slide3_title" = "3. 탐지 검토하기";
+"onboarding_swipePrompt" = "스와이프하여 시작하세요";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "당신의 스매시가 얼마나 빠른지 알고 싶으신가요?";
+"onboarding_welcome_title" = "Smashspeed에 오신 것을 환영합니다";
+
+/* Processing States */
+"processing_analyzingVideo" = "비디오 분석 중...";
+"processing_preparingVideo" = "비디오 준비 중...";
+"processing_trimmingVideo" = "비디오 자르는 중...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**카메라:** 가로 모드와 0.5배 줌을 사용하여 셔틀콕을 프레임 안에 유지하세요.";
+"recordingGuide_frameRateTip" = "**프레임 속도:** 30 FPS도 괜찮지만 60 FPS가 더 좋습니다.";
+"recordingGuide_recorderTip" = "**플레이어 A(촬영자):** 사이드 트램 라인에 서세요.";
+"recordingGuide_smasherTip" = "**플레이어 B(스매셔):** 반대편 코트에서 스매시하세요.";
+"recordingGuide_title" = "최상의 결과를 위한 녹화 방법";
+"recordingGuide_visitWebsite" = "비디오 튜토리얼을 보려면 smashspeed.ca를 방문하세요";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "다른 비디오 분석";
+"resultView_angleFormat" = "%.0f° 하향";
+"resultView_angleNotCalculated" = "각도 계산되지 않음";
+"resultView_angleUnlockInfo" = "각도 분석을 잠금 해제하려면 100 km/h 이상으로 스매시하세요.";
+"resultView_maxSpeedTitle" = "최고 속도";
+"resultView_signInPrompt" = "결과를 저장하시겠습니까? 로그인";
+"resultView_smashAngleLabel" = "스매시 각도:";
+"resultView_speedUnit" = "km/h";
+
+/* Review */
+"review_alert_interpolation_message" = "보간은 누락된 경계 상자를 자동으로 채웁니다. 상자가 있는 프레임과 상자가 없는 프레임 간격이 있고 그 뒤에 상자가 있는 다른 프레임이 있는 경우, 이 도구는 간격을 채우기 위해 직선을 그립니다.";
+"review_alert_interpolation_title" = "보간이란 무엇인가요?";
+"review_alert_manual_message" = "이 컨트롤을 사용하여 AI가 만든 오류를 수정하세요. AI가 셔틀콕을 놓친 경우 상자를 추가하거나, 탐지가 잘못된 경우 상자를 제거하거나, 기존 상자를 이동/크기 조정하여 정확도를 높일 수 있습니다.";
+"review_alert_manual_title" = "수동 조정";
+"review_alert_speedCalc_message" = "속도는 비디오의 프레임 속도(fps)와 결합된 프레임 간 셔틀콕 이동 거리를 사용하여 계산됩니다.\n\n1. AI는 셔틀콕의 중심점을 픽셀 단위로 추적합니다.\n2. 이동 거리(픽셀 단위)에 프레임 속도를 곱하여 초당 픽셀을 구합니다.\n3. 코트의 알려진 치수에서 결정된 스케일 팩터(미터/픽셀)를 사용하여 이를 초당 미터로 변환합니다.\n4. 결과는 km/h로 변환됩니다.";
+"review_alert_speedCalc_title" = "속도는 어떻게 계산되나요?";
+"review_box_addButton" = "상자 추가";
+"review_box_nudgePicker" = "조정";
+"review_box_removeButton" = "상자 제거";
+"review_box_resizePicker" = "크기 조정";
+"review_finishButton" = "분석 완료 및 저장";
+"review_guidance_dontShowAgain" = "다시 표시 안 함";
+"review_guidance_message" = "슬라이더를 사용하여 각 프레임의 탐지를 검토하세요. 최상의 정확도를 위해 필요에 따라 상자를 조정하세요.";
+"review_guidance_title" = "팁: 모든 프레임 확인";
+"review_interp_gapWarning_message" = "정확한 속도 결과를 보장하려면 '보간'을 사용하세요.";
+"review_interp_gapWarning_title" = "추적 중 간격 감지됨";
+"review_interp_interpolateButton" = "누락된 프레임 보간";
+"review_interp_whatIsButton" = "보간이란 무엇인가요?";
+"review_manual_sectionTitle" = "수동 조정";
+"review_nav_aiWarning" = "AI 탐지는 초기 단계이므로 종종 수동 조정이 필요합니다.";
+"review_nav_hideManualControls" = "수동 컨트롤 숨기기";
+"review_nav_sectionTitle" = "프레임 탐색";
+"review_nav_showManualControls" = "수동 컨트롤 표시";
+"review_nav_speedLabel" = "이 프레임의 속도:";
+"review_recalibrateButton" = "거리 재보정";
+"review_topBar_frameCountFormat" = "프레임 %d / %d";
+"review_topBar_noFrames" = "프레임 없음";
+"review_speedWithUnitFormat" = "%.1f km/h";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° 하향";
+"share_image_generatedBy" = "Smashspeed에서 생성됨";
+"share_image_smashAngleLabel" = "스매시 각도";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "지금 공유";
+"share_preview_title" = "공유 가능한 이미지 미리보기";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "클립을 0.8초 미만(약 %d프레임)으로 자르고 스매시만 표시합니다. 셔틀콕은 모든 프레임에서 보여야 합니다.";
+"trimView_alert_tooLong_title" = "클립이 너무 깁니다";
+"trimView_confirmButton" = "자르기 확인";
+"trimView_description" = "충돌 순간을 분리합니다. 최종 클립은 매우 짧아야 하며(약 0.25초), 셔틀콕은 모든 프레임에서 명확하게 보여야 합니다.";
+"trimView_durationFormat" = "선택한 시간: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "스매시로 자르기";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "계정";
+"tab_detect" = "탐지";
+"tab_results" = "결과";
+"account_navTitle" = "계정";
+
+/* Update Alert */
+"updateAlert_button" = "지금 업데이트";
+"updateAlert_message" = "앱의 새 버전을 사용할 수 있습니다. 앱을 계속 사용하려면 업데이트하세요.";
+"updateAlert_title" = "업데이트 필요";

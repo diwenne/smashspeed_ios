@@ -1,0 +1,229 @@
+// =================================================================
+// Filipino (fil.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "Sigurado ka bang gusto mong burahin ang iyong account? Ang pagkilos na ito ay permanente at hindi na mababawi.";
+"account_alert_delete_title" = "Burahin ang Account";
+"account_alert_signOut_message" = "Sigurado ka bang gusto mong mag-sign out?";
+"account_loggedIn_accountActions" = "Mga Aksyon sa Account";
+"account_loggedIn_appearance" = "Itsura";
+"account_loggedIn_appearanceDark" = "Madilim";
+"account_loggedIn_appearanceLight" = "Maliwanag";
+"account_loggedIn_appearanceSystem" = "System";
+"account_loggedIn_changePassword" = "Palitan ang Password";
+"account_loggedIn_communitySupport" = "Komunidad at Suporta";
+"account_loggedIn_contactSupport" = "Makipag-ugnayan sa Suporta";
+"account_loggedIn_deleteAccount" = "Burahin ang Account";
+"account_loggedIn_followInstagram" = "I-follow sa Instagram";
+"account_loggedIn_memberSinceFormat" = "Miyembro mula pa noong %@";
+"account_loggedIn_noEmail" = "Walang nahanap na email";
+"account_loggedIn_officialWebsite" = "Opisyal na Website";
+"account_loggedIn_settingsTitle" = "Mga Setting";
+"account_loggedIn_signOut" = "Mag-sign Out";
+"account_loggedIn_viewTutorial" = "Tingnan ang Tutorial";
+"account_menu_contact" = "Makipag-ugnayan sa Amin";
+"account_menu_faq" = "FAQ";
+"account_menu_privacy" = "Patakaran sa Privacy";
+"account_menu_terms" = "Mga Tuntunin ng Serbisyo";
+"account_navTitle_myAccount" = "Aking Account";
+"account_navTitle_welcome" = "Maligayang Pagdating";
+"auth_alreadyHaveAccount" = "May account ka na? Mag-sign In";
+"auth_createAccountButton" = "Gumawa ng Account";
+"auth_createAccountTitle" = "Gumawa ng isang Account";
+"auth_dontHaveAccount" = "Wala ka pang account? Mag-sign Up";
+"auth_forgotPassword" = "Nakalimutan ang Password?";
+"auth_orDivider" = "O";
+"auth_passwordMismatch" = "Hindi magkatugma ang mga password.";
+"auth_signInButton" = "Mag-sign In";
+"auth_signInPrompt" = "Mag-sign in upang ma-access ang mas maraming feature, i-customize ang mga setting, at subaybayan ang iyong progreso sa paglipas ng panahon.";
+"auth_signInTitle" = "Mag-sign In";
+"auth_signInWithGoogle" = "Mag-sign in gamit ang Google";
+"auth_termsAgreement" = "Nabasa ko at sumasang-ayon ako sa Mga Tuntunin ng Serbisyo at Patakaran sa Privacy.";
+"changePwd_cancelButton" = "Kanselahin";
+"changePwd_confirmPwdField" = "Kumpirmahin ang Bagong Password";
+"changePwd_navTitle" = "Palitan ang Password";
+"changePwd_newPwdField" = "Bagong Password";
+"changePwd_updateButton" = "I-update ang Password";
+
+/* Calibration */
+"calib_instruction1" = "Ilagay ang isang punto sa front service line at ang isa pa sa doubles long service (flick) line.";
+"calib_instruction2" = "Tip: I-drag mula sa lugar sa paligid ng isang punto upang maiwasan itong matakpan ng iyong daliri.";
+"calib_refLengthDescription" = "Ilagay ang totoong distansya sa pagitan ng dalawang punto.";
+"calib_refLengthLabel" = "Haba ng Sanggunian";
+"calib_startButton" = "Simulan ang Pagsusuri";
+"calib_title" = "Kalibrasyon";
+
+/* Common */
+"common_cancel" = "Kanselahin";
+"common_delete" = "Burahin";
+"common_done" = "Tapos na";
+"common_email" = "Email";
+"common_error" = "Error";
+"common_height" = "Taas";
+"common_kmh" = "km/h";
+"common_meters" = "metro";
+"common_notAvailable" = "N/A";
+"common_ok" = "OK";
+"common_password" = "Password";
+"common_smashAngle" = "Anggulo ng Smash:";
+"common_speed" = "Bilis";
+"common_tryAgain" = "Subukang Muli";
+"common_width" = "Lapad";
+
+/* Errors */
+"error_couldNotLoadVideo" = "Hindi ma-load ang napiling video.";
+"error_genericVideoSelection" = "Nagkaroon ng error habang pinipili ang video.";
+"error_recordLandscape" = "Paki-record sa landscape mode. Hindi suportado ang mga portrait video.";
+"error_selectLandscape" = "Pumili ng landscape video. Hindi suportado ang mga portrait video.";
+
+/* History & Details */
+"details_liveSpeed" = "Live na Bilis:";
+"details_navTitle" = "Mga Detalye ng Smash";
+"details_peakSpeed" = "Pinakamataas na Bilis";
+"details_speedHeader" = "Bilis";
+"details_timeHeader" = "Oras";
+"details_timestampTitle" = "Data ng Timestamp";
+"history_alert_delete_message" = "Sigurado ka bang gusto mong burahin ang resultang ito? Hindi na mababawi ang pagkilos na ito.";
+"history_alert_delete_title" = "Kumpirmahin ang Pagbura";
+"history_chart_noData" = "Walang sapat na data sa kasalukuyang mga filter para gumuhit ng tsart.";
+"history_chart_selectedDataFormat" = "Pinakamataas na Bilis noong %@: %.1f km/h";
+"history_chart_subtitleFormat" = "Pinakamataas na Bilis Bawat Araw (%@)";
+"history_chart_title" = "Progreso sa Paglipas ng Panahon";
+"history_empty_message" = "Ang iyong mga nasuring smash ay lilitaw dito.";
+"history_empty_title" = "Walang mga Resulta";
+"history_filters_filterBySpeed" = "I-filter ayon sa Bilis";
+"history_filters_minSpeed" = "Pinakamababang Bilis:";
+"history_filters_timeRange" = "Saklaw ng Oras";
+"history_filters_title" = "Mga Filter";
+"history_list_noResults" = "Walang mga resultang tumutugma sa iyong kasalukuyang mga filter.";
+"history_list_title" = "Kasaysayan";
+"history_loggedOut_message" = "Mangyaring mag-sign in upang tingnan ang mga resulta.";
+"history_loggedOut_title" = "Kailangan Mag-log In";
+"history_navTitle" = "Mga Resulta";
+"history_range_all" = "Lahat ng Oras";
+"history_range_month" = "Nakaraang Buwan";
+"history_range_week" = "Nakaraang Linggo";
+"history_stats_avgSpeed" = "Average na Bilis";
+"history_stats_title" = "Mga Na-filter na Stats";
+"history_stats_topSpeed" = "Pinakamataas na Bilis";
+"history_stats_totalSmashes" = "Kabuuang mga Smash";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Pumili mula sa Library";
+"inputSelector_landscapeOnlyWarning" = "Mga landscape video lang ang suportado.";
+"inputSelector_recordNewButton" = "Mag-record ng Bagong Video";
+"inputSelector_title" = "Suriin ang isang Smash";
+"mainView_howToRecordButton" = "Paano Mag-record";
+"mainView_prompt" = "Pumili ng video upang magsimula";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "Resulta ng Pagsusuri";
+"navTitle_calibration" = "Kalibrasyon";
+"navTitle_detect" = "Tukuyin";
+"navTitle_recordingGuide" = "Gabay sa Pag-record";
+"navTitle_reviewAdjust" = "Suriin at Ayusin";
+"navTitle_trimVideo" = "I-trim ang Video";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "Magsimula";
+"onboarding_slide1_instruction1" = "Ilagay ang camera sa sideline, nakaharap nang diretso. Ang mga linya ng court ay dapat magmukhang parallel sa frame.";
+"onboarding_slide1_instruction2" = "Panatilihing nakikita ang shuttle — iwasan ang silaw o magulong background.";
+"onboarding_slide1_instruction3" = "Gumamit ng regular na video. Iwasan ang Slo-Mo o mga filter.";
+"onboarding_slide1_instruction4" = "I-trim sa mismong smash lang — wala pang 1 segundo (~10 frames).";
+"onboarding_slide1_title" = "1. I-record ang Iyong Smash";
+"onboarding_slide2_instruction1" = "Markahan ang front service line at doubles service line — 3.87 m ang pagitan.";
+"onboarding_slide2_instruction2" = "Ilagay ang linya nang direkta sa ilalim ng manlalaro.";
+"onboarding_slide2_instruction3" = "Panatilihin ang 3.87 m maliban kung gumagamit ng ibang mga linya — ang pagbabago nito ay maaaring makabawas sa katumpakan.";
+"onboarding_slide2_title" = "2. Markahan ang Isang Kilalang Distansya";
+"onboarding_slide3_instruction1" = "Gamitin ang slider o arrow keys upang gumalaw sa bawat frame at tingnan ang bilis ng shuttle.";
+"onboarding_slide3_instruction2" = "Gamitin ang tool na 'Interpolate' upang awtomatikong punan ang mga puwang sa pagitan ng magagandang detection. Ito ay lubos na inirerekomenda.";
+"onboarding_slide3_instruction3" = "Para sa fine-tuning, gamitin ang mga manual control para ilipat, baguhin ang laki, magdagdag, o mag-alis ng detection box.";
+"onboarding_slide3_instruction4" = "Kung magkamali ka, gamitin ang mga undo/redo button sa kaliwang itaas.";
+"onboarding_slide3_title" = "3. Suriin ang Detection";
+"onboarding_swipePrompt" = "Mag-swipe para magsimula";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Gusto mo bang malaman kung gaano ka talaga kabilis mag-smash?";
+"onboarding_welcome_title" = "Maligayang pagdating sa";
+
+/* Processing States */
+"processing_analyzingVideo" = "Sinusuri ang Video...";
+"processing_preparingVideo" = "Inihahanda ang Video...";
+"processing_trimmingVideo" = "Tini-trim ang Video...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "Camera: Gumamit ng landscape mode na may 0.5x zoom upang mapanatili ang shuttle sa frame.";
+"recordingGuide_frameRateTip" = "Frame Rate: OK ang 30 FPS, mas maganda ang 60 FPS.";
+"recordingGuide_recorderTip" = "Player A (Tagapag-record): Tumayo sa mga side tram line.";
+"recordingGuide_smasherTip" = "Player B (Smasher): Mag-smash mula sa kabilang kalahati ng court.";
+"recordingGuide_title" = "Paano Mag-record para sa Pinakamahusay na mga Resulta";
+"recordingGuide_visitWebsite" = "Para sa isang video tutorial, bisitahin ang smashspeed.ca";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "Suriin ang Isa pang Video";
+"resultView_angleFormat" = "%.0f° pababa";
+"resultView_angleNotCalculated" = "Hindi Nakalkula ang Anggulo";
+"resultView_angleUnlockInfo" = "Mag-smash nang mas mabilis sa 100 km/h upang ma-unlock ang pagsusuri ng anggulo.";
+"resultView_maxSpeedTitle" = "Pinakamataas na Bilis";
+"resultView_signInPrompt" = "Gusto mo bang i-save ang iyong resulta? Mag-sign In";
+"resultView_smashAngleLabel" = "Anggulo ng Smash:";
+"resultView_speedUnit" = "km/h";
+
+/* Review */
+"review_alert_interpolation_message" = "Awtomatikong pinupunan ng interpolation ang mga nawawalang bounding box. Kung mayroon kang isang frame na may box, tapos isang puwang ng mga frame na walang box, na sinusundan ng isa pang frame na may box, ang tool na ito ay guguhit ng isang tuwid na linya upang punan ang puwang.";
+"review_alert_interpolation_title" = "Ano ang Interpolation?";
+"review_alert_manual_message" = "Gamitin ang mga control na ito para ayusin ang mga error na ginawa ng AI. Maaari kang magdagdag ng box kung na-miss ng AI ang shuttle, mag-alis ng box kung mali ang detection, o i-nudge/i-resize ang isang umiiral na box para sa mas mahusay na katumpakan.";
+"review_alert_manual_title" = "Manu-manong Pagsasaayos";
+"review_alert_speedCalc_message" = "Ang bilis ay kinakalkula gamit ang distansya na tinatahak ng shuttlecock sa pagitan ng mga frame, kasama ang frame rate (fps) ng video.\n\n1. Tinutunton ng AI ang sentrong punto ng shuttle sa mga pixel.\n2. Ang distansyang ginalaw (sa pixels) ay minu-multiply sa frame rate para makuha ang pixels/segundo.\n3. Isang scale factor (metro/pixel), na tinutukoy mula sa mga kilalang sukat ng court, ay nagko-convert nito sa metro/segundo.\n4. Ang resulta ay kino-convert sa km/h.";
+"review_alert_speedCalc_title" = "Paano Kinakalkula ang Bilis?";
+"review_box_addButton" = "Magdagdag ng Box";
+"review_box_nudgePicker" = "I-nudge";
+"review_box_removeButton" = "Alisin ang Box";
+"review_box_resizePicker" = "Baguhin ang Laki";
+"review_finishButton" = "Tapusin at I-save ang Pagsusuri";
+"review_guidance_dontShowAgain" = "Huwag nang ipakita ito muli";
+"review_guidance_message" = "Gamitin ang slider upang suriin ang detection sa bawat frame. Ayusin ang mga box kung kinakailangan para sa pinakamahusay na katumpakan.";
+"review_guidance_title" = "Tip: Suriin ang Lahat ng Frame";
+"review_interp_gapWarning_message" = "Gamitin ang 'Interpolate' upang matiyak ang tumpak na mga resulta ng bilis.";
+"review_interp_gapWarning_title" = "May mga Puwang na Natukoy sa Pagsubaybay";
+"review_interp_interpolateButton" = "I-interpolate ang mga Nawawalang Frame";
+"review_interp_whatIsButton" = "Ano ang Interpolation?";
+"review_manual_sectionTitle" = "MANU-MANONG PAGSASAAYOS";
+"review_nav_aiWarning" = "Ang AI detection ay nasa maagang yugto, madalas kailangan ang manu-manong pag-tune.";
+"review_nav_hideManualControls" = "Itago ang mga Manu-manong Control";
+"review_nav_sectionTitle" = "PAG-NAVIGATE NG FRAME";
+"review_nav_showManualControls" = "Ipakita ang mga Manu-manong Control";
+"review_nav_speedLabel" = "Bilis sa frame na ito:";
+"review_recalibrateButton" = "I-recalibrate ang Distansya";
+"review_topBar_frameCountFormat" = "Frame %d ng %d";
+"review_topBar_noFrames" = "Walang mga Frame";
+"review_speedWithUnitFormat" = "%.1f km/h";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° pababa";
+"share_image_generatedBy" = "Nilikha ng Smashspeed";
+"share_image_smashAngleLabel" = "Anggulo ng Smash";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Ibahagi Ngayon";
+"share_preview_title" = "Preview ng Imahe na Pwedeng I-share";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "I-trim ang clip sa wala pang 0.8s (~%d frames), na ipinapakita lamang ang smash. Dapat nakikita ang shuttle sa bawat frame.";
+"trimView_alert_tooLong_title" = "Masyadong Mahaba ang Clip";
+"trimView_confirmButton" = "Kumpirmahin ang Trim";
+"trimView_description" = "Ihiwalay ang sandali ng pagtama. Ang huling clip ay dapat napakaikli (~0.25 segundo), at ang birdie ay dapat malinaw na nakikita sa bawat frame.";
+"trimView_durationFormat" = "Napiling Tagal: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "I-trim sa Smash";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "Account";
+"tab_detect" = "Tukuyin";
+"tab_results" = "Mga Resulta";
+"account_navTitle" = "Account";
+
+/* Update Alert */
+"updateAlert_button" = "I-update Ngayon";
+"updateAlert_message" = "May bagong bersyon ng app na magagamit. Paki-update upang magpatuloy sa paggamit ng app.";
+"updateAlert_title" = "Kailangan ng Update";

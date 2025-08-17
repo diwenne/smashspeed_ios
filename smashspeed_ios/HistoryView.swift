@@ -8,8 +8,6 @@ import FirebaseStorage
 import CoreGraphics
 
 // MARK: - Helper Types for History View
-
-// LOCALIZED: Added a helper to get the localization key for each enum case.
 enum TimeRange: String, CaseIterable, Identifiable {
     case week = "Past Week"
     case month = "Past Month"
@@ -33,7 +31,6 @@ struct DailyTopSpeed: Identifiable {
 
 
 // MARK: - Main History View
-
 struct HistoryView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
     @StateObject private var historyViewModel = HistoryViewModel()
@@ -61,7 +58,6 @@ struct HistoryView: View {
                         loggedOutView
                     }
                 }
-                // LOCALIZED
                 .navigationTitle(Text("history_navTitle"))
                 .onAppear {
                     if let userID = authViewModel.user?.uid {
@@ -72,14 +68,11 @@ struct HistoryView: View {
                 .onChange(of: speedFilterEnabled) { _ in applyFilters() }
                 .onChange(of: minimumSpeed) { _ in applyFilters() }
                 .onChange(of: historyViewModel.allResults) { _ in applyFilters() }
-                // LOCALIZED
                 .alert(Text("history_alert_delete_title"), isPresented: $showDeleteConfirmation, presenting: resultToDelete) { result in
-                    // LOCALIZED
                     Button("common_delete", role: .destructive) {
                         historyViewModel.deleteResult(result)
                     }
                 } message: { result in
-                    // LOCALIZED
                     Text("history_alert_delete_message")
                 }
             }
@@ -112,8 +105,6 @@ struct HistoryView: View {
 
     private var emptyStateView: some View {
         VStack {
-            // LOCALIZED
-            // AFTER
             ContentUnavailableView("history_empty_title", systemImage: "list.bullet.clipboard", description: Text("history_empty_message"))
         }
         .padding(40)
@@ -125,15 +116,11 @@ struct HistoryView: View {
     private var statsSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 12) {
-                // LOCALIZED
                 Text("history_stats_title").font(.headline).padding(.bottom, 5)
-                // LOCALIZED
                 StatRow(labelKey: "history_stats_topSpeed", value: String(format: "%.1f km/h", historyViewModel.filteredTopSpeed))
                 Divider()
-                // LOCALIZED
                 StatRow(labelKey: "history_stats_avgSpeed", value: String(format: "%.1f km/h", historyViewModel.filteredAverageSpeed))
                 Divider()
-                // LOCALIZED
                 StatRow(labelKey: "history_stats_totalSmashes", value: "\(historyViewModel.filteredDetectionCount)")
             }
             .padding(20)
@@ -159,14 +146,11 @@ struct HistoryView: View {
     private var chartHeader: some View {
         HStack {
             VStack(alignment: .leading) {
-                // LOCALIZED
                 Text("history_chart_title").font(.headline)
                 if let selectedDataPoint, showChartValue {
-                    // LOCALIZED
                     Text(String.localizedStringWithFormat(NSLocalizedString("history_chart_selectedDataFormat", comment: ""), selectedDataPoint.date.formatted(date: .abbreviated, time: .omitted), selectedDataPoint.topSpeed))
                        .font(.caption).foregroundColor(.secondary)
                 } else {
-                    // LOCALIZED
                     Text(String.localizedStringWithFormat(NSLocalizedString("history_chart_subtitleFormat", comment: ""), NSLocalizedString(selectedRange.localizedKey, comment: "")))
                         .font(.caption).foregroundColor(.secondary)
                 }
@@ -176,41 +160,50 @@ struct HistoryView: View {
         .padding(.bottom, 10)
     }
     
-    @ViewBuilder
-    private var chartBody: some View {
+    private var chartView: some View {
         let chartData = historyViewModel.aggregatedChartData
         
-        if chartData.count > 1 {
-            Chart(chartData) { dataPoint in
-                LineMark(x: .value("Date", dataPoint.date, unit: .day), y: .value("Speed", dataPoint.topSpeed))
-                    .interpolationMethod(.catmullRom)
-                    .foregroundStyle(LinearGradient(colors: [.accentColor.opacity(0.8), .accentColor.opacity(0.2)], startPoint: .top, endPoint: .bottom))
+        return Chart(chartData) { dataPoint in
+            LineMark(x: .value("Date", dataPoint.date, unit: .day), y: .value("Speed", dataPoint.topSpeed))
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(LinearGradient(colors: [.accentColor.opacity(0.8), .accentColor.opacity(0.2)], startPoint: .top, endPoint: .bottom))
 
-                PointMark(x: .value("Date", dataPoint.date, unit: .day), y: .value("Speed", dataPoint.topSpeed))
-                    .foregroundStyle(Color.accentColor)
+            PointMark(x: .value("Date", dataPoint.date, unit: .day), y: .value("Speed", dataPoint.topSpeed))
+                .foregroundStyle(Color.accentColor)
+        }
+        .chartYScale(domain: 0...((historyViewModel.filteredTopSpeed > 0 ? historyViewModel.filteredTopSpeed : 250) * 1.2))
+        .frame(height: 200)
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .weekOfYear)) {
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel(format: .dateTime.month().day(), centered: true)
             }
-            .chartYScale(domain: 0...((historyViewModel.filteredTopSpeed > 0 ? historyViewModel.filteredTopSpeed : 250) * 1.2))
-            .frame(height: 200)
-            .chartXAxis { AxisMarks(values: .stride(by: .day)) { _ in AxisGridLine(); AxisTick(); AxisValueLabel(format: .dateTime.month().day()) } }
-            .chartOverlay { proxy in
-                GeometryReader { geometry in
-                    Rectangle().fill(.clear).contentShape(Rectangle())
-                        .gesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { value in
-                                    let location = value.location
-                                    showChartValue = true
-                                    if let date: Date = proxy.value(atX: location.x) {
-                                         let closest = chartData.min(by: { abs($0.date.distance(to: date)) < abs($1.date.distance(to: date)) })
-                                         if let closestDataPoint = closest { self.selectedDataPoint = closestDataPoint }
-                                    }
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle().fill(.clear).contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let location = value.location
+                                showChartValue = true
+                                if let date: Date = proxy.value(atX: location.x) {
+                                     let closest = chartData.min(by: { abs($0.date.distance(to: date)) < abs($1.date.distance(to: date)) })
+                                     if let closestDataPoint = closest { self.selectedDataPoint = closestDataPoint }
                                 }
-                                .onEnded { _ in showChartValue = false }
-                        )
-                }
+                            }
+                            .onEnded { _ in showChartValue = false }
+                    )
             }
+        }
+    }
+
+    @ViewBuilder
+    private var chartBody: some View {
+        if historyViewModel.aggregatedChartData.count > 1 {
+            chartView
         } else {
-            // LOCALIZED
             Text("history_chart_noData")
                 .font(.subheadline).foregroundColor(.secondary).padding()
                 .frame(height: 200, alignment: .center)
@@ -220,28 +213,41 @@ struct HistoryView: View {
     private var filterControlsSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 15) {
-                // LOCALIZED
                 Text("history_filters_title").font(.headline)
                 
-                // LOCALIZED
-                Picker(LocalizedStringKey("history_filters_timeRange"), selection: $selectedRange) {
-                    ForEach(TimeRange.allCases) { range in
-                        Text(LocalizedStringKey(range.localizedKey)).tag(range)
+                HStack {
+                    Text("history_filters_timeRange")
+                        .font(.callout)
+                    Spacer()
+                    Menu {
+                        Picker(selection: $selectedRange, label: EmptyView()) {
+                            ForEach(TimeRange.allCases) { range in
+                                Text(LocalizedStringKey(range.localizedKey)).tag(range)
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(LocalizedStringKey(selectedRange.localizedKey))
+                            Image(systemName: "chevron.up.chevron.down")
+                        }
+                        .font(.callout)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(8)
                     }
                 }
-                .pickerStyle(.segmented)
                 
                 Divider()
                 
                 Toggle(isOn: $speedFilterEnabled.animation()) {
-                    // LOCALIZED
                     Text("history_filters_filterBySpeed")
                 }
                 
                 if speedFilterEnabled {
                     VStack {
                         HStack {
-                            // LOCALIZED
                             Text("history_filters_minSpeed")
                             Spacer()
                             Text("\(Int(minimumSpeed)) km/h").bold()
@@ -259,10 +265,8 @@ struct HistoryView: View {
     }
     
     private var historyListSection: some View {
-        // LOCALIZED
         Section(header: Text("history_list_title").padding(.leading)) {
             if historyViewModel.filteredResults.isEmpty {
-                // LOCALIZED
                  Text("history_list_noResults")
                      .foregroundColor(.secondary)
                      .padding()
@@ -280,7 +284,6 @@ struct HistoryView: View {
                                 resultToDelete = result
                                 showDeleteConfirmation = true
                             } label: {
-                                // LOCALIZED
                                 Label("common_delete", systemImage: "trash.fill")
                             }
                             .tint(.red)
@@ -295,7 +298,6 @@ struct HistoryView: View {
     
     private var loggedOutView: some View {
         VStack {
-            // LOCALIZED
             ContentUnavailableView("history_loggedOut_title", systemImage: "person.crop.circle.badge.questionmark", description: Text("history_loggedOut_message"))
         }
         .padding(40)
@@ -323,7 +325,6 @@ extension View {
 }
 
 struct StatRow: View {
-    // LOCALIZED: Changed to use a key
     let labelKey: LocalizedStringKey
     let value: String
     var body: some View { HStack { Text(labelKey); Spacer(); Text(value).fontWeight(.bold).foregroundColor(.secondary) } }
@@ -442,7 +443,6 @@ struct ResultDetailView: View {
                 .padding()
             }
         }
-        // LOCALIZED
         .navigationTitle(Text("details_navTitle"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { viewModel.player.play() }
@@ -484,45 +484,39 @@ struct ResultDetailView: View {
     private var detailsSection: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 15) {
-                // LOCALIZED
-                 Text("details_peakSpeed")
-                     .font(.headline)
-                     .foregroundColor(.secondary)
+                Text("details_peakSpeed")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
+                Text(String(format: "%.1f km/h", result.peakSpeedKph))
+                    .font(.system(size: 60, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
 
-                // LOCALIZED
-                 Text(String.localizedStringWithFormat(NSLocalizedString("common_kmh", comment: ""), result.peakSpeedKph))
-                     .font(.system(size: 60, weight: .bold, design: .rounded))
-                     .foregroundColor(.primary)
+                Divider()
 
-                 Divider()
+                if let angle = result.angle {
+                    HStack {
+                        Text("common_smashAngle")
+                            .font(.callout).foregroundColor(.secondary)
+                        Spacer()
+                        Text(String.localizedStringWithFormat(NSLocalizedString("resultView_angleFormat", comment: ""), angle))
+                            .font(.callout).fontWeight(.semibold)
+                    }
+                    .padding(.horizontal)
+                }
 
-                 if let angle = result.angle {
-                     HStack {
-                         // LOCALIZED
-                         Text("common_smashAngle")
-                             .font(.callout).foregroundColor(.secondary)
-                         Spacer()
-                         // LOCALIZED
-                         Text(String.localizedStringWithFormat(NSLocalizedString("resultView_angleFormat", comment: ""), angle))
-                             .font(.callout).fontWeight(.semibold)
-                     }
-                     .padding(.horizontal)
-                 }
-
-                 HStack {
-                     // LOCALIZED
-                     Text("details_liveSpeed")
-                         .font(.callout).foregroundColor(.secondary)
-                     Spacer()
-                     // LOCALIZED
-                     Text(String.localizedStringWithFormat(NSLocalizedString("common_kmh", comment: ""), viewModel.currentSpeed))
-                         .font(.callout).fontWeight(.semibold)
-                 }
-                 .padding(.horizontal)
-             }
-             .padding(20)
-             .background(GlassPanel())
-             .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
+                HStack {
+                    Text("details_liveSpeed")
+                        .font(.callout).foregroundColor(.secondary)
+                    Spacer()
+                    Text(String(format: "%.1f km/h", viewModel.currentSpeed))
+                        .font(.callout).fontWeight(.semibold)
+                }
+                .padding(.horizontal)
+            }
+            .padding(20)
+            .background(GlassPanel())
+            .clipShape(RoundedRectangle(cornerRadius: 25, style: .continuous))
 
             Button(action: renderImageForSharing) {
                 Image(systemName: "square.and.arrow.up")
@@ -544,16 +538,13 @@ struct ResultDetailView: View {
     private var timestampTableSection: some View {
         if !viewModel.frameData.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-                // LOCALIZED
                 Text("details_timestampTitle")
                     .font(.headline)
                     .padding([.horizontal, .top])
                 
                 HStack {
-                    // LOCALIZED
                     Text("details_timeHeader").fontWeight(.bold)
                     Spacer()
-                    // LOCALIZED
                     Text("details_speedHeader").fontWeight(.bold)
                 }
                 .font(.caption)
@@ -566,8 +557,7 @@ struct ResultDetailView: View {
                     HStack {
                         Text(String(format: "%.2f s", frame.timestamp))
                         Spacer()
-                        // LOCALIZED
-                        Text(String.localizedStringWithFormat(NSLocalizedString("common_kmh", comment: ""), frame.speedKPH))
+                        Text(String(format: "%.1f km/h", frame.speedKPH))
                     }
                     .font(.system(.body, design: .monospaced))
                     .padding(.horizontal)

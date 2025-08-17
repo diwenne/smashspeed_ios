@@ -1,0 +1,229 @@
+// =================================================================
+// Japanese (ja.lproj/Localizable.strings)
+// =================================================================
+
+/* Account & Auth */
+"account_alert_delete_message" = "アカウントを本当に削除しますか？この操作は永続的であり、元に戻すことはできません。";
+"account_alert_delete_title" = "アカウントを削除";
+"account_alert_signOut_message" = "本当にサインアウトしますか？";
+"account_loggedIn_accountActions" = "アカウント操作";
+"account_loggedIn_appearance" = "外観";
+"account_loggedIn_appearanceDark" = "ダーク";
+"account_loggedIn_appearanceLight" = "ライト";
+"account_loggedIn_appearanceSystem" = "システム";
+"account_loggedIn_changePassword" = "パスワードを変更";
+"account_loggedIn_communitySupport" = "コミュニティとサポート";
+"account_loggedIn_contactSupport" = "サポートに連絡";
+"account_loggedIn_deleteAccount" = "アカウントを削除";
+"account_loggedIn_followInstagram" = "Instagramでフォロー";
+"account_loggedIn_memberSinceFormat" = "メンバー登録日: %@";
+"account_loggedIn_noEmail" = "メールアドレスが見つかりません";
+"account_loggedIn_officialWebsite" = "公式サイト";
+"account_loggedIn_settingsTitle" = "設定";
+"account_loggedIn_signOut" = "サインアウト";
+"account_loggedIn_viewTutorial" = "チュートリアルを見る";
+"account_menu_contact" = "お問い合わせ";
+"account_menu_faq" = "よくある質問";
+"account_menu_privacy" = "プライバシーポリシー";
+"account_menu_terms" = "利用規約";
+"account_navTitle_myAccount" = "マイアカウント";
+"account_navTitle_welcome" = "ようこそ";
+"auth_alreadyHaveAccount" = "アカウントをお持ちですか？サインイン";
+"auth_createAccountButton" = "アカウントを作成";
+"auth_createAccountTitle" = "アカウントを作成";
+"auth_dontHaveAccount" = "アカウントがありませんか？サインアップ";
+"auth_forgotPassword" = "パスワードをお忘れですか？";
+"auth_orDivider" = "または";
+"auth_passwordMismatch" = "パスワードが一致しません。";
+"auth_signInButton" = "サインイン";
+"auth_signInPrompt" = "サインインして、より多くの機能にアクセスし、設定をカスタマイズし、進捗を追跡しましょう。";
+"auth_signInTitle" = "サインイン";
+"auth_signInWithGoogle" = "Googleでサインイン";
+"auth_termsAgreement" = "[利用規約](https://smashspeed.ca/terms-of-service)と[プライバシーポリシー](https://smashspeed.ca/privacy-policy)を読み、同意します。";
+"changePwd_cancelButton" = "キャンセル";
+"changePwd_confirmPwdField" = "新しいパスワードを確認";
+"changePwd_navTitle" = "パスワードを変更";
+"changePwd_newPwdField" = "新しいパスワード";
+"changePwd_updateButton" = "パスワードを更新";
+
+/* Calibration */
+"calib_instruction1" = "1つのポイントをフロントサービスラインに、もう1つをダブルスのロングサービスライン（フリックライン）に配置します。";
+"calib_instruction2" = "ヒント：ポイント周辺のエリアからドラッグして、指で隠れないようにします。";
+"calib_refLengthDescription" = "2つのポイント間の実際の距離を入力してください。";
+"calib_refLengthLabel" = "参照長";
+"calib_startButton" = "分析を開始";
+"calib_title" = "キャリブレーション";
+
+/* Common */
+"common_cancel" = "キャンセル";
+"common_delete" = "削除";
+"common_done" = "完了";
+"common_email" = "メールアドレス";
+"common_error" = "エラー";
+"common_height" = "高さ";
+"common_kmh" = "km/h";
+"common_meters" = "メートル";
+"common_notAvailable" = "N/A";
+"common_ok" = "OK";
+"common_password" = "パスワード";
+"common_smashAngle" = "スマッシュ角度:";
+"common_speed" = "速度";
+"common_tryAgain" = "再試行";
+"common_width" = "幅";
+
+/* Errors */
+"error_couldNotLoadVideo" = "選択したビデオを読み込めませんでした。";
+"error_genericVideoSelection" = "ビデオの選択中にエラーが発生しました。";
+"error_recordLandscape" = "横向きモードで録画してください。縦向きのビデオはサポートされていません。";
+"error_selectLandscape" = "横向きのビデオを選択してください。縦向きのビデオはサポートされていません。";
+
+/* History & Details */
+"details_liveSpeed" = "現在の速度:";
+"details_navTitle" = "スマッシュの詳細";
+"details_peakSpeed" = "最高速度";
+"details_speedHeader" = "速度";
+"details_timeHeader" = "時間";
+"details_timestampTitle" = "タイムスタンプデータ";
+"history_alert_delete_message" = "この結果を本当に削除しますか？この操作は元に戻せません。";
+"history_alert_delete_title" = "削除の確認";
+"history_chart_noData" = "現在のフィルターではグラフを描画するためのデータが不足しています。";
+"history_chart_selectedDataFormat" = "%@の最高速度: %.1f km/h";
+"history_chart_subtitleFormat" = "日ごとの最高速度 (%@)";
+"history_chart_title" = "時系列での進捗";
+"history_empty_message" = "分析されたスマッシュはここに表示されます。";
+"history_empty_title" = "結果がありません";
+"history_filters_filterBySpeed" = "速度でフィルター";
+"history_filters_minSpeed" = "最低速度:";
+"history_filters_timeRange" = "期間";
+"history_filters_title" = "フィルター";
+"history_list_noResults" = "現在のフィルターに一致する結果はありません。";
+"history_list_title" = "履歴";
+"history_loggedOut_message" = "結果を表示するにはサインインしてください。";
+"history_loggedOut_title" = "サインインが必要です";
+"history_navTitle" = "結果";
+"history_range_all" = "すべて";
+"history_range_month" = "過去1ヶ月";
+"history_range_week" = "過去1週間";
+"history_stats_avgSpeed" = "平均速度";
+"history_stats_title" = "フィルター済み統計";
+"history_stats_topSpeed" = "最高速度";
+"history_stats_totalSmashes" = "スマッシュ総数";
+
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "ライブラリから選択";
+"inputSelector_landscapeOnlyWarning" = "横向きのビデオのみサポートされています。";
+"inputSelector_recordNewButton" = "新しいビデオを録画";
+"inputSelector_title" = "スマッシュを分析";
+"mainView_howToRecordButton" = "録画方法";
+"mainView_prompt" = "ビデオを選択して開始";
+
+/* Navigation Titles */
+"navTitle_analysisResult" = "分析結果";
+"navTitle_calibration" = "キャリブレーション";
+"navTitle_detect" = "検出";
+"navTitle_recordingGuide" = "録画ガイド";
+"navTitle_reviewAdjust" = "確認と調整";
+"navTitle_trimVideo" = "ビデオをトリミング";
+
+/* Onboarding */
+"onboarding_getStartedButton" = "始める";
+"onboarding_slide1_instruction1" = "カメラをサイドラインに置き、まっすぐ向かい側に向けます。コートのラインはフレームと平行に見えるようにします。";
+"onboarding_slide1_instruction2" = "シャトルが見えるようにしてください — 光の反射やごちゃごちゃした背景を避けます。";
+"onboarding_slide1_instruction3" = "通常のビデオを使用してください。スローモーションやフィルターは避けます。";
+"onboarding_slide1_instruction4" = "スマッシュの瞬間だけをトリミングします — 1秒未満（約10フレーム）。";
+"onboarding_slide1_title" = "1. スマッシュを録画する";
+"onboarding_slide2_instruction1" = "フロントサービスラインとダブルスサービスラインをマークします — 3.87m離れています。";
+"onboarding_slide2_instruction2" = "プレイヤーの真下にラインを配置します。";
+"onboarding_slide2_instruction3" = "異なるラインを使用しない限り、3.87mを維持してください — 変更すると精度が低下する可能性があります。";
+"onboarding_slide2_title" = "2. 既知の距離をマークする";
+"onboarding_slide3_instruction1" = "スライダーまたは矢印キーを使用して各フレームを確認し、シャトルの速度を表示します。";
+"onboarding_slide3_instruction2" = "「補間」ツールを使用して、良好な検出間のギャップを自動的に埋めます。これを強くお勧めします。";
+"onboarding_slide3_instruction3" = "微調整には、手動コントロールを使用して検出ボックスを移動、サイズ変更、追加、または削除します。";
+"onboarding_slide3_instruction4" = "間違えた場合は、左上の元に戻す/やり直すボタンを使用します。";
+"onboarding_slide3_title" = "3. 検出を確認する";
+"onboarding_swipePrompt" = "スワイプして開始";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "あなたのスマッシュが本当にどれくらい速いか知りたいですか？";
+"onboarding_welcome_title" = "ようこそ";
+
+/* Processing States */
+"processing_analyzingVideo" = "ビデオを分析中...";
+"processing_preparingVideo" = "ビデオを準備中...";
+"processing_trimmingVideo" = "ビデオをトリミング中...";
+
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**カメラ：** 横向きモードと0.5倍ズームを使用して、シャトルをフレーム内に収めます。";
+"recordingGuide_frameRateTip" = "**フレームレート：** 30 FPSで十分ですが、60 FPSの方が良いです。";
+"recordingGuide_recorderTip" = "**プレイヤーA（録画者）：** サイドトラムラインに立ちます。";
+"recordingGuide_smasherTip" = "**プレイヤーB（スマッシャー）：** 反対側のコート半分からスマッシュします。";
+"recordingGuide_title" = "最高の結果を得るための録画方法";
+"recordingGuide_visitWebsite" = "ビデオチュートリアルはsmashspeed.caをご覧ください";
+
+/* Result View */
+"resultView_analyzeAnotherButton" = "別のビデオを分析";
+"resultView_angleFormat" = "%.0f° 下向き";
+"resultView_angleNotCalculated" = "角度が計算されていません";
+"resultView_angleUnlockInfo" = "100 km/h以上でスマッシュして角度分析をアンロックします。";
+"resultView_maxSpeedTitle" = "最高速度";
+"resultView_signInPrompt" = "結果を保存しますか？サインイン";
+"resultView_smashAngleLabel" = "スマッシュ角度:";
+"resultView_speedUnit" = "km/h";
+
+/* Review */
+"review_alert_interpolation_message" = "補間は、欠落しているバウンディングボックスを自動的に埋めます。ボックスのあるフレームと、ボックスのないフレームのギャップがあり、その後にボックスのある別のフレームがある場合、このツールはギャップを埋めるために直線を引きます。";
+"review_alert_interpolation_title" = "補間とは？";
+"review_alert_manual_message" = "これらのコントロールを使用して、AIが犯したエラーを修正します。AIがシャトルを見逃した場合はボックスを追加したり、検出が間違っている場合はボックスを削除したり、既存のボックスを微調整/サイズ変更して精度を向上させることができます。";
+"review_alert_manual_title" = "手動調整";
+"review_alert_speedCalc_message" = "速度は、シャトルがフレーム間で移動する距離と、ビデオのフレームレート（fps）を組み合わせて計算されます。\n\n1. AIはシャトルの中心点をピクセル単位で追跡します。\n2. 移動した距離（ピクセル単位）にフレームレートを掛けて、ピクセル/秒を求めます。\n3. コートの既知の寸法から決定されたスケールファクター（メートル/ピクセル）で、これをメートル/秒に変換します。\n4. 結果はkm/hに変換されます。";
+"review_alert_speedCalc_title" = "速度はどのように計算されますか？";
+"review_box_addButton" = "ボックスを追加";
+"review_box_nudgePicker" = "微調整";
+"review_box_removeButton" = "ボックスを削除";
+"review_box_resizePicker" = "サイズ変更";
+"review_finishButton" = "分析を終了して保存";
+"review_guidance_dontShowAgain" = "今後は表示しない";
+"review_guidance_message" = "スライダーを使用して各フレームの検出を確認します。最高の精度のために必要に応じてボックスを調整してください。";
+"review_guidance_title" = "ヒント：すべてのフレームを確認";
+"review_interp_gapWarning_message" = "正確な速度結果を確保するために「補間」を使用してください。";
+"review_interp_gapWarning_title" = "追跡中にギャップが検出されました";
+"review_interp_interpolateButton" = "欠落しているフレームを補間";
+"review_interp_whatIsButton" = "補間とは？";
+"review_manual_sectionTitle" = "手動調整";
+"review_nav_aiWarning" = "AI検出は初期段階であり、手動での調整がしばしば必要です。";
+"review_nav_hideManualControls" = "手動コントロールを非表示";
+"review_nav_sectionTitle" = "フレームナビゲーション";
+"review_nav_showManualControls" = "手動コントロールを表示";
+"review_nav_speedLabel" = "このフレームの速度:";
+"review_recalibrateButton" = "距離を再キャリブレーション";
+"review_topBar_frameCountFormat" = "フレーム %d / %d";
+"review_topBar_noFrames" = "フレームがありません";
+"review_speedWithUnitFormat" = "%.1f km/h";
+
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f° 下向き";
+"share_image_generatedBy" = "Smashspeedで生成";
+"share_image_smashAngleLabel" = "スマッシュ角度";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "今すぐ共有";
+"share_preview_title" = "共有可能な画像のプレビュー";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "クリップを0.8秒未満（約%dフレーム）にトリミングし、スマッシュのみを表示します。シャトルは各フレームで見える必要があります。";
+"trimView_alert_tooLong_title" = "クリップが長すぎます";
+"trimView_confirmButton" = "トリミングを確定";
+"trimView_description" = "インパクトの瞬間を分離します。最終的なクリップは非常に短く（約0.25秒）、シャトルは各フレームではっきりと見える必要があります。";
+"trimView_durationFormat" = "選択した期間: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "スマッシュにトリミング";
+
+/* App & Tab Bar */
+"appName" = "Smashspeed";
+"tab_account" = "アカウント";
+"tab_detect" = "検出";
+"tab_results" = "結果";
+"account_navTitle" = "アカウント";
+
+/* Update Alert */
+"updateAlert_button" = "今すぐアップデート";
+"updateAlert_message" = "アプリの新しいバージョンが利用可能です。アプリを引き続き使用するには、アップデートしてください。";
+"updateAlert_title" = "アップデートが必要です";
