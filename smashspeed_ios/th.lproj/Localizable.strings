@@ -52,6 +52,7 @@
 "changePwd_navTitle" = "เปลี่ยนรหัสผ่าน";
 "changePwd_newPwdField" = "รหัสผ่านใหม่";
 "changePwd_updateButton" = "อัปเดตรหัสผ่าน";
+"account_menu_changeLanguage" = "เปลี่ยนภาษา";
 
 /* Calibration */
 "calib_instruction1" = "วางจุดหนึ่งบนเส้นเสิร์ฟหน้า และอีกจุดหนึ่งบนเส้นเสิร์ฟยาวของประเภทคู่ (เส้นเสิร์ฟหลัง)";
@@ -115,6 +116,7 @@
 "history_stats_title" = "สถิติที่กรองแล้ว";
 "history_stats_topSpeed" = "ความเร็วสูงสุด";
 "history_stats_totalSmashes" = "จำนวนการตบทั้งหมด";
+
 
 /* Main & Input Selector */
 "inputSelector_chooseLibraryButton" = "เลือกจากคลัง";

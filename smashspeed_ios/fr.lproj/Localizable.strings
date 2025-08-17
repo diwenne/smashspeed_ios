@@ -52,6 +52,7 @@
 "changePwd_navTitle" = "Changer le mot de passe";
 "changePwd_newPwdField" = "Nouveau mot de passe";
 "changePwd_updateButton" = "Mettre à jour le mot de passe";
+"account_menu_changeLanguage" = "Changer de langue";
 
 /* Calibration */
 "calib_instruction1" = "Placez un point sur la ligne de service avant et l'autre sur la ligne de service longue de double (ligne de flick).";

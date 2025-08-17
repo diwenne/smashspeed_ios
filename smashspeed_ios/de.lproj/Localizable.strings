@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "Passwort ändern";
 "changePwd_newPwdField" = "Neues Passwort";
 "changePwd_updateButton" = "Passwort aktualisieren";
+"account_menu_changeLanguage" = "Sprache ändern";
 
 /* Calibration */
 "calib_instruction1" = "Platzieren Sie einen Punkt auf der vorderen Aufschlaglinie und den anderen auf der langen Doppel-Aufschlaglinie (Flick-Linie).";

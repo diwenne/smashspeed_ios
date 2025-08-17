@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "Skift adgangskode";
 "changePwd_newPwdField" = "Ny adgangskode";
 "changePwd_updateButton" = "Opdater adgangskode";
+"account_menu_changeLanguage" = "Skift sprog";
 
 /* Calibration */
 "calib_instruction1" = "Placer et punkt på den forreste servelinje og det andet på den lange servelinje for double (flick-linjen).";

@@ -52,6 +52,7 @@
 "changePwd_navTitle" = "Đổi mật khẩu";
 "changePwd_newPwdField" = "Mật khẩu mới";
 "changePwd_updateButton" = "Cập nhật mật khẩu";
+"account_menu_changeLanguage" = "Đổi ngôn ngữ";
 
 /* Calibration */
 "calib_instruction1" = "Đặt một điểm trên vạch giao cầu ngắn và điểm còn lại trên vạch giao cầu dài cho đánh đôi.";

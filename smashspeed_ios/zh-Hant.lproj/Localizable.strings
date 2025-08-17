@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "更改密碼";
 "changePwd_newPwdField" = "新密碼";
 "changePwd_updateButton" = "更新密碼";
+"account_menu_changeLanguage" = "更改語言";
 
 /* Calibration */
 "calib_instruction1" = "將一個點放在前發球線上，另一個點放在雙打長發球線（挑球線）上。";

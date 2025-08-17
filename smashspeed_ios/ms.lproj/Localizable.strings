@@ -53,6 +53,7 @@
 "changePwd_navTitle" = "Tukar Kata Laluan";
 "changePwd_newPwdField" = "Kata Laluan Baharu";
 "changePwd_updateButton" = "Kemas Kini Kata Laluan";
+"account_menu_changeLanguage" = "Tukar Bahasa";
 
 /* Calibration */
 "calib_instruction1" = "Letakkan satu titik pada garisan servis hadapan dan satu lagi pada garisan servis panjang beregu (garisan flick).";

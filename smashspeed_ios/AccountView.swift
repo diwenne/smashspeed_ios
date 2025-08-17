@@ -9,6 +9,8 @@ struct AccountView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     
+    @State private var showLanguagePicker = false
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -27,22 +29,28 @@ struct AccountView: View {
                 case .signedOut: AuthView()
                 }
             }
-            // LOCALIZED
             .navigationTitle(Text(viewModel.authState == .signedIn ? "account_navTitle_myAccount" : "account_navTitle_welcome"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        // LOCALIZED
+                        Button {
+                            showLanguagePicker = true
+                        } label: {
+                            Label("account_menu_changeLanguage", systemImage: "globe")
+                        }
+                        
+                        Divider()
+                        
                         if let url = URL(string: "https://smashspeed.ca/#contact") { Link(destination: url) { Label("account_menu_contact", systemImage: "person.fill.questionmark") } }
-                        // LOCALIZED
                         if let url = URL(string: "https://smashspeed.ca/#faq") { Link(destination: url) { Label("account_menu_faq", systemImage: "questionmark.circle.fill") } }
                         Divider()
-                        // LOCALIZED
                         if let url = URL(string: "https://smashspeed.ca/terms-of-service") { Link(destination: url) { Label("account_menu_terms", systemImage: "doc.text.fill") } }
-                        // LOCALIZED
                         if let url = URL(string: "https://smashspeed.ca/privacy-policy") { Link(destination: url) { Label("account_menu_privacy", systemImage: "shield.lefthalf.filled") } }
                     } label: { Image(systemName: "gearshape.fill").font(.title3).foregroundColor(.secondary) }
                 }
+            }
+            .sheet(isPresented: $showLanguagePicker) {
+                LanguagePickerView()
             }
         }
     }
@@ -61,7 +69,6 @@ struct LoggedInView: View {
     @State private var showChangePasswordSheet = false
     @State private var showSignOutAlert = false
     
-    // LOCALIZED
     private var memberSince: String { user.metadata.creationDate?.formatted(date: .long, time: .omitted) ?? NSLocalizedString("common_notAvailable", comment: "") }
     
     var body: some View {
@@ -72,9 +79,7 @@ struct LoggedInView: View {
                     HStack(spacing: 16) {
                         Image(systemName: "person.crop.circle.fill.badge.checkmark").font(.system(size: 60)).foregroundColor(.green)
                         VStack(alignment: .leading) {
-                            // LOCALIZED
                             Text(user.email ?? NSLocalizedString("account_loggedIn_noEmail", comment: "")).font(.headline).fontWeight(.semibold)
-                            // LOCALIZED
                             Text(String.localizedStringWithFormat(NSLocalizedString("account_loggedIn_memberSinceFormat", comment: ""), memberSince)).font(.subheadline).foregroundColor(.secondary)
                         }
                         Spacer()
@@ -83,42 +88,31 @@ struct LoggedInView: View {
 
                 // --- App Settings ---
                 VStack(alignment: .leading, spacing: 15) {
-                    // LOCALIZED
                     Text("account_loggedIn_settingsTitle").font(.title2.bold()).padding(.bottom, 5)
-                    // LOCALIZED
                     Picker("account_loggedIn_appearance", selection: $appearanceMode) {
                         ForEach(AppearanceMode.allCases) { mode in Text(NSLocalizedString(mode.localizedKey, comment: "")).tag(mode) }
                     }.pickerStyle(.segmented)
                     Divider()
-                    // LOCALIZED
                     Button { showOnboarding = true } label: { Label("account_loggedIn_viewTutorial", systemImage: "questionmark.circle.fill") }
                 }.glassPanelStyle()
 
                 // --- Community & Support ---
                 VStack(alignment: .leading, spacing: 15) {
-                    // LOCALIZED
                     Text("account_loggedIn_communitySupport").font(.title2.bold()).padding(.bottom, 5)
-                    // LOCALIZED
                     if let url = URL(string: "https://smashspeed.ca") { Link(destination: url) { Label("account_loggedIn_officialWebsite", systemImage: "globe") } }
                     Divider()
-                    // LOCALIZED
                     if let url = URL(string: "https://instagram.com/smashspeedai") { Link(destination: url) { Label("account_loggedIn_followInstagram", systemImage: "camera.fill") } }
                     Divider()
-                    // LOCALIZED
                     if let url = URL(string: "mailto:smashspeedai@gmail.com") { Link(destination: url) { Label("account_loggedIn_contactSupport", systemImage: "envelope.fill") } }
                 }.glassPanelStyle()
                 
                 // --- Account Actions ---
                 VStack(alignment: .leading, spacing: 15) {
-                    // LOCALIZED
                     Text("account_loggedIn_accountActions").font(.title2.bold()).padding(.bottom, 5)
-                    // LOCALIZED
                     Button("account_loggedIn_changePassword", action: { showChangePasswordSheet = true })
                     Divider()
-                    // LOCALIZED
                     Button("account_loggedIn_signOut", role: .destructive, action: { showSignOutAlert = true })
                     Divider()
-                    // LOCALIZED
                     Button("account_loggedIn_deleteAccount", role: .destructive, action: { showDeleteAlert = true })
                 }.glassPanelStyle()
             }
@@ -126,18 +120,12 @@ struct LoggedInView: View {
         }
         .sheet(isPresented: $showOnboarding) { OnboardingView(onComplete: { showOnboarding = false }) }
         .sheet(isPresented: $showChangePasswordSheet) { ChangePasswordView() }
-        // LOCALIZED
         .alert(Text("account_alert_delete_title"), isPresented: $showDeleteAlert) {
-            // LOCALIZED
             Button("common_delete", role: .destructive, action: deleteAccountAction)
-            // LOCALIZED
             Button("common_cancel", role: .cancel) {}
         } message: { Text("account_alert_delete_message") }
-        // LOCALIZED
         .alert(Text("account_alert_signOut_message"), isPresented: $showSignOutAlert) {
-            // LOCALIZED
             Button("account_loggedIn_signOut", role: .destructive, action: signOutAction)
-            // LOCALIZED
             Button("common_cancel", role: .cancel) {}
         }
     }
@@ -158,20 +146,14 @@ struct ChangePasswordView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                // LOCALIZED
                 ModernTextField(titleKey: "changePwd_newPwdField", text: $newPassword, isSecure: true)
-                // LOCALIZED
                 ModernTextField(titleKey: "changePwd_confirmPwdField", text: $confirmPassword, isSecure: true)
                 if let feedbackMessage = feedbackMessage {
-                    // LOCALIZED: Note that feedbackMessage is a variable, so if it's from Firebase it may not be localized.
-                    // The "Passwords do not match" case is localized below.
                     Text(feedbackMessage).font(.caption).foregroundColor(isSuccess ? .green : .red).multilineTextAlignment(.center)
                 }
-                // LOCALIZED
                 Button("changePwd_updateButton") {
                     guard newPassword == confirmPassword else {
                         isSuccess = false
-                        // LOCALIZED
                         feedbackMessage = NSLocalizedString("auth_passwordMismatch", comment: "")
                         return
                     }
@@ -183,9 +165,7 @@ struct ChangePasswordView: View {
                 Spacer()
             }
             .padding(30)
-            // LOCALIZED
             .navigationTitle(Text("changePwd_navTitle"))
-            // LOCALIZED
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("changePwd_cancelButton", action: { dismiss() }) } }
         }
     }
@@ -212,7 +192,6 @@ struct AuthView: View {
             }
             .padding(30).background(GlassPanel()).clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
             
-            // LOCALIZED
             Text("auth_signInPrompt")
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -234,28 +213,22 @@ struct SignInForm: View {
     
     var body: some View {
         VStack(spacing: 15) {
-            // LOCALIZED
             Text("auth_signInTitle").font(.title2).fontWeight(.bold)
-            // LOCALIZED
             ModernTextField(titleKey: "common_email", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress)
-            // LOCALIZED
             ModernTextField(titleKey: "common_password", text: $password, isSecure: true).textContentType(.password)
             
             HStack {
                 Spacer()
-                // LOCALIZED
                 Button("auth_forgotPassword") { viewModel.sendPasswordReset(for: email) }.font(.footnote)
             }.padding(.bottom, -5)
             
             if let error = viewModel.errorMessage { Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center)
             } else if let info = viewModel.infoMessage { Text(info).font(.caption).foregroundColor(.green).multilineTextAlignment(.center) }
             
-            // LOCALIZED
             Button { viewModel.signIn(email: email, password: password) } label: { Text("auth_signInButton").fontWeight(.bold).frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent).controlSize(.large)
 
             HStack {
                 VStack { Divider() }
-                // LOCALIZED
                 Text("auth_orDivider").font(.footnote).foregroundColor(.secondary)
                 VStack { Divider() }
             }.padding(.vertical, 5)
@@ -267,7 +240,6 @@ struct SignInForm: View {
             SignInWithGoogleButtonView(action: {
                 viewModel.signInWithGoogle()
             })
-            // LOCALIZED
             Button("auth_dontHaveAccount") { isSigningUp = true }.font(.footnote).tint(.accentColor).padding(.top)
         }
         .onChange(of: email) { _ in viewModel.errorMessage = nil; viewModel.infoMessage = nil }
@@ -286,28 +258,20 @@ struct CreateAccountForm: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // LOCALIZED
             Text("auth_createAccountTitle").font(.title2).fontWeight(.bold)
-            // LOCALIZED
             ModernTextField(titleKey: "common_email", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress)
-            // LOCALIZED
             ModernTextField(titleKey: "common_password", text: $password, isSecure: true).textContentType(.newPassword)
-            // LOCALIZED
             ModernTextField(titleKey: "changePwd_confirmPwdField", text: $confirmPassword, isSecure: true).textContentType(.newPassword)
             HStack(alignment: .top, spacing: 12) {
                 Button(action: { hasAcceptedTerms.toggle() }) { Image(systemName: hasAcceptedTerms ? "checkmark.square.fill" : "square").font(.headline).foregroundColor(hasAcceptedTerms ? .accentColor : .secondary) }.buttonStyle(.plain)
-                // LOCALIZED
                 Text("auth_termsAgreement").font(.footnote).fixedSize(horizontal: false, vertical: true)
             }
             if let error = viewModel.errorMessage { Text(error).font(.caption).foregroundColor(.red).multilineTextAlignment(.center) }
             Button {
-                // LOCALIZED
                 guard password == confirmPassword else { viewModel.errorMessage = NSLocalizedString("auth_passwordMismatch", comment: ""); return }
                 viewModel.signUp(email: email, password: password)
             } label: {
-                // LOCALIZED
                 Text("auth_createAccountButton").fontWeight(.bold).frame(maxWidth: .infinity) }.buttonStyle(.borderedProminent).controlSize(.large).disabled(!isFormValid)
-            // LOCALIZED
             Button("auth_alreadyHaveAccount") { isSigningUp = false; viewModel.errorMessage = nil; viewModel.infoMessage = nil }.font(.footnote).tint(.accentColor).padding(.top)
         }
         .onChange(of: email) { _ in viewModel.errorMessage = nil }
@@ -318,7 +282,6 @@ struct CreateAccountForm: View {
 
 // MARK: - Reusable Components
 struct ModernTextField: View {
-    // LOCALIZED: Changed `title` to `titleKey` to reflect it's a localization key.
     let titleKey: LocalizedStringKey
     @Binding var text: String
     var isSecure: Bool = false
@@ -327,7 +290,6 @@ struct ModernTextField: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 if isSecure {
-                    // LOCALIZED
                     if isPasswordVisible { TextField(titleKey, text: $text) } else { SecureField(titleKey, text: $text) }
                 } else { TextField(titleKey, text: $text) }
                 if isSecure { Button(action: { isPasswordVisible.toggle() }) { Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill").foregroundColor(.secondary) }.buttonStyle(.plain) }
@@ -353,7 +315,6 @@ struct SignInWithGoogleButtonView: View {
                     .scaledToFit()
                     .frame(width: 28, height: 28)
 
-                // LOCALIZED
                 Text("auth_signInWithGoogle")
                     .font(.body.weight(.medium))
                     .foregroundColor(Color.black.opacity(0.85))
@@ -368,5 +329,3 @@ struct SignInWithGoogleButtonView: View {
         }
     }
 }
-
-

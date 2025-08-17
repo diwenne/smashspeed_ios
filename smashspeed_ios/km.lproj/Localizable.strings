@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "ផ្លាស់ប្តូរពាក្យសម្ងាត់";
 "changePwd_newPwdField" = "ពាក្យសម្ងាត់ថ្មី";
 "changePwd_updateButton" = "ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់";
+"account_menu_changeLanguage" = "ផ្លាស់ប្តូរភាសា";
 
 /* Calibration */
 "calib_instruction1" = "ដាក់ចំណុចមួយនៅលើបន្ទាត់សេវាខាងមុខ និងចំណុចមួយទៀតនៅលើបន្ទាត់សេវាយូរទ្វេ (flick)។";

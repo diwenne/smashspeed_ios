@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "비밀번호 변경";
 "changePwd_newPwdField" = "새 비밀번호";
 "changePwd_updateButton" = "비밀번호 업데이트";
+"account_menu_changeLanguage" = "언어 변경";
 
 /* Calibration */
 "calib_instruction1" = "한 점은 앞 서비스 라인에, 다른 한 점은 복식 롱 서비스 라인(플릭 라인)에 놓습니다.";

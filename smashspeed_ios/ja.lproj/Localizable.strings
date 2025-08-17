@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "パスワードを変更";
 "changePwd_newPwdField" = "新しいパスワード";
 "changePwd_updateButton" = "パスワードを更新";
+"account_menu_changeLanguage" = "言語を変更";
 
 /* Calibration */
 "calib_instruction1" = "1つのポイントをフロントサービスラインに、もう1つをダブルスのロングサービスライン（フリックライン）に配置します。";

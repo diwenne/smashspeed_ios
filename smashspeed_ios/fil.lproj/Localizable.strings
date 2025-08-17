@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "Palitan ang Password";
 "changePwd_newPwdField" = "Bagong Password";
 "changePwd_updateButton" = "I-update ang Password";
+"account_menu_changeLanguage" = "Palitan ang Wika";
 
 /* Calibration */
 "calib_instruction1" = "Ilagay ang isang punto sa front service line at ang isa pa sa doubles long service (flick) line.";

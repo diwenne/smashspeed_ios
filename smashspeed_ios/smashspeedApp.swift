@@ -29,11 +29,12 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
 struct smashspeed_iosApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
+  @StateObject private var languageManager = LanguageManager()
   @StateObject private var versionChecker = VersionChecker()
     
   @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     
-  private let appStoreID = "6748543435" // Replace with your actual App Store ID
+  private let appStoreID = "6748543435"
   private var appStoreURL: URL {
       URL(string: "https://apps.apple.com/app/id\(appStoreID)")!
   }
@@ -41,15 +42,14 @@ struct smashspeed_iosApp: App {
   var body: some Scene {
     WindowGroup {
         ContentView()
+            .environmentObject(languageManager)
+            .environment(\.locale, Locale(identifier: languageManager.languageCode))
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
             }
-            // LOCALIZED
             .alert(Text("updateAlert_title"), isPresented: $versionChecker.needsForceUpdate) {
-                // LOCALIZED
                 Link(NSLocalizedString("updateAlert_button", comment: ""), destination: appStoreURL)
             } message: {
-                // LOCALIZED
                 Text("updateAlert_message")
             }
             .task {

@@ -45,6 +45,7 @@
 "changePwd_navTitle" = "Ubah Kata Sandi";
 "changePwd_newPwdField" = "Kata Sandi Baru";
 "changePwd_updateButton" = "Perbarui Kata Sandi";
+"account_menu_changeLanguage" = "Ubah Bahasa";
 
 /* Calibration */
 "calib_instruction1" = "Letakkan satu titik di garis servis depan dan titik lainnya di garis servis panjang ganda (flick).";

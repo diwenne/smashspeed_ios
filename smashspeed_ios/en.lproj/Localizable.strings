@@ -45,6 +45,7 @@
     "changePwd_navTitle" = "Change Password";
     "changePwd_newPwdField" = "New Password";
     "changePwd_updateButton" = "Update Password";
+    "account_menu_changeLanguage" = "Change Language";
 
     /* Calibration */
     "calib_instruction1" = "Place one point on the front service line and the other on the doubles long service (flick) line.";
