@@ -35,7 +35,7 @@ class YOLOv5ModelHandler {
         do {
             let configuration = MLModelConfiguration()
             configuration.computeUnits = .all
-            let coreMLModel = try best(configuration: configuration).model
+            let coreMLModel = try best_v2(configuration: configuration).model
             self.model = try VNCoreMLModel(for: coreMLModel)
             #if DEBUG
             print("✅ YOLOv5ModelHandler: Model loaded successfully.")
