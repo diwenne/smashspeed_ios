@@ -109,15 +109,14 @@ class KalmanTracker {
         p.1 = (p10, p11, p12, p13)
     }
 
-    /// Returns the current estimated state (position and speed).
-    /// The returned `speedKPH` value is the raw velocity in pixels/frame.
-    /// Conversion to a metric like KPH must be done by the caller.
-    func getCurrentState() -> (point: CGPoint, speedKPH: Double?) {
-        guard isInitialized else { return (CGPoint.zero, nil) }
+    /// Returns the current estimated state (position, velocity vector, and speed magnitude).
+    /// The returned speed is the raw velocity in pixels/frame.
+    func getCurrentState() -> (point: CGPoint, velocity: CGPoint, speed: Double?) {
+        guard isInitialized else { return (CGPoint.zero, CGPoint.zero, nil) }
         let point = CGPoint(x: x.0, y: x.1)
-        // This is velocity in pixels per frame (or per dt)
-        let velocityPixelsPerFrame = sqrt(x.2 * x.2 + x.3 * x.3)
-        return (point, velocityPixelsPerFrame)
+        let velocity = CGPoint(x: x.2, y: x.3)
+        let speedPixelsPerFrame = sqrt(x.2 * x.2 + x.3 * x.3)
+        return (point, velocity, speedPixelsPerFrame)
     }
     
     /// Creates a deep copy of the tracker's current state.

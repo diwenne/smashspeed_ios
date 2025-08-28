@@ -102,7 +102,7 @@ class VideoProcessor {
                 // Check if the main tracker has already established motion.
                 // If not, we waive the minimum speed requirement for the first valid detection.
                 let mainTrackerState = tracker.getCurrentState()
-                let mainTrackerPixelVelocity = mainTrackerState.speedKPH ?? 0.0
+                let mainTrackerPixelVelocity = mainTrackerState.speed ?? 0.0
                 let trackerHasEstablishedMotion = mainTrackerPixelVelocity > 0.0
 
                 // Iterate through sorted detections to find one that doesn't produce an absurd speed.
@@ -114,7 +114,7 @@ class VideoProcessor {
                     let tempState = tempTracker.getCurrentState()
                     
                     // Calculate the speed that would result from this update
-                    let pixelsPerFrameVelocity = tempState.speedKPH ?? 0.0
+                    let pixelsPerFrameVelocity = tempState.speed ?? 0.0
                     let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
                     let metersPerSecond = pixelsPerSecond * tempTracker.scaleFactor
                     let potentialSpeedKPH = metersPerSecond * 3.6
@@ -152,31 +152,31 @@ class VideoProcessor {
             
             if let chosenOne = chosenDetection {
                 let pixelRect = scaleBoxFromModelToOriginal(chosenOne.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
-                
+            
                 // Perform the REAL update on the main tracker.
                 tracker.update(measurement: pixelRect.center)
-                
+            
                 finalBox = CGRect(x: pixelRect.origin.x / videoSize.width,
                                   y: pixelRect.origin.y / videoSize.height,
                                   width: pixelRect.size.width / videoSize.width,
                                   height: pixelRect.size.height / videoSize.height)
-                
+            
                 #if DEBUG
                 print(String(format: "✅ Frame %d CHOSEN Box (norm): [x: %.3f, y: %.3f], Score: %.3f", frameCount + 1, finalBox!.origin.x, finalBox!.origin.y, chosenOne.score))
                 #endif
             } else {
                 #if DEBUG
                 if !allDetections.isEmpty {
-                     print("🔴 Frame \(frameCount + 1): All detections resulted in out-of-range speed. Using prediction only.")
+                    print("🔴 Frame \(frameCount + 1): All detections resulted in out-of-range speed. Using prediction only.")
                 } else if frameCount > 0 {
-                     print("📪 Frame \(frameCount + 1): No detections found. Using prediction only.")
+                    print("📪 Frame \(frameCount + 1): No detections found. Using prediction only.")
                 }
                 #endif
             }
             
             // 5. Get the final state (position and speed) from the tracker.
             let currentState = tracker.getCurrentState()
-            let pixelsPerFrameVelocity = currentState.speedKPH ?? 0.0
+            let pixelsPerFrameVelocity = currentState.speed ?? 0.0
             
             let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
             let metersPerSecond = pixelsPerSecond * tracker.scaleFactor

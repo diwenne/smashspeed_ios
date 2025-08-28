@@ -542,12 +542,10 @@ struct ReviewView: View {
 
     private func recalculateAllSpeeds() {
         let freshTracker = KalmanTracker(scaleFactor: initialResult.scaleFactor)
-
         let frameRate = initialResult.frameRate
         let videoSize = initialResult.videoSize
 
         for i in 0..<analysisResults.count {
-
             _ = freshTracker.predict(dt: 1.0)
 
             if let boundingBox = analysisResults[i].boundingBox {
@@ -555,17 +553,41 @@ struct ReviewView: View {
                 freshTracker.update(measurement: pixelRect.center)
             }
 
+            // --- SMART TRACKING LOGIC ---
             let currentState = freshTracker.getCurrentState()
-            let pixelsPerFrameVelocity = currentState.speedKPH ?? 0.0
+            var finalTrackedPoint = currentState.point // Default to the smoothed center
 
+            // If there's a bounding box, we can calculate the "smart" offset
+            if let boundingBox = analysisResults[i].boundingBox {
+                let pixelRect = VNImageRectForNormalizedRect(boundingBox, Int(videoSize.width), Int(videoSize.height))
+                let velocity = currentState.velocity
+                let speed = currentState.speed ?? 0.0
+
+                // Only apply offset if the object is moving to avoid jitter
+                if speed > 0.1 {
+                    // Normalize the velocity vector to get a pure direction
+                    let normalizedVelocity = CGPoint(x: velocity.x / speed, y: velocity.y / speed)
+                    
+                    // Calculate offset to be half the box's dimension in the direction of motion
+                    let offsetX = normalizedVelocity.x * (pixelRect.width / 2.0)
+                    let offsetY = normalizedVelocity.y * (pixelRect.height / 2.0)
+                    
+                    // The "smart" point is the smoothed center offset towards the leading edge
+                    finalTrackedPoint = CGPoint(x: currentState.point.x + offsetX, y: currentState.point.y + offsetY)
+                }
+            }
+            
+            analysisResults[i].trackedPoint = finalTrackedPoint
+            
+            // Speed calculation uses the unmodified tracker speed
+            let pixelsPerFrameVelocity = currentState.speed ?? 0.0
             let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
             let metersPerSecond = pixelsPerSecond * initialResult.scaleFactor
             let finalSpeed = metersPerSecond * 3.6
-
             analysisResults[i].speedKPH = finalSpeed
-            analysisResults[i].trackedPoint = currentState.point
         }
     }
+
 
     private func addBox() {
         saveUndoState()

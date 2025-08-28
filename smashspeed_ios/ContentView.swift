@@ -43,6 +43,7 @@ struct LoadingView: View {
 }
 
 struct MainTabView: View {
+    @EnvironmentObject var languageManager: LanguageManager
     var body: some View {
         TabView {
             DetectView()
@@ -73,6 +74,7 @@ struct MainTabView: View {
             // LOCALIZED
             .tabItem { Label("tab_account", systemImage: "person.crop.circle") }
         }
+        .id(languageManager.languageCode)
     }
 }
 
