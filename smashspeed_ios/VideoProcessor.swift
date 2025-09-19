@@ -59,18 +59,8 @@ class VideoProcessor {
             
             let presentationTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
             
-            // 1. Predict where the tracker thinks the shuttlecock will be.
             let predictedPoint = tracker.predict(dt: 1.0)
             
-            #if DEBUG
-            if let point = predictedPoint, videoSize.width > 0, videoSize.height > 0 {
-                let normalizedX = point.x / videoSize.width
-                let normalizedY = point.y / videoSize.height
-                print(String(format: "🔮 Frame %d Kalman PREDICTED (norm): [x: %.3f, y: %.3f]", frameCount + 1, normalizedX, normalizedY))
-            }
-            #endif
-            
-            // 2. Get ALL candidate detections from the model.
             let allDetections: [YOLOv5ModelHandler.Prediction] = await withCheckedContinuation { continuation in
                 modelHandler.performDetection(on: pixelBuffer) { result in
                     switch result {
@@ -80,123 +70,77 @@ class VideoProcessor {
                 }
             }
 
-            var chosenDetection: (prediction: YOLOv5ModelHandler.Prediction, score: Double)? = nil
-            
+            var chosenDetection: YOLOv5ModelHandler.Prediction? = nil
             if !allDetections.isEmpty {
                 let scoredDetections = allDetections.map { detection -> (prediction: YOLOv5ModelHandler.Prediction, score: Double) in
                     let pixelRect = scaleBoxFromModelToOriginal(detection.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
                     let score = calculateScore(for: pixelRect.center, confidence: Double(detection.confidence), predictedPoint: predictedPoint, frameSize: videoSize)
                     return (detection, score)
                 }
-                .sorted { $0.score > $1.score } // Sort by score, highest first
+                .sorted { $0.score > $1.score }
 
-                #if DEBUG
-                if !scoredDetections.isEmpty {
-                    print("⚖️ Frame \(frameCount + 1) Checking \(scoredDetections.count) Detections (sorted by score):")
-                }
-                #endif
-
-                // --- GEMINI'S NOTE: This is the new logic block to fix the first-frame speed jump. ---
-                // It checks if the tracker has been initialized yet.
-                let mainTrackerState = tracker.getCurrentState()
-                let trackerHasBeenInitialized = mainTrackerState.point != .zero
-                
-                if !trackerHasBeenInitialized {
-                    // --- GEMINI'S NOTE: If the tracker is new, we 'seed' it with the best detection ---
-                    // and skip all speed checks for this one frame to give it a starting point.
-                    chosenDetection = scoredDetections.first
-                    #if DEBUG
-                    if chosenDetection != nil {
-                        print("   - ✅ Tracker not initialized. Seeding with highest-scoring box.")
+                if !tracker.isInitialized {
+                    // Seed the tracker with the best detection, no speed check.
+                    if let bestDetection = scoredDetections.first {
+                        chosenDetection = bestDetection.prediction
                     }
-                    #endif
                 } else {
-                    // --- GEMINI'S NOTE: If the tracker is already moving, we enforce your original speed checks. ---
-                    let maxSpeedKPH: Double = 450.0 // Increased for safety
-                    let minSpeedKPH: Double = 5.0
-                    let trackerHasEstablishedMotion = (mainTrackerState.speed ?? 0.0) > 0.0
-
+                    // Tracker is running, so apply speed filter.
+                    let maxSpeedKPH: Double = 500.0
                     for scoredDetection in scoredDetections {
                         let tempTracker = tracker.copy()
                         let pixelRect = scaleBoxFromModelToOriginal(scoredDetection.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
                         tempTracker.update(measurement: pixelRect.center)
-                        let tempState = tempTracker.getCurrentState()
                         
-                        let pixelsPerFrameVelocity = tempState.speed ?? 0.0
-                        let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
-                        let metersPerSecond = pixelsPerSecond * tempTracker.scaleFactor
-                        let potentialSpeedKPH = metersPerSecond * 3.6
-                        
-                        #if DEBUG
-                        print(String(format: "   - 𝗧𝗲𝘀𝘁𝗶𝗻𝗴 box with score %.3f... potential speed: %.1f kph", scoredDetection.score, potentialSpeedKPH))
-                        #endif
+                        if let tempState = tempTracker.getCurrentState() {
+                            let pixelsPerFrameVelocity = tempState.speed ?? 0.0
+                            let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
+                            let metersPerSecond = pixelsPerSecond * tempTracker.scaleFactor
+                            let potentialSpeedKPH = metersPerSecond * 3.6
 
-                        let isTooFast = potentialSpeedKPH >= maxSpeedKPH
-                        let isTooSlow = potentialSpeedKPH < minSpeedKPH
-                        let motionCheckFailed = isTooSlow && trackerHasEstablishedMotion
-
-                        if !isTooFast && !motionCheckFailed {
-                            chosenDetection = scoredDetection
-                            #if DEBUG
-                            print("   - ✅ PASSED speed check. Selecting this box.")
-                            #endif
-                            break
-                        } else {
-                            #if DEBUG
-                            if isTooFast {
-                                print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too high (max: %.0f).", potentialSpeedKPH, maxSpeedKPH))
-                            } else if motionCheckFailed {
-                                print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too low (min: %.0f).", potentialSpeedKPH, minSpeedKPH))
+                            if potentialSpeedKPH < maxSpeedKPH {
+                                chosenDetection = scoredDetection.prediction
+                                break
                             }
-                            #endif
                         }
                     }
                 }
             }
             
-            // --- GEMINI'S NOTE: This new logic block correctly calculates the final speed. ---
-            // 1. We check the tracker's state BEFORE we update it for the current frame.
-            let wasInitializedBeforeUpdate = tracker.getCurrentState().point != .zero
+            // Check the state *before* updating the tracker for this frame.
+            let wasInitializedBeforeUpdate = tracker.isInitialized
 
             var finalBox: CGRect?
             if let chosenOne = chosenDetection {
-                let pixelRect = scaleBoxFromModelToOriginal(chosenOne.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
-                tracker.update(measurement: pixelRect.center)
+                let pixelRect = scaleBoxFromModelToOriginal(chosenOne.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
+                tracker.update(measurement: pixelRect.center) // Now update the tracker
                 finalBox = CGRect(x: pixelRect.origin.x / videoSize.width,
                                   y: pixelRect.origin.y / videoSize.height,
                                   width: pixelRect.size.width / videoSize.width,
                                   height: pixelRect.size.height / videoSize.height)
-            
-                #if DEBUG
-                print(String(format: "✅ Frame %d CHOSEN Box (norm): [x: %.3f, y: %.3f], Score: %.3f", frameCount + 1, finalBox!.origin.x, finalBox!.origin.y, chosenOne.score))
-                #endif
-            } else {
-                #if DEBUG
-                if !allDetections.isEmpty {
-                    print("🔴 Frame \(frameCount + 1): All detections resulted in out-of-range speed. Using prediction only.")
-                } else if frameCount > 0 {
-                    print("📪 Frame \(frameCount + 1): No detections found. Using prediction only.")
-                }
-                #endif
             }
 
-            // 2. We get the tracker's new state AFTER the potential update.
-            let currentState = tracker.getCurrentState()
-            
-            // 3. The speed is ONLY calculated if the tracker was ALREADY initialized before this frame.
-            //    This ensures the frame with the very first detection has a speed of 0.
-            let pixelsPerFrameVelocity = wasInitializedBeforeUpdate ? (currentState.speed ?? 0.0) : 0.0
+            var finalSpeedKPH: Double = 0.0
+            var finalTrackedPoint: CGPoint? = nil
 
-            let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
-            let metersPerSecond = pixelsPerSecond * tracker.scaleFactor
-            let finalSpeed = metersPerSecond * 3.6
-            let finalPoint = currentState.point
+            // Get the state of the tracker *after* the potential update.
+            if let currentState = tracker.getCurrentState() {
+                finalTrackedPoint = currentState.point
+                
+                // Only calculate speed if the tracker was already running before this frame.
+                if wasInitializedBeforeUpdate {
+                    let pixelsPerFrameVelocity = currentState.speed ?? 0.0
+                    let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
+                    let metersPerSecond = pixelsPerSecond * tracker.scaleFactor
+                    finalSpeedKPH = metersPerSecond * 3.6
+                }
+            }
 
             let frameResult = FrameAnalysis(
                 timestamp: presentationTime.seconds,
                 boundingBox: finalBox,
-                speedKPH: finalSpeed,
-                trackedPoint: finalPoint
+                speedKPH: finalSpeedKPH,
+                trackedPoint: finalTrackedPoint
             )
             analysisResults.append(frameResult)
             

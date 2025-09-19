@@ -541,11 +541,6 @@ struct ReviewView: View {
     }
 
     private func recalculateAllSpeeds() {
-        // --- LOGIC CHANGE ---
-        // This function now uses a two-pass approach.
-        // Pass 1: Calculate the "smart" tracked point for every frame.
-        // Pass 2: Calculate the speed based on the distance between these points.
-        
         let freshTracker = KalmanTracker(scaleFactor: initialResult.scaleFactor)
         let videoSize = initialResult.videoSize
         
@@ -558,29 +553,35 @@ struct ReviewView: View {
                 freshTracker.update(measurement: pixelRect.center)
             }
 
-            let currentState = freshTracker.getCurrentState()
-            var finalTrackedPoint = currentState.point
+            // MODIFICATION: Safely unwrap the optional state from the tracker
+            if let currentState = freshTracker.getCurrentState() {
+                var finalTrackedPoint = currentState.point
 
-            if let boundingBox = analysisResults[i].boundingBox {
-                let pixelRect = VNImageRectForNormalizedRect(boundingBox, Int(videoSize.width), Int(videoSize.height))
-                let velocity = currentState.velocity
-                let speed = currentState.speed ?? 0.0
+                // This logic offsets the tracked point to the leading edge of the shuttlecock
+                if let boundingBox = analysisResults[i].boundingBox {
+                    let pixelRect = VNImageRectForNormalizedRect(boundingBox, Int(videoSize.width), Int(videoSize.height))
+                    let speed = currentState.speed ?? 0.0
 
-                if speed > 0.1 {
-                    let normalizedVelocity = CGPoint(x: velocity.x / speed, y: velocity.y / speed)
-                    let offsetX = normalizedVelocity.x * (pixelRect.width / 2.0)
-                    let offsetY = normalizedVelocity.y * (pixelRect.height / 2.0)
-                    finalTrackedPoint = CGPoint(x: currentState.point.x + offsetX, y: currentState.point.y + offsetY)
+                    if speed > 0.1 { // Only offset if there's meaningful motion
+                        let velocity = currentState.velocity
+                        let normalizedVelocity = CGPoint(x: velocity.x / speed, y: velocity.y / speed)
+                        let offsetX = normalizedVelocity.x * (pixelRect.width / 2.0)
+                        let offsetY = normalizedVelocity.y * (pixelRect.height / 2.0)
+                        finalTrackedPoint = CGPoint(x: currentState.point.x + offsetX, y: currentState.point.y + offsetY)
+                    }
                 }
+                analysisResults[i].trackedPoint = finalTrackedPoint
+            } else {
+                // If tracker is not initialized, there is no tracked point.
+                analysisResults[i].trackedPoint = nil
             }
-            analysisResults[i].trackedPoint = finalTrackedPoint
         }
         
         // Pass 2: Calculate speed based on the distance between tracked points
         let frameRate = initialResult.frameRate
         for i in 0..<analysisResults.count {
             if i == 0 {
-                analysisResults[i].speedKPH = 0.0 // Speed is zero for the first frame
+                analysisResults[i].speedKPH = 0.0
                 continue
             }
             
@@ -590,12 +591,10 @@ struct ReviewView: View {
                 continue
             }
             
-            // Calculate distance between the two cyan dots in pixels
             let dx = currentPoint.x - previousPoint.x
             let dy = currentPoint.y - previousPoint.y
             let pixelsPerFrameVelocity = sqrt(dx*dx + dy*dy)
             
-            // Convert pixels/frame to km/h
             let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
             let metersPerSecond = pixelsPerSecond * initialResult.scaleFactor
             let finalSpeed = metersPerSecond * 3.6

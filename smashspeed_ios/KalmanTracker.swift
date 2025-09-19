@@ -24,7 +24,7 @@ class KalmanTracker {
                                                            (0, 0, 0, 1000) )
     private let q: Double = 1e-4
     private let r: Double = 0.01
-    var isInitialized = false
+    public var isInitialized = false
 
     // MARK: - Initialization
     init(scaleFactor: Double) {
@@ -109,10 +109,11 @@ class KalmanTracker {
         p.1 = (p10, p11, p12, p13)
     }
 
-    /// Returns the current estimated state (position, velocity vector, and speed magnitude).
+    /// Returns the current estimated state, or nil if the tracker is not initialized.
     /// The returned speed is the raw velocity in pixels/frame.
-    func getCurrentState() -> (point: CGPoint, velocity: CGPoint, speed: Double?) {
-        guard isInitialized else { return (CGPoint.zero, CGPoint.zero, nil) }
+    func getCurrentState() -> (point: CGPoint, velocity: CGPoint, speed: Double)? {
+        guard isInitialized else { return nil }
+        
         let point = CGPoint(x: x.0, y: x.1)
         let velocity = CGPoint(x: x.2, y: x.3)
         let speedPixelsPerFrame = sqrt(x.2 * x.2 + x.3 * x.3)
