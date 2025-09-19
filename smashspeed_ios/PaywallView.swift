@@ -179,33 +179,47 @@ struct LockedFeatureView: View {
     
     var body: some View {
         ZStack {
-            // Added background to match the rest of the app's aesthetic
+            // Background to match app aesthetic
             Color(.systemBackground).ignoresSafeArea()
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
             
-            VStack(spacing: 25) {
-                Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 70, weight: .light))
-                    .foregroundColor(.accentColor)
+            VStack(spacing: 28) {
+                // Glassy lock emblem
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 90, height: 90)
+                        .overlay(
+                            Circle().stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+                        )
+                        .shadow(radius: 10, y: 6)
+                    
+                    Image(systemName: "lock.shield.fill")
+                        .font(.system(size: 38, weight: .semibold))
+                        .foregroundColor(.accentColor)
+                }
                 
-                VStack(spacing: 10) {
+                // Title & description
+                VStack(spacing: 8) {
                     Text(title)
-                        .font(.largeTitle.bold())
+                        .font(.system(.title, design: .rounded).bold())
+                        .multilineTextAlignment(.center)
                     
                     Text(description)
-                        .font(.body)
+                        .font(.callout)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
                 
+                // CTA
                 Button("Upgrade to Pro", action: onUpgrade)
                     .buttonStyle(ProminentButtonStyle())
                     .controlSize(.large)
-                    .padding(.top)
+                    .padding(.top, 6)
             }
-            .padding(40)
+            .padding(36)
         }
     }
 }
