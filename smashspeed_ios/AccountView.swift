@@ -62,12 +62,14 @@ struct LoggedInView: View {
     let signOutAction: () -> Void
     let deleteAccountAction: () -> Void
 
+    @EnvironmentObject var storeManager: StoreManager
     @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     
     @State private var showOnboarding = false
     @State private var showDeleteAlert = false
     @State private var showChangePasswordSheet = false
     @State private var showSignOutAlert = false
+    @State private var showPaywallSheet = false
     
     private var memberSince: String { user.metadata.creationDate?.formatted(date: .long, time: .omitted) ?? NSLocalizedString("common_notAvailable", comment: "") }
     
@@ -85,6 +87,28 @@ struct LoggedInView: View {
                         Spacer()
                     }
                 }.glassPanelStyle()
+                
+                // --- Subscription Section ---
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("Subscription").font(.title2.bold()).padding(.bottom, 5)
+                    if storeManager.isSubscribed {
+                        HStack {
+                            Label("SmashSpeed Pro", systemImage: "checkmark.seal.fill")
+                                .foregroundColor(.green)
+                            Spacer()
+                            Text("Active")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("You are on the free plan.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Button("Upgrade to Pro", action: { showPaywallSheet = true })
+                            .buttonStyle(.borderedProminent)
+                    }
+                }
+                .glassPanelStyle()
 
                 // --- App Settings ---
                 VStack(alignment: .leading, spacing: 15) {
@@ -120,6 +144,7 @@ struct LoggedInView: View {
         }
         .sheet(isPresented: $showOnboarding) { OnboardingView(onComplete: { showOnboarding = false }) }
         .sheet(isPresented: $showChangePasswordSheet) { ChangePasswordView() }
+        .sheet(isPresented: $showPaywallSheet) { PaywallView(isPresented: $showPaywallSheet) }
         .alert(Text("account_alert_delete_title"), isPresented: $showDeleteAlert) {
             Button("common_delete", role: .destructive, action: deleteAccountAction)
             Button("common_cancel", role: .cancel) {}

@@ -33,6 +33,7 @@ struct DailyTopSpeed: Identifiable {
 // MARK: - Main History View
 struct HistoryView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @EnvironmentObject var storeManager: StoreManager
     @StateObject private var historyViewModel = HistoryViewModel()
     
     @State private var selectedRange: TimeRange = .week
@@ -43,6 +44,7 @@ struct HistoryView: View {
     @State private var resultToDelete: DetectionResult?
     @State private var selectedDataPoint: DailyTopSpeed?
     @State private var showChartValue = false
+    @State private var showPaywallSheet = false
     
     var body: some View {
         NavigationStack {
@@ -53,7 +55,15 @@ struct HistoryView: View {
                 
                 VStack {
                     if authViewModel.isSignedIn, let user = authViewModel.user {
-                        content(for: user.uid)
+                        if storeManager.isSubscribed {
+                            content(for: user.uid)
+                        } else {
+                            LockedFeatureView(
+                                title: "Unlock Your History",
+                                description: "Subscribe to Pro to view your full analysis history, track your stats, and see your progress over time.",
+                                onUpgrade: { showPaywallSheet = true }
+                            )
+                        }
                     } else {
                         loggedOutView
                     }
@@ -75,6 +85,9 @@ struct HistoryView: View {
                 } message: { result in
                     Text("history_alert_delete_message")
                 }
+            }
+            .sheet(isPresented: $showPaywallSheet) {
+                PaywallView(isPresented: $showPaywallSheet)
             }
         }
     }
@@ -306,6 +319,7 @@ struct HistoryView: View {
         .padding()
     }
 }
+
 
 // MARK: - View Modifiers & Subviews
 

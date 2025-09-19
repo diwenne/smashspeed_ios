@@ -28,6 +28,7 @@ class VideoProcessor {
     }
 
     func processVideo(progressHandler: ((Progress) -> Void)?) async throws -> VideoAnalysisResult? {
+        tracker.reset()
         let asset = AVURLAsset(url: videoURL)
         
         guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else { return nil }
@@ -79,10 +80,6 @@ class VideoProcessor {
                 }
             }
 
-            // --- ❗️ LOGIC CHANGE ---
-            // 3. Score detections, sort them, and find the best one that passes a speed check.
-            let maxSpeedKPH: Double = 375.0 // Reject detections that would cause a speed > 375 km/h
-            let minSpeedKPH: Double = 5.0   // Reject detections that would cause a speed < 5 km/h
             var chosenDetection: (prediction: YOLOv5ModelHandler.Prediction, score: Double)? = nil
             
             if !allDetections.isEmpty {
@@ -98,64 +95,73 @@ class VideoProcessor {
                     print("⚖️ Frame \(frameCount + 1) Checking \(scoredDetections.count) Detections (sorted by score):")
                 }
                 #endif
-                
-                // Check if the main tracker has already established motion.
-                // If not, we waive the minimum speed requirement for the first valid detection.
+
+                // --- GEMINI'S NOTE: This is the new logic block to fix the first-frame speed jump. ---
+                // It checks if the tracker has been initialized yet.
                 let mainTrackerState = tracker.getCurrentState()
-                let mainTrackerPixelVelocity = mainTrackerState.speed ?? 0.0
-                let trackerHasEstablishedMotion = mainTrackerPixelVelocity > 0.0
-
-                // Iterate through sorted detections to find one that doesn't produce an absurd speed.
-                for scoredDetection in scoredDetections {
-                    let tempTracker = tracker.copy() // Use a temporary tracker to test the update
-                    let pixelRect = scaleBoxFromModelToOriginal(scoredDetection.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
-                    
-                    tempTracker.update(measurement: pixelRect.center)
-                    let tempState = tempTracker.getCurrentState()
-                    
-                    // Calculate the speed that would result from this update
-                    let pixelsPerFrameVelocity = tempState.speed ?? 0.0
-                    let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
-                    let metersPerSecond = pixelsPerSecond * tempTracker.scaleFactor
-                    let potentialSpeedKPH = metersPerSecond * 3.6
-                    
+                let trackerHasBeenInitialized = mainTrackerState.point != .zero
+                
+                if !trackerHasBeenInitialized {
+                    // --- GEMINI'S NOTE: If the tracker is new, we 'seed' it with the best detection ---
+                    // and skip all speed checks for this one frame to give it a starting point.
+                    chosenDetection = scoredDetections.first
                     #if DEBUG
-                    print(String(format: "   - 𝗧𝗲𝘀𝘁𝗶𝗻𝗴 box with score %.3f... potential speed: %.1f kph", scoredDetection.score, potentialSpeedKPH))
+                    if chosenDetection != nil {
+                        print("   - ✅ Tracker not initialized. Seeding with highest-scoring box.")
+                    }
                     #endif
+                } else {
+                    // --- GEMINI'S NOTE: If the tracker is already moving, we enforce your original speed checks. ---
+                    let maxSpeedKPH: Double = 450.0 // Increased for safety
+                    let minSpeedKPH: Double = 5.0
+                    let trackerHasEstablishedMotion = (mainTrackerState.speed ?? 0.0) > 0.0
 
-                    let isTooFast = potentialSpeedKPH >= maxSpeedKPH
-                    let isTooSlow = potentialSpeedKPH < minSpeedKPH
-                    
-                    // The minimum speed check is only enforced after the tracker has a non-zero velocity.
-                    let motionCheckFailed = isTooSlow && trackerHasEstablishedMotion
-
-                    if !isTooFast && !motionCheckFailed {
-                        chosenDetection = scoredDetection
+                    for scoredDetection in scoredDetections {
+                        let tempTracker = tracker.copy()
+                        let pixelRect = scaleBoxFromModelToOriginal(scoredDetection.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
+                        tempTracker.update(measurement: pixelRect.center)
+                        let tempState = tempTracker.getCurrentState()
+                        
+                        let pixelsPerFrameVelocity = tempState.speed ?? 0.0
+                        let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
+                        let metersPerSecond = pixelsPerSecond * tempTracker.scaleFactor
+                        let potentialSpeedKPH = metersPerSecond * 3.6
+                        
                         #if DEBUG
-                        print("   - ✅ PASSED speed check. Selecting this box.")
+                        print(String(format: "   - 𝗧𝗲𝘀𝘁𝗶𝗻𝗴 box with score %.3f... potential speed: %.1f kph", scoredDetection.score, potentialSpeedKPH))
                         #endif
-                        break // Exit the loop, we have our winner.
-                    } else {
-                        #if DEBUG
-                        if isTooFast {
-                            print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too high (max: %.0f).", potentialSpeedKPH, maxSpeedKPH))
-                        } else if motionCheckFailed {
-                            print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too low (min: %.0f).", potentialSpeedKPH, minSpeedKPH))
+
+                        let isTooFast = potentialSpeedKPH >= maxSpeedKPH
+                        let isTooSlow = potentialSpeedKPH < minSpeedKPH
+                        let motionCheckFailed = isTooSlow && trackerHasEstablishedMotion
+
+                        if !isTooFast && !motionCheckFailed {
+                            chosenDetection = scoredDetection
+                            #if DEBUG
+                            print("   - ✅ PASSED speed check. Selecting this box.")
+                            #endif
+                            break
+                        } else {
+                            #if DEBUG
+                            if isTooFast {
+                                print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too high (max: %.0f).", potentialSpeedKPH, maxSpeedKPH))
+                            } else if motionCheckFailed {
+                                print(String(format: "   - ❌ REJECTED. Speed %.1f kph is too low (min: %.0f).", potentialSpeedKPH, minSpeedKPH))
+                            }
+                            #endif
                         }
-                        #endif
                     }
                 }
             }
             
-            // 4. Update the main tracker with the validated detection, if one was found.
+            // --- GEMINI'S NOTE: This new logic block correctly calculates the final speed. ---
+            // 1. We check the tracker's state BEFORE we update it for the current frame.
+            let wasInitializedBeforeUpdate = tracker.getCurrentState().point != .zero
+
             var finalBox: CGRect?
-            
             if let chosenOne = chosenDetection {
                 let pixelRect = scaleBoxFromModelToOriginal(chosenOne.prediction.rect, modelSize: modelHandler.modelInputSize, originalSize: videoSize)
-            
-                // Perform the REAL update on the main tracker.
                 tracker.update(measurement: pixelRect.center)
-            
                 finalBox = CGRect(x: pixelRect.origin.x / videoSize.width,
                                   y: pixelRect.origin.y / videoSize.height,
                                   width: pixelRect.size.width / videoSize.width,
@@ -173,11 +179,14 @@ class VideoProcessor {
                 }
                 #endif
             }
-            
-            // 5. Get the final state (position and speed) from the tracker.
+
+            // 2. We get the tracker's new state AFTER the potential update.
             let currentState = tracker.getCurrentState()
-            let pixelsPerFrameVelocity = currentState.speed ?? 0.0
             
+            // 3. The speed is ONLY calculated if the tracker was ALREADY initialized before this frame.
+            //    This ensures the frame with the very first detection has a speed of 0.
+            let pixelsPerFrameVelocity = wasInitializedBeforeUpdate ? (currentState.speed ?? 0.0) : 0.0
+
             let pixelsPerSecond = pixelsPerFrameVelocity * Double(frameRate)
             let metersPerSecond = pixelsPerSecond * tracker.scaleFactor
             let finalSpeed = metersPerSecond * 3.6
@@ -209,9 +218,8 @@ class VideoProcessor {
         let confidenceWeight = 0.3
         let distanceWeight = 0.7
         
-        var distanceScore = 0.5 // Default score if there's no prediction yet
-        if let prediction = predictedPoint {
-            // Normalize distance by a fraction of the frame width to make scoring independent of resolution
+        var distanceScore = 0.5
+        if let prediction = predictedPoint, prediction != .zero {
             let normalizer = frameSize.width / 4.0
             let distance = point.distance(to: prediction)
             distanceScore = max(0.0, 1.0 - (distance / normalizer))
@@ -221,7 +229,6 @@ class VideoProcessor {
     }
 
     private func scaleBoxFromModelToOriginal(_ boxInModelCoords: CGRect, modelSize: CGSize, originalSize: CGSize) -> CGRect {
-        // Adjust for padding ("letterboxing")
         let scaleX = modelSize.width / originalSize.width
         let scaleY = modelSize.height / originalSize.height
         let scale = min(scaleX, scaleY)
@@ -232,7 +239,6 @@ class VideoProcessor {
         let unpaddedX = boxInModelCoords.origin.x - offsetX
         let unpaddedY = boxInModelCoords.origin.y - offsetY
         
-        // Un-scale to original image coordinates
         let finalX = unpaddedX / scale
         let finalY = unpaddedY / scale
         let finalWidth = boxInModelCoords.width / scale

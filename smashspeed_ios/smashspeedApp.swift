@@ -31,6 +31,7 @@ struct smashspeed_iosApp: App {
     
   @StateObject private var languageManager = LanguageManager()
   @StateObject private var versionChecker = VersionChecker()
+  @StateObject private var storeManager = StoreManager()
     
   @AppStorage("appearanceMode") private var appearanceMode: AppearanceMode = .system
     
@@ -43,6 +44,7 @@ struct smashspeed_iosApp: App {
     WindowGroup {
         ContentView()
             .environmentObject(languageManager)
+            .environmentObject(storeManager)
             .environment(\.locale, Locale(identifier: languageManager.languageCode))
             .onOpenURL { url in
                 GIDSignIn.sharedInstance.handle(url)
@@ -54,6 +56,8 @@ struct smashspeed_iosApp: App {
             }
             .task {
                 await versionChecker.checkVersion()
+                await storeManager.fetchProducts()
+                await storeManager.updateSubscriptionStatus()
             }
             .preferredColorScheme(appearanceMode == .light ? .light : (appearanceMode == .dark ? .dark : nil))
     }

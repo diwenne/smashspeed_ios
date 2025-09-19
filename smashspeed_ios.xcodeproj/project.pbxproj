@@ -15,6 +15,7 @@
 		4E15708D2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 4E15708C2E172AF500DAAE03 /* FirebaseAnalyticsOnDeviceConversion */; };
 		4E1570912E1736C200DAAE03 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4E1570902E1736C200DAAE03 /* FirebaseFirestore */; };
 		4E1570A12E17493300DAAE03 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 4E1570A02E17493300DAAE03 /* FirebaseStorage */; };
+		4E5AA8B82E7C5E5B00929316 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 4E5AA8B72E7C5E5B00929316 /* Products.storekit */; };
 		4E6A779F2E35C08F00DC469C /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 4E6A779E2E35C08F00DC469C /* FirebaseRemoteConfig */; };
 		4E6A77E42E3870F300DC469C /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 4E6A77E32E3870F300DC469C /* GoogleSignIn */; };
 		4E6A77E62E3870F300DC469C /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4E6A77E52E3870F300DC469C /* GoogleSignInSwift */; };
@@ -42,6 +43,7 @@
 		4E439D672E106B1C0034BCBB /* smashspeed_ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = smashspeed_ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E439D742E106B1E0034BCBB /* smashspeed_iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = smashspeed_iosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E439D7E2E106B1E0034BCBB /* smashspeed_iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = smashspeed_iosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E5AA8B72E7C5E5B00929316 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		4EA4AEEC2E20D08E0051BBB5 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -142,6 +144,7 @@
 		4E439D5E2E106B1C0034BCBB = {
 			isa = PBXGroup;
 			children = (
+				4E5AA8B72E7C5E5B00929316 /* Products.storekit */,
 				4EA4AEEC2E20D08E0051BBB5 /* .gitignore */,
 				4E439D692E106B1C0034BCBB /* smashspeed_ios */,
 				4E439D772E106B1E0034BCBB /* smashspeed_iosTests */,
@@ -311,6 +314,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4EA4AEEE2E20D0940051BBB5 /* .gitignore in Resources */,
+				4E5AA8B82E7C5E5B00929316 /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,7 +498,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -516,7 +520,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -532,7 +536,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = smashspeed_ios/smashspeed_ios.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = LMBN55R375;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -554,7 +558,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.diwenne.smashspeed-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

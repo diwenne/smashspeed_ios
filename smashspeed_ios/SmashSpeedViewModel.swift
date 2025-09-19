@@ -1,19 +1,17 @@
-//
-//  SmashSpeedViewModel.swift
-//  smashspeed
-//
-//  Created by Diwen Huang on 2025-06-27.
-//
-
 import Foundation
 import SwiftUI
 import Combine
-import CoreGraphics // <-- ADDED: Needed for CGPoint
+import CoreGraphics
 
 @MainActor
 class SmashSpeedViewModel: ObservableObject {
     
-    // --- MODIFIED: The .completed state now holds both speed and angle. ---
+    private let monthlySmashLimit = 5
+    @AppStorage("smashCount") private var smashCount: Int = 0
+    @AppStorage("lastSmashMonth") private var lastSmashMonth: String = ""
+
+    @Published var smashesLeftText: String = ""
+
     enum AppState {
         case idle
         case preparing
@@ -23,12 +21,54 @@ class SmashSpeedViewModel: ObservableObject {
         case review(videoURL: URL, result: VideoAnalysisResult)
         case completed(speed: Double, angle: Double?)
         case error(String)
+        case limitReached
     }
     
     @Published var appState: AppState = .idle
     
     private var videoProcessor: VideoProcessor?
     
+    func updateSmashesLeftDisplay(isSubscribed: Bool) {
+        if isSubscribed {
+            smashesLeftText = "You have unlimited smashes with Pro."
+            return
+        }
+        
+        checkAndResetMonthlyCountIfNeeded()
+        let remaining = max(0, monthlySmashLimit - smashCount)
+        if remaining == 1 {
+            smashesLeftText = "You have 1 free analysis left this month."
+        } else {
+            smashesLeftText = "You have \(remaining) free analyses left this month."
+        }
+    }
+    
+    func canPerformSmash(isSubscribed: Bool) -> Bool {
+        if isSubscribed {
+            return true
+        }
+        checkAndResetMonthlyCountIfNeeded()
+        return smashCount < monthlySmashLimit
+    }
+    
+    private func incrementSmashCount(isSubscribed: Bool) {
+        if !isSubscribed {
+            smashCount += 1
+        }
+    }
+    
+    private func checkAndResetMonthlyCountIfNeeded() {
+        let calendar = Calendar.current
+        let month = calendar.component(.month, from: Date())
+        let year = calendar.component(.year, from: Date())
+        let currentMonthIdentifier = "month_\(month)_year_\(year)"
+        
+        if lastSmashMonth != currentMonthIdentifier {
+            lastSmashMonth = currentMonthIdentifier
+            smashCount = 0
+        }
+    }
+
     func videoSelected(url: URL) {
         appState = .trimming(url)
     }
@@ -41,7 +81,8 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
-    func startProcessing(videoURL: URL, scaleFactor: Double) {
+    // --- CHANGE #1: Added `isSubscribed` parameter to this function ---
+    func startProcessing(videoURL: URL, scaleFactor: Double, isSubscribed: Bool) {
         let progress = Progress(totalUnitCount: 100)
         appState = .processing(progress)
         
@@ -60,6 +101,10 @@ class SmashSpeedViewModel: ObservableObject {
                         progress.completedUnitCount = newProgress.completedUnitCount
                         progress.totalUnitCount = newProgress.totalUnitCount
                     }) {
+                        // --- CHANGE #2: Credit is now used HERE, before showing the review screen ---
+                        self.incrementSmashCount(isSubscribed: isSubscribed)
+                        self.updateSmashesLeftDisplay(isSubscribed: isSubscribed)
+                        
                         appState = .review(videoURL: videoURL, result: result)
                     }
                 }
@@ -74,17 +119,14 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
-    // --- MODIFIED: This function now calculates the angle and passes it to the completed state. ---
-    func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL) {
-        let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
+    func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL, isSubscribed: Bool) {
+        // --- CHANGE #3: Removed the credit deduction logic from this function ---
         
-        // Calculate the angle using the helper function.
+        let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         let angle = self.calculateSmashAngle(from: editedFrames)
         
         let frameDataToSave = editedFrames.compactMap { frame -> FrameData? in
-            guard let validBox = frame.boundingBox else {
-                return nil
-            }
+            guard let validBox = frame.boundingBox else { return nil }
             return FrameData(
                 timestamp: frame.timestamp,
                 speedKPH: frame.speedKPH ?? 0.0,
@@ -101,7 +143,7 @@ class SmashSpeedViewModel: ObservableObject {
                     
                     try HistoryViewModel.saveResult(
                         peakSpeedKph: maxSpeed,
-                        angle: angle, // This now works
+                        angle: angle,
                         for: userID,
                         videoURL: downloadURL.absoluteString,
                         frameData: frameDataToSave
@@ -123,7 +165,6 @@ class SmashSpeedViewModel: ObservableObject {
         appState = .idle
     }
     
-    // --- ADDED: The angle calculation function now lives in the ViewModel. ---
     private func calculateSmashAngle(from frames: [FrameAnalysis]) -> Double? {
         let relevantPoints = frames.compactMap { frame -> CGPoint? in
             guard frame.boundingBox != nil, let point = frame.trackedPoint else { return nil }
@@ -138,7 +179,6 @@ class SmashSpeedViewModel: ObservableObject {
         
         for i in 0..<(relevantPoints.count - 1) {
             if relevantPoints[i+1].y > relevantPoints[i].y {
-                // The sequence continues downwards.
             } else {
                 let currentSequenceLength = i - currentStartIndex + 1
                 if currentSequenceLength > maxSequenceLength {

@@ -4,19 +4,18 @@ import AVFoundation
 import AVKit
 import UIKit
 
-// This Equatable extension matches the simplified AppState
-// NOTE: You will need to add a `preparing` case to your `SmashSpeedViewModel.AppState` enum for this code to compile.
 extension SmashSpeedViewModel.AppState: Equatable {
     static func == (lhs: SmashSpeedViewModel.AppState, rhs: SmashSpeedViewModel.AppState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle): return true
-        case (.preparing, .preparing): return true // Added state for pre-trimming processing
+        case (.preparing, .preparing): return true
         case (.trimming, .trimming): return true
         case (.review, .review): return true
         case (.awaitingCalibration, .awaitingCalibration): return true
         case (.processing, .processing): return true
         case (.completed, .completed): return true
         case (.error, .error): return true
+        case (.limitReached, .limitReached): return true
         default: return false
         }
     }
@@ -26,15 +25,17 @@ extension SmashSpeedViewModel.AppState: Equatable {
 struct DetectView: View {
     @StateObject private var viewModel = SmashSpeedViewModel()
     @EnvironmentObject var authViewModel: AuthenticationViewModel
+    @EnvironmentObject var storeManager: StoreManager
 
     @State private var selectedItem: PhotosPickerItem?
     @State private var showCamera = false
     @State private var recordedVideoURL: URL?
 
     @State private var showInputSelector = false
-    @State private var showRecordingGuide = false // Added state for the new guide
+    @State private var showRecordingGuide = false
 
     @State private var showOnboarding = false
+    @State private var showPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -43,99 +44,24 @@ struct DetectView: View {
 
                 Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
                 Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
-
-                switch viewModel.appState {
-
-                case .idle:
-                    MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide)
-                        .onChange(of: selectedItem) {
-                            guard let item = selectedItem else { return }
-                            viewModel.appState = .preparing // Show processing view immediately
-                            selectedItem = nil
-
-                            Task {
-                                do {
-                                    guard let videoFile = try await item.loadTransferable(type: VideoFile.self) else {
-                                        // LOCALIZED
-                                        viewModel.appState = .error(NSLocalizedString("error_couldNotLoadVideo", comment: "Error message"))
-                                        return
-                                    }
-
-                                    let url = videoFile.url
-                                    if await isVideoLandscape(url: url) {
-                                        viewModel.videoSelected(url: url)
-                                    } else {
-                                        // LOCALIZED
-                                        viewModel.appState = .error(NSLocalizedString("error_selectLandscape", comment: "Error message"))
-                                    }
-                                } catch {
-                                    // LOCALIZED
-                                    viewModel.appState = .error(NSLocalizedString("error_genericVideoSelection", comment: "Error message"))
-                                }
-                            }
-                        }
-                        .onChange(of: recordedVideoURL) {
-                            guard let url = recordedVideoURL else { return }
-                            viewModel.appState = .preparing // Show processing view immediately
-                            recordedVideoURL = nil
-                            
-                            Task {
-                                if await isVideoLandscape(url: url) {
-                                    viewModel.videoSelected(url: url)
-                                } else {
-                                    // LOCALIZED
-                                    viewModel.appState = .error(NSLocalizedString("error_recordLandscape", comment: "Error message"))
-                                }
-                            }
-                        }
                 
-                case .preparing:
-                    // LOCALIZED
-                    ProcessingView(message: NSLocalizedString("processing_preparingVideo", comment: "Status message")) { viewModel.reset() }
-
-                case .trimming(let videoURL):
-                    TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
-                        viewModel.videoTrimmed(url: trimmedURL)
-                    }, onCancel: {
-                        viewModel.reset()
-                    })
-
-                case .review(let videoURL, let result):
-                    ReviewView(
-                        videoURL: videoURL,
-                        initialResult: result,
-                        onFinish: { editedFrames in
-                            viewModel.finishReview(andShowResultsFrom: editedFrames, for: authViewModel.user?.uid, videoURL: videoURL)
-                        },
-                        onRecalibrate: {
-                            viewModel.appState = .awaitingCalibration(videoURL)
-                        }
-                    )
-                    
-                case .awaitingCalibration(let url):
-                    CalibrationView(videoURL: url, onComplete: { scaleFactor in
-                        viewModel.startProcessing(videoURL: url, scaleFactor: scaleFactor)
-                    }, onCancel: { viewModel.cancelCalibration() })
-
-                case .processing:
-                    ProcessingView { viewModel.cancelProcessing() }
-
-                case .completed(let speed, let angle):
-                    ResultView(speed: speed, angle: angle, onReset: viewModel.reset)
-
-                case .error(let message):
-                    ErrorView(message: message, onReset: viewModel.reset)
-                }
+                currentView
             }
             .toolbar {
-                if case .idle = viewModel.appState {
-                    ToolbarItem(placement: .topBarLeading) { AppLogoView() }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: { showOnboarding = true }) {
-                            Image(systemName: "info.circle").foregroundColor(.accentColor)
-                        }
-                    }
-                }
+                 if case .idle = viewModel.appState {
+                     ToolbarItem(placement: .topBarLeading) { AppLogoView() }
+                     ToolbarItem(placement: .navigationBarTrailing) {
+                         Button(action: { showOnboarding = true }) {
+                             Image(systemName: "info.circle").foregroundColor(.accentColor)
+                         }
+                     }
+                 }
+            }
+            .onAppear {
+                viewModel.updateSmashesLeftDisplay(isSubscribed: storeManager.isSubscribed)
+            }
+            .onChange(of: storeManager.isSubscribed) {
+                viewModel.updateSmashesLeftDisplay(isSubscribed: storeManager.isSubscribed)
             }
         }
         .sheet(isPresented: $showInputSelector) {
@@ -147,33 +73,139 @@ struct DetectView: View {
             .presentationDetents([.height(260)])
             .background(ClearBackgroundView())
         }
-        .sheet(isPresented: $showRecordingGuide) {
-            RecordingGuideView()
-        }
+        .sheet(isPresented: $showRecordingGuide) { RecordingGuideView() }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker(videoURL: $recordedVideoURL)
                 .ignoresSafeArea()
         }
         .sheet(isPresented: $showOnboarding) { OnboardingView { showOnboarding = false } }
+        .sheet(isPresented: $showPaywall) { PaywallView(isPresented: $showPaywall) }
     }
     
-    // LOCALIZED: This helper now returns localization keys instead of hardcoded strings.
-    private var navigationTitleForState: String {
+    @ViewBuilder
+    private var currentView: some View {
         switch viewModel.appState {
         case .idle:
-            return "navTitle_detect"
-        case .trimming:
-            return "navTitle_trimVideo"
-        case .review:
-            return "navTitle_reviewAdjust"
-        case .awaitingCalibration:
-            return "navTitle_calibration"
-        case .completed:
-            return "navTitle_analysisResult"
-        case .error:
-            return "common_error"
-        default:
-            return ""
+            VStack(spacing: 20) {
+                MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide)
+                
+                Text(viewModel.smashesLeftText)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                    .multilineTextAlignment(.center)
+                    .animation(.default, value: viewModel.smashesLeftText)
+            }
+            // --- THE FIX IS HERE: The .onChange closures are now correctly written ---
+            .onChange(of: selectedItem) { newItem in handleVideoSelection(item: newItem) }
+            .onChange(of: recordedVideoURL) { newURL in handleVideoSelection(url: newURL) }
+        
+        case .limitReached:
+            LockedFeatureView(
+                title: "Monthly Limit Reached",
+                description: "You've reached your limit of free analyses for the month. Upgrade to Pro for unlimited smashes.",
+                onUpgrade: {
+                    showPaywall = true
+                    viewModel.reset()
+                }
+            )
+        
+        case .preparing:
+            ProcessingView(message: NSLocalizedString("processing_preparingVideo", comment: "Status message")) { viewModel.reset() }
+
+        case .trimming(let videoURL):
+            TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
+                viewModel.videoTrimmed(url: trimmedURL)
+            }, onCancel: {
+                viewModel.reset()
+            })
+
+        case .review(let videoURL, let result):
+            ReviewView(
+                videoURL: videoURL,
+                initialResult: result,
+                onFinish: { editedFrames in
+                    viewModel.finishReview(
+                        andShowResultsFrom: editedFrames,
+                        for: authViewModel.user?.uid,
+                        videoURL: videoURL,
+                        isSubscribed: storeManager.isSubscribed
+                    )
+                },
+                onRecalibrate: {
+                    viewModel.appState = .awaitingCalibration(videoURL)
+                }
+            )
+            
+        case .awaitingCalibration(let url):
+            CalibrationView(videoURL: url, onComplete: { scaleFactor in
+                viewModel.startProcessing(
+                    videoURL: url,
+                    scaleFactor: scaleFactor,
+                    isSubscribed: storeManager.isSubscribed
+                )
+            }, onCancel: { viewModel.cancelCalibration() })
+
+        case .processing:
+            ProcessingView { viewModel.cancelProcessing() }
+
+        case .completed(let speed, let angle):
+            ResultView(speed: speed, angle: angle, onReset: viewModel.reset)
+
+        case .error(let message):
+            ErrorView(message: message, onReset: viewModel.reset)
+        }
+    }
+    
+    private func handleVideoSelection(item: PhotosPickerItem?) {
+        guard let item = item else { return }
+        
+        if !viewModel.canPerformSmash(isSubscribed: storeManager.isSubscribed) {
+            viewModel.appState = .limitReached
+            self.selectedItem = nil
+            return
+        }
+
+        viewModel.appState = .preparing
+        self.selectedItem = nil
+        
+        Task {
+            do {
+                guard let videoFile = try await item.loadTransferable(type: VideoFile.self) else {
+                    viewModel.appState = .error(NSLocalizedString("error_couldNotLoadVideo", comment: "Error message"))
+                    return
+                }
+
+                let url = videoFile.url
+                if await isVideoLandscape(url: url) {
+                    viewModel.videoSelected(url: url)
+                } else {
+                    viewModel.appState = .error(NSLocalizedString("error_selectLandscape", comment: "Error message"))
+                }
+            } catch {
+                viewModel.appState = .error(NSLocalizedString("error_genericVideoSelection", comment: "Error message"))
+            }
+        }
+    }
+    
+    private func handleVideoSelection(url: URL?) {
+        guard let url = url else { return }
+
+        if !viewModel.canPerformSmash(isSubscribed: storeManager.isSubscribed) {
+            viewModel.appState = .limitReached
+            self.recordedVideoURL = nil
+            return
+        }
+        
+        viewModel.appState = .preparing
+        self.recordedVideoURL = nil
+        
+        Task {
+            if await isVideoLandscape(url: url) {
+                viewModel.videoSelected(url: url)
+            } else {
+                viewModel.appState = .error(NSLocalizedString("error_recordLandscape", comment: "Error message"))
+            }
         }
     }
 }

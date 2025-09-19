@@ -24,7 +24,7 @@ class KalmanTracker {
                                                            (0, 0, 0, 1000) )
     private let q: Double = 1e-4
     private let r: Double = 0.01
-    private var isInitialized = false
+    var isInitialized = false
 
     // MARK: - Initialization
     init(scaleFactor: Double) {

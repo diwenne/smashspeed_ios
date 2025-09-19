@@ -4,10 +4,33 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Promises (Playground).xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>smashspeed_ios.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>4E439D662E106B1C0034BCBB</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>4E439D732E106B1E0034BCBB</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>4E439D7D2E106B1E0034BCBB</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>
