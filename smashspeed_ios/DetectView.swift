@@ -113,11 +113,13 @@ struct DetectView: View {
             ProcessingView(message: NSLocalizedString("processing_preparingVideo", comment: "Status message")) { viewModel.reset() }
 
         case .trimming(let videoURL):
-            TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
-                viewModel.videoTrimmed(url: trimmedURL)
-            }, onCancel: {
-                viewModel.reset()
-            })
+              // --- THIS VIEW IS UPDATED ---
+              TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
+                  // The call to `videoTrimmed` now includes the subscription status.
+                  viewModel.videoTrimmed(url: trimmedURL, isSubscribed: storeManager.isSubscribed)
+              }, onCancel: {
+                  viewModel.reset()
+              })
 
         case .review(let videoURL, let result):
             ReviewView(

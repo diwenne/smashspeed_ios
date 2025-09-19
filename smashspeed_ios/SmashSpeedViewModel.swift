@@ -73,7 +73,11 @@ class SmashSpeedViewModel: ObservableObject {
         appState = .trimming(url)
     }
     
-    func videoTrimmed(url: URL) {
+    // --- THIS FUNCTION IS UPDATED ---
+    // A credit is now used when the user finishes trimming the video.
+    func videoTrimmed(url: URL, isSubscribed: Bool) {
+        self.incrementSmashCount(isSubscribed: isSubscribed)
+        self.updateSmashesLeftDisplay(isSubscribed: isSubscribed)
         appState = .awaitingCalibration(url)
     }
     
@@ -81,7 +85,6 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
-    // --- CHANGE #1: Added `isSubscribed` parameter to this function ---
     func startProcessing(videoURL: URL, scaleFactor: Double, isSubscribed: Bool) {
         let progress = Progress(totalUnitCount: 100)
         appState = .processing(progress)
@@ -101,10 +104,7 @@ class SmashSpeedViewModel: ObservableObject {
                         progress.completedUnitCount = newProgress.completedUnitCount
                         progress.totalUnitCount = newProgress.totalUnitCount
                     }) {
-                        // --- CHANGE #2: Credit is now used HERE, before showing the review screen ---
-                        self.incrementSmashCount(isSubscribed: isSubscribed)
-                        self.updateSmashesLeftDisplay(isSubscribed: isSubscribed)
-                        
+                        // --- CREDIT DEDUCTION REMOVED FROM HERE ---
                         appState = .review(videoURL: videoURL, result: result)
                     }
                 }
@@ -120,8 +120,6 @@ class SmashSpeedViewModel: ObservableObject {
     }
 
     func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL, isSubscribed: Bool) {
-        // --- CHANGE #3: Removed the credit deduction logic from this function ---
-        
         let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         let angle = self.calculateSmashAngle(from: editedFrames)
         

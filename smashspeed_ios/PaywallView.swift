@@ -1,8 +1,20 @@
 import SwiftUI
 import StoreKit
 
-// --- UNIFIED BUTTON STYLE ---
-// We now only need one style to make the buttons look identical.
+// --- CUSTOM BUTTON STYLES ---
+struct ProminentButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.bold())
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .foregroundColor(.white)
+            .background(Color.accentColor)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+    }
+}
+
 struct OutlineButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -80,8 +92,6 @@ struct PaywallView: View {
                 ProgressView()
             } else {
                 ForEach(sortedProducts) { product in
-                    // --- STYLE SIMPLIFIED ---
-                    // Both buttons now use the exact same style.
                     Button(action: { purchase(product: product) }) {
                         purchaseButtonLabel(for: product)
                     }
@@ -102,8 +112,6 @@ struct PaywallView: View {
         if purchasingProduct?.id == product.id {
             ProgressView().tint(.accentColor)
         } else {
-            // --- TEXT SIMPLIFIED ---
-            // The crossed-off price is removed for a cleaner look.
             let isYearly = product.subscription?.subscriptionPeriod.unit == .year
             Text(isYearly ? "Yearly - \(product.displayPrice)" : "Monthly - \(product.displayPrice)")
                 .fontWeight(.bold)
@@ -163,31 +171,41 @@ struct FeatureRow: View {
     }
 }
 
+// --- THIS VIEW IS REDESIGNED ---
 struct LockedFeatureView: View {
     let title: String
     let description: String
     let onUpgrade: () -> Void
     
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "lock.shield.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.accentColor)
+        ZStack {
+            // Added background to match the rest of the app's aesthetic
+            Color(.systemBackground).ignoresSafeArea()
+            Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
+            Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
             
-            Text(title)
-                .font(.title.bold())
-            
-            Text(description)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            
-            Button("Upgrade to Pro", action: onUpgrade)
-                .buttonStyle(OutlineButtonStyle())
+            VStack(spacing: 25) {
+                Image(systemName: "lock.shield.fill")
+                    .font(.system(size: 70, weight: .light))
+                    .foregroundColor(.accentColor)
+                
+                VStack(spacing: 10) {
+                    Text(title)
+                        .font(.largeTitle.bold())
+                    
+                    Text(description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                
+                Button("Upgrade to Pro", action: onUpgrade)
+                    .buttonStyle(ProminentButtonStyle())
+                    .controlSize(.large)
+                    .padding(.top)
+            }
+            .padding(40)
         }
-        .padding(40)
-        .background(GlassPanel())
-        .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
-        .padding()
     }
 }
