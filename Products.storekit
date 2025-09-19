@@ -95,7 +95,35 @@
           ],
           "productID" : "smashspeed_pro_monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Smashspeed Pro",
+          "referenceName" : "Smashspeed Pro Monthly",
+          "subscriptionGroupID" : "275F9D5C",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "C39396A5",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "smashspeed_pro_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Smashspeed Pro Yearly",
           "subscriptionGroupID" : "275F9D5C",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
