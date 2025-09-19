@@ -58,10 +58,13 @@ struct DetectView: View {
                  }
             }
             .onAppear {
-                viewModel.updateSmashesLeftDisplay(isSubscribed: storeManager.isSubscribed)
+                authViewModel.checkAndResetMonthlyCount()
+            }
+            .onChange(of: authViewModel.userRecord) {
+                viewModel.updateUserState(userRecord: authViewModel.userRecord, isSubscribed: storeManager.isSubscribed)
             }
             .onChange(of: storeManager.isSubscribed) {
-                viewModel.updateSmashesLeftDisplay(isSubscribed: storeManager.isSubscribed)
+                viewModel.updateUserState(userRecord: authViewModel.userRecord, isSubscribed: storeManager.isSubscribed)
             }
         }
         .sheet(isPresented: $showInputSelector) {
@@ -113,13 +116,14 @@ struct DetectView: View {
             ProcessingView(message: NSLocalizedString("processing_preparingVideo", comment: "Status message")) { viewModel.reset() }
 
         case .trimming(let videoURL):
-              // --- THIS VIEW IS UPDATED ---
-              TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
-                  // The call to `videoTrimmed` now includes the subscription status.
-                  viewModel.videoTrimmed(url: trimmedURL, isSubscribed: storeManager.isSubscribed)
-              }, onCancel: {
-                  viewModel.reset()
-              })
+            TrimmingView(videoURL: videoURL, onComplete: { trimmedURL in
+                if !storeManager.isSubscribed {
+                    authViewModel.incrementSmashCount()
+                }
+                viewModel.videoTrimmed(url: trimmedURL)
+            }, onCancel: {
+                viewModel.reset()
+            })
 
         case .review(let videoURL, let result):
             ReviewView(
@@ -129,8 +133,7 @@ struct DetectView: View {
                     viewModel.finishReview(
                         andShowResultsFrom: editedFrames,
                         for: authViewModel.user?.uid,
-                        videoURL: videoURL,
-                        isSubscribed: storeManager.isSubscribed
+                        videoURL: videoURL
                     )
                 },
                 onRecalibrate: {
@@ -142,8 +145,7 @@ struct DetectView: View {
             CalibrationView(videoURL: url, onComplete: { scaleFactor in
                 viewModel.startProcessing(
                     videoURL: url,
-                    scaleFactor: scaleFactor,
-                    isSubscribed: storeManager.isSubscribed
+                    scaleFactor: scaleFactor
                 )
             }, onCancel: { viewModel.cancelCalibration() })
 
@@ -167,7 +169,7 @@ struct DetectView: View {
     private func handleVideoSelection(item: PhotosPickerItem?) {
         guard let item = item else { return }
         
-        if !viewModel.canPerformSmash(isSubscribed: storeManager.isSubscribed) {
+        if !viewModel.canPerformSmash {
             viewModel.appState = .limitReached
             self.selectedItem = nil
             return
@@ -198,7 +200,7 @@ struct DetectView: View {
     private func handleVideoSelection(url: URL?) {
         guard let url = url else { return }
 
-        if !viewModel.canPerformSmash(isSubscribed: storeManager.isSubscribed) {
+        if !viewModel.canPerformSmash {
             viewModel.appState = .limitReached
             self.recordedVideoURL = nil
             return

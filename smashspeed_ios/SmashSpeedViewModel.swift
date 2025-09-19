@@ -7,10 +7,9 @@ import CoreGraphics
 class SmashSpeedViewModel: ObservableObject {
     
     private let monthlySmashLimit = 5
-    @AppStorage("smashCount") private var smashCount: Int = 0
-    @AppStorage("lastSmashMonth") private var lastSmashMonth: String = ""
 
     @Published var smashesLeftText: String = ""
+    @Published var canPerformSmash: Bool = true
 
     enum AppState {
         case idle
@@ -28,56 +27,34 @@ class SmashSpeedViewModel: ObservableObject {
     
     private var videoProcessor: VideoProcessor?
     
-    func updateSmashesLeftDisplay(isSubscribed: Bool) {
+    func updateUserState(userRecord: UserRecord?, isSubscribed: Bool) {
         if isSubscribed {
             smashesLeftText = "You have unlimited smashes with Pro."
+            canPerformSmash = true
             return
         }
         
-        checkAndResetMonthlyCountIfNeeded()
-        let remaining = max(0, monthlySmashLimit - smashCount)
+        guard let record = userRecord else {
+            smashesLeftText = "Loading your data..."
+            canPerformSmash = false
+            return
+        }
+        
+        let remaining = max(0, monthlySmashLimit - record.smashCount)
         if remaining == 1 {
             smashesLeftText = "You have 1 free analysis left this month."
         } else {
             smashesLeftText = "You have \(remaining) free analyses left this month."
         }
-    }
-    
-    func canPerformSmash(isSubscribed: Bool) -> Bool {
-        if isSubscribed {
-            return true
-        }
-        checkAndResetMonthlyCountIfNeeded()
-        return smashCount < monthlySmashLimit
-    }
-    
-    private func incrementSmashCount(isSubscribed: Bool) {
-        if !isSubscribed {
-            smashCount += 1
-        }
-    }
-    
-    private func checkAndResetMonthlyCountIfNeeded() {
-        let calendar = Calendar.current
-        let month = calendar.component(.month, from: Date())
-        let year = calendar.component(.year, from: Date())
-        let currentMonthIdentifier = "month_\(month)_year_\(year)"
         
-        if lastSmashMonth != currentMonthIdentifier {
-            lastSmashMonth = currentMonthIdentifier
-            smashCount = 0
-        }
+        canPerformSmash = remaining > 0
     }
 
     func videoSelected(url: URL) {
         appState = .trimming(url)
     }
     
-    // --- THIS FUNCTION IS UPDATED ---
-    // A credit is now used when the user finishes trimming the video.
-    func videoTrimmed(url: URL, isSubscribed: Bool) {
-        self.incrementSmashCount(isSubscribed: isSubscribed)
-        self.updateSmashesLeftDisplay(isSubscribed: isSubscribed)
+    func videoTrimmed(url: URL) {
         appState = .awaitingCalibration(url)
     }
     
@@ -85,7 +62,7 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
-    func startProcessing(videoURL: URL, scaleFactor: Double, isSubscribed: Bool) {
+    func startProcessing(videoURL: URL, scaleFactor: Double) {
         let progress = Progress(totalUnitCount: 100)
         appState = .processing(progress)
         
@@ -104,7 +81,6 @@ class SmashSpeedViewModel: ObservableObject {
                         progress.completedUnitCount = newProgress.completedUnitCount
                         progress.totalUnitCount = newProgress.totalUnitCount
                     }) {
-                        // --- CREDIT DEDUCTION REMOVED FROM HERE ---
                         appState = .review(videoURL: videoURL, result: result)
                     }
                 }
@@ -119,7 +95,7 @@ class SmashSpeedViewModel: ObservableObject {
         reset()
     }
 
-    func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL, isSubscribed: Bool) {
+    func finishReview(andShowResultsFrom editedFrames: [FrameAnalysis], for userID: String?, videoURL: URL) {
         let maxSpeed = editedFrames.compactMap { $0.speedKPH }.max() ?? 0.0
         let angle = self.calculateSmashAngle(from: editedFrames)
         

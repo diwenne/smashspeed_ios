@@ -1,42 +1,49 @@
-//
-//  AuthenticationViewModel.swift
-//  smashspeed_ios
-//
-//  Created by Diwen Huang on 2025-07-04.
-//
-
 import Foundation
 import FirebaseAuth
 import Combine
 import FirebaseStorage
 import AuthenticationServices
 import GoogleSignIn
-import CryptoKit // Import CryptoKit for SHA256
+import CryptoKit
+import FirebaseFirestore
+
+// --- THIS STRUCT IS MODIFIED ---
+struct UserRecord: Equatable {
+    var smashCount: Int
+    var lastSmashMonth: String
+}
 
 @MainActor
 class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationControllerDelegate {
     
-    // Enum to manage the different states of authentication.
     enum AuthState {
         case unknown, signedIn, signedOut
     }
     
     @Published var authState: AuthState = .unknown
     @Published var user: User?
+    @Published var userRecord: UserRecord?
+    
     @Published var errorMessage: String?
     @Published var infoMessage: String?
 
     private var authStateHandle: AuthStateDidChangeListenerHandle?
     private var currentNonce: String?
+    private let db = Firestore.firestore()
 
     override init() {
         super.init()
-        // Listen for changes to the user's login state.
         authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             guard let self = self else { return }
             
             self.user = user
             self.authState = (user == nil) ? .signedOut : .signedIn
+            
+            if let user = user {
+                self.fetchUserRecord(for: user.uid)
+            } else {
+                self.userRecord = nil
+            }
         }
     }
     
@@ -138,11 +145,62 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
         }
     }
     
+    // MARK: - Smash Count Logic
+    
+    func fetchUserRecord(for uid: String) {
+        let userDocRef = db.collection("users").document(uid)
+        
+        userDocRef.getDocument { (document, error) in
+            if let document = document, document.exists, let data = document.data() {
+                let count = data["smashCount"] as? Int ?? -1
+                let lastMonth = data["lastSmashMonth"] as? String ?? ""
+                
+                if count == -1 {
+                    userDocRef.setData(["smashCount": 0, "lastSmashMonth": ""], merge: true)
+                    self.userRecord = UserRecord(smashCount: 0, lastSmashMonth: "")
+                } else {
+                    self.userRecord = UserRecord(smashCount: count, lastSmashMonth: lastMonth)
+                }
+            } else {
+                userDocRef.setData(["smashCount": 0, "lastSmashMonth": ""])
+                self.userRecord = UserRecord(smashCount: 0, lastSmashMonth: "")
+            }
+        }
+    }
+
+    func incrementSmashCount() {
+        guard var record = userRecord, let uid = user?.uid else { return }
+        
+        record.smashCount += 1
+        self.userRecord = record
+        
+        let userDocRef = db.collection("users").document(uid)
+        userDocRef.setData(["smashCount": record.smashCount], merge: true)
+    }
+    
+    func checkAndResetMonthlyCount() {
+        guard var record = userRecord, let uid = user?.uid else { return }
+        
+        let calendar = Calendar.current
+        let currentMonthIdentifier = "month_\(calendar.component(.month, from: Date()))_year_\(calendar.component(.year, from: Date()))"
+        
+        if record.lastSmashMonth != currentMonthIdentifier {
+            record.lastSmashMonth = currentMonthIdentifier
+            record.smashCount = 0
+            self.userRecord = record
+            
+            let userDocRef = db.collection("users").document(uid)
+            userDocRef.setData([
+                "smashCount": record.smashCount,
+                "lastSmashMonth": record.lastSmashMonth
+            ], merge: true)
+        }
+    }
+    
     // MARK: - Account Management
 
     func signOut() {
         GIDSignIn.sharedInstance.signOut()
-        self.authState = .signedOut
         try? Auth.auth().signOut()
     }
 
@@ -184,7 +242,6 @@ class AuthenticationViewModel: NSObject, ObservableObject, ASAuthorizationContro
     }
 }
 
-// Helper extension to find the top view controller.
 extension UIApplication {
     func topViewController() -> UIViewController? {
         let keyWindow = connectedScenes
@@ -201,8 +258,6 @@ extension UIApplication {
     }
 }
 
-// --- ADDED BACK TO FIX ERROR ---
-// This extension provides the SHA256 hashing function required for Apple Sign-In's nonce.
 extension String {
     func sha256() -> String {
         let inputData = Data(self.utf8)

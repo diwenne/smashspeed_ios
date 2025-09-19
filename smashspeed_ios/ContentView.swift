@@ -7,21 +7,29 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
+            // --- MODIFICATION ---
+            // The view now checks the authState. The main app (MainTabView) is only shown
+            // when the user is signed in. Otherwise, the AccountView is shown.
             switch authViewModel.authState {
             case .unknown:
                 LoadingView()
-            case .signedIn, .signedOut:
+            case .signedIn:
                 MainTabView()
+                    .environmentObject(authViewModel)
+            case .signedOut:
+                AccountView()
                     .environmentObject(authViewModel)
             }
         }
-        .sheet(isPresented: .constant(!hasCompletedOnboarding)) {
+        .sheet(isPresented: .constant(!hasCompletedOnboarding && authViewModel.authState != .unknown)) {
             OnboardingView {
                 hasCompletedOnboarding = true
             }
         }
     }
 }
+
+// --- LoadingView and MainTabView are unchanged ---
 
 struct LoadingView: View {
     var body: some View {
@@ -32,7 +40,6 @@ struct LoadingView: View {
                 .frame(width: 80, height: 80)
                 .shadow(color: .blue.opacity(0.4), radius: 10, y: 5)
 
-            // LOCALIZED
             Text("appName")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -48,30 +55,25 @@ struct MainTabView: View {
         TabView {
             DetectView()
                 .tabItem {
-                    // LOCALIZED
                     Label("tab_detect", systemImage: "camera.viewfinder")
                 }
             
             NavigationStack {
                 HistoryView()
-                    // LOCALIZED
                     .navigationTitle(Text("history_navTitle"))
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) { AppLogoView() }
                     }
             }
-            // LOCALIZED
             .tabItem { Label("tab_results", systemImage: "chart.bar.xaxis") }
 
             NavigationStack {
                 AccountView()
-                    // LOCALIZED
                     .navigationTitle(Text("account_navTitle"))
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) { AppLogoView() }
                     }
             }
-            // LOCALIZED
             .tabItem { Label("tab_account", systemImage: "person.crop.circle") }
         }
         .id(languageManager.languageCode)
@@ -87,7 +89,6 @@ struct AppLogoView: View {
                 .frame(width: 30, height: 30)
                 .shadow(color: .blue.opacity(0.3), radius: 4, y: 1)
 
-            // LOCALIZED
             Text("appName")
                 .font(.headline)
                 .fontWeight(.bold)
