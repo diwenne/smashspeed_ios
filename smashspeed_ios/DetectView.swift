@@ -96,7 +96,6 @@ struct DetectView: View {
                     .multilineTextAlignment(.center)
                     .animation(.default, value: viewModel.smashesLeftText)
             }
-            // --- THE FIX IS HERE: The .onChange closures are now correctly written ---
             .onChange(of: selectedItem) { newItem in handleVideoSelection(item: newItem) }
             .onChange(of: recordedVideoURL) { newURL in handleVideoSelection(url: newURL) }
         
@@ -150,7 +149,13 @@ struct DetectView: View {
             ProcessingView { viewModel.cancelProcessing() }
 
         case .completed(let speed, let angle):
-            ResultView(speed: speed, angle: angle, onReset: viewModel.reset)
+            ResultView(
+                speed: speed,
+                angle: angle,
+                isSubscribed: storeManager.isSubscribed,
+                showPaywall: $showPaywall,
+                onReset: viewModel.reset
+            )
 
         case .error(let message):
             ErrorView(message: message, onReset: viewModel.reset)
@@ -476,7 +481,6 @@ struct TrimmingView: View {
     }
 }
 
-// NOTE: RangeSliderView has no user-facing text to localize.
 
 private struct RangeSliderView: View {
     @Binding var startTime: Double
@@ -723,6 +727,8 @@ struct ResultView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
     let speed: Double
     let angle: Double?
+    let isSubscribed: Bool
+    @Binding var showPaywall: Bool
     let onReset: () -> Void
     @State private var shareableImage: UIImage?
     var body: some View {
@@ -748,19 +754,50 @@ struct ResultView: View {
 
                     if let angle = angle {
                         Divider().padding(.horizontal)
-                        HStack {
-                            // LOCALIZED
-                            Text("resultView_smashAngleLabel")
-                                .font(.title3)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            // LOCALIZED
-                            Text(String(format: NSLocalizedString("resultView_angleFormat", comment: ""), angle))
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
+                        if isSubscribed {
+                            HStack {
+                                // LOCALIZED
+                                Text("resultView_smashAngleLabel")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                // LOCALIZED
+                                Text(String(format: NSLocalizedString("resultView_angleFormat", comment: ""), angle))
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(.horizontal)
+                        } else {
+                            HStack {
+                                Text("resultView_smashAngleLabel")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+
+                                Spacer()
+
+                                ZStack {
+                                    Text("XX.X°")
+                                        .font(.title3.weight(.semibold))
+                                        .blur(radius: 5)
+                                        .foregroundColor(.secondary)
+                                    
+                                    // MODIFIED: Increased font size and padding
+                                    Button(action: { showPaywall = true }) {
+                                        Text("Reveal")
+                                            .font(.callout) // Increased from .footnote
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.accentColor)
+                                            .padding(.vertical, 8)   // Increased from 6
+                                            .padding(.horizontal, 16) // Increased from 12
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(Capsule())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
                     } else {
                         Divider().padding(.horizontal)
                         VStack(spacing: 5) {
