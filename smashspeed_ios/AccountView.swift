@@ -93,7 +93,7 @@ struct LoggedInView: View {
                     Text("Subscription").font(.title2.bold()).padding(.bottom, 5)
                     if storeManager.isSubscribed {
                         HStack {
-                            Label("SmashSpeed Pro", systemImage: "checkmark.seal.fill")
+                            Label("Smashspeed Pro", systemImage: "checkmark.seal.fill")
                                 .foregroundColor(.green)
                             Spacer()
                             Text("Active")
@@ -101,11 +101,33 @@ struct LoggedInView: View {
                                 .foregroundColor(.secondary)
                         }
                     } else {
-                        Text("You are on the free plan.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Button("Upgrade to Pro", action: { showPaywallSheet = true })
-                            .buttonStyle(.borderedProminent)
+                        // MODIFICATION: Redesigned the panel to be a single, more attractive button.
+                        Button(action: { showPaywallSheet = true }) {
+                            HStack(spacing: 15) {
+                                Image(systemName: "sparkles")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                                    .background(Color.accentColor.gradient)
+                                    .clipShape(Circle())
+
+                                VStack(alignment: .leading) {
+                                    Text("Upgrade to Smashspeed Pro")
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.primary)
+                                    Text("Unlock all features")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.callout.weight(.semibold))
+                                    .foregroundColor(.secondary.opacity(0.5))
+                            }
+                        }
+                        .buttonStyle(.plain) // Use .plain to let our custom content define the look
                     }
                 }
                 .glassPanelStyle()
