@@ -59,8 +59,8 @@ struct HistoryView: View {
                             content(for: user.uid)
                         } else {
                             LockedFeatureView(
-                                title: "Unlock Your History",
-                                description: "Subscribe to Pro to view your full analysis history, track your stats, and see your progress over time.",
+                                title: "history_locked_title",
+                                description: "history_locked_subtitle",
                                 onUpgrade: { showPaywallSheet = true }
                             )
                         }
@@ -162,7 +162,7 @@ struct HistoryView: View {
                 Text("history_chart_title").font(.headline)
                 if let selectedDataPoint, showChartValue {
                     Text(String.localizedStringWithFormat(NSLocalizedString("history_chart_selectedDataFormat", comment: ""), selectedDataPoint.date.formatted(date: .abbreviated, time: .omitted), selectedDataPoint.topSpeed))
-                       .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(.secondary)
                 } else {
                     Text(String.localizedStringWithFormat(NSLocalizedString("history_chart_subtitleFormat", comment: ""), NSLocalizedString(selectedRange.localizedKey, comment: "")))
                         .font(.caption).foregroundColor(.secondary)
@@ -202,8 +202,8 @@ struct HistoryView: View {
                                 let location = value.location
                                 showChartValue = true
                                 if let date: Date = proxy.value(atX: location.x) {
-                                     let closest = chartData.min(by: { abs($0.date.distance(to: date)) < abs($1.date.distance(to: date)) })
-                                     if let closestDataPoint = closest { self.selectedDataPoint = closestDataPoint }
+                                    let closest = chartData.min(by: { abs($0.date.distance(to: date)) < abs($1.date.distance(to: date)) })
+                                    if let closestDataPoint = closest { self.selectedDataPoint = closestDataPoint }
                                 }
                             }
                             .onEnded { _ in showChartValue = false }
@@ -433,6 +433,7 @@ class ResultDetailViewModel: ObservableObject {
 
 struct ResultDetailView: View {
     @StateObject private var viewModel: ResultDetailViewModel
+    @EnvironmentObject var languageManager: LanguageManager
     private let result: DetectionResult
 
     @State private var shareableImage: UIImage?
@@ -545,6 +546,7 @@ struct ResultDetailView: View {
     @MainActor
     private func renderImageForSharing() {
         let shareView = ShareableView(speed: result.peakSpeedKph, angle: result.angle)
+            .environment(\.locale, Locale(identifier: languageManager.languageCode))
         self.shareableImage = shareView.snapshot()
     }
 

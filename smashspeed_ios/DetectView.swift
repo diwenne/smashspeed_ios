@@ -59,6 +59,7 @@ struct DetectView: View {
             }
             .onAppear {
                 authViewModel.checkAndResetMonthlyCount()
+                viewModel.updateUserState(userRecord: authViewModel.userRecord, isSubscribed: storeManager.isSubscribed)
             }
             .onChange(of: authViewModel.userRecord) {
                 viewModel.updateUserState(userRecord: authViewModel.userRecord, isSubscribed: storeManager.isSubscribed)
@@ -85,27 +86,55 @@ struct DetectView: View {
         .sheet(isPresented: $showPaywall) { PaywallView(isPresented: $showPaywall) }
     }
     
-    @ViewBuilder
-    private var currentView: some View {
-        switch viewModel.appState {
-        case .idle:
-            VStack(spacing: 20) {
-                MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide)
-                
-                Text(viewModel.smashesLeftText)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                    .multilineTextAlignment(.center)
-                    .animation(.default, value: viewModel.smashesLeftText)
+    
+    // This is the new helper view that builds the localized text
+        @ViewBuilder
+        private var smashesLeftTextView: some View {
+            Group {
+                if storeManager.isSubscribed {
+                    Text("smashesLeft_unlimited")
+                } else if let count = viewModel.smashesLeftCount {
+                    if count == 1 {
+                        Text("smashesLeft_one")
+                    } else {
+                        // This new pattern combines three Text views and is the most reliable method.
+                        (
+                            Text("smashesLeft_prefix") +
+                            Text("\(count)") +
+                            Text("smashesLeft_suffix")
+                        )
+                    }
+                } else {
+                    Text("smashesLeft_loading")
+                }
             }
-            .onChange(of: selectedItem) { newItem in handleVideoSelection(item: newItem) }
-            .onChange(of: recordedVideoURL) { newURL in handleVideoSelection(url: newURL) }
+            .font(.subheadline)
+            .foregroundColor(.secondary)
+            .padding(.horizontal)
+            .multilineTextAlignment(.center)
+            .animation(.default, value: viewModel.smashesLeftCount)
+            .animation(.default, value: storeManager.isSubscribed)
+        }
+    
+    
+    @ViewBuilder
+        private var currentView: some View {
+            switch viewModel.appState {
+            case .idle:
+                VStack(spacing: 20) {
+                    MainView(showInputSelector: $showInputSelector, showRecordingGuide: $showRecordingGuide)
+                    
+                    // ** THE FIX IS HERE: The old Text view is replaced with the new helper view **
+                    smashesLeftTextView
+                }
+                .onChange(of: selectedItem) { newItem in handleVideoSelection(item: newItem) }
+                .onChange(of: recordedVideoURL) { newURL in handleVideoSelection(url: newURL) }
+            
         
         case .limitReached:
             LockedFeatureView(
-                title: "Monthly Limit Reached",
-                description: "You've reached your limit of free analyses for the month. Upgrade to Pro for unlimited smashes.",
+                title: "limitReached_title",
+                description: "limitReached_description",
                 onUpgrade: {
                     showPaywall = true
                     viewModel.reset()
@@ -729,6 +758,7 @@ struct ErrorView: View {
 // MARK: - Result View & Sharing Components
 struct ResultView: View {
     @EnvironmentObject var viewModel: AuthenticationViewModel
+    @EnvironmentObject var languageManager: LanguageManager
     let speed: Double
     let angle: Double?
     let isSubscribed: Bool
@@ -741,7 +771,6 @@ struct ResultView: View {
                 Spacer()
 
                 VStack(spacing: 15) {
-                    // LOCALIZED
                     Text("resultView_maxSpeedTitle")
                         .font(.title)
                         .foregroundColor(.secondary)
@@ -750,7 +779,6 @@ struct ResultView: View {
                         .font(.system(size: 80, weight: .bold, design: .rounded))
                         .foregroundColor(.accentColor)
 
-                    // LOCALIZED
                     Text("resultView_speedUnit")
                         .font(.title2)
                         .foregroundColor(.secondary)
@@ -760,16 +788,20 @@ struct ResultView: View {
                         Divider().padding(.horizontal)
                         if isSubscribed {
                             HStack {
-                                // LOCALIZED
                                 Text("resultView_smashAngleLabel")
                                     .font(.title3)
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                // LOCALIZED
-                                Text(String(format: NSLocalizedString("resultView_angleFormat", comment: ""), angle))
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.primary)
+                                
+                                // ** THIS IS THE CORRECTED CODE **
+                                (
+                                    Text(angle, format: .number.precision(.fractionLength(0))) +
+                                    Text("° ") +
+                                    Text("common_angle_downward")
+                                )
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
                             }
                             .padding(.horizontal)
                         } else {
@@ -786,14 +818,13 @@ struct ResultView: View {
                                         .blur(radius: 5)
                                         .foregroundColor(.secondary)
                                     
-                                    // MODIFIED: Increased font size and padding
                                     Button(action: { showPaywall = true }) {
-                                        Text("Reveal")
-                                            .font(.callout) // Increased from .footnote
+                                        Text("resultView_revealButton")
+                                            .font(.callout)
                                             .fontWeight(.bold)
                                             .foregroundColor(.accentColor)
-                                            .padding(.vertical, 8)   // Increased from 6
-                                            .padding(.horizontal, 16) // Increased from 12
+                                            .padding(.vertical, 8)
+                                            .padding(.horizontal, 16)
                                             .background(.ultraThinMaterial)
                                             .clipShape(Capsule())
                                     }
@@ -805,11 +836,9 @@ struct ResultView: View {
                     } else {
                         Divider().padding(.horizontal)
                         VStack(spacing: 5) {
-                            // LOCALIZED
                             Text("resultView_angleNotCalculated")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
-                            // LOCALIZED
                             Text("resultView_angleUnlockInfo")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -824,13 +853,11 @@ struct ResultView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 35, style: .continuous))
 
                 if viewModel.authState != .signedIn {
-                    // LOCALIZED
                     NavigationLink(destination: AccountView()) { Text("resultView_signInPrompt") }.padding(.top, 10)
                 }
 
                 Spacer()
                 
-                // LOCALIZED
                 Button(action: onReset) { Label("resultView_analyzeAnotherButton", systemImage: "arrow.uturn.backward.circle") }
                 .buttonStyle(.bordered).controlSize(.large)
                 
@@ -850,6 +877,7 @@ struct ResultView: View {
     @MainActor
     private func renderImageForSharing() {
         let shareView = ShareableView(speed: self.speed, angle: self.angle)
+            .environment(\.locale, Locale(identifier: languageManager.languageCode))
         self.shareableImage = shareView.snapshot()
     }
 }

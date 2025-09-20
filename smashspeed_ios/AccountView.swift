@@ -74,29 +74,38 @@ struct LoggedInView: View {
     private var memberSince: String { user.metadata.creationDate?.formatted(date: .long, time: .omitted) ?? NSLocalizedString("common_notAvailable", comment: "") }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                // --- Profile Header ---
-                VStack(spacing: 20) {
-                    HStack(spacing: 16) {
-                        Image(systemName: "person.crop.circle.fill.badge.checkmark").font(.system(size: 60)).foregroundColor(.green)
-                        VStack(alignment: .leading) {
-                            Text(user.email ?? NSLocalizedString("account_loggedIn_noEmail", comment: "")).font(.headline).fontWeight(.semibold)
-                            Text(String.localizedStringWithFormat(NSLocalizedString("account_loggedIn_memberSinceFormat", comment: ""), memberSince)).font(.subheadline).foregroundColor(.secondary)
+            ScrollView {
+                VStack(spacing: 30) {
+                    // --- Profile Header ---
+                    VStack(spacing: 20) {
+                        HStack(spacing: 16) {
+                            Image(systemName: "person.crop.circle.fill.badge.checkmark").font(.system(size: 60)).foregroundColor(.green)
+                            VStack(alignment: .leading) {
+                                Text(user.email ?? NSLocalizedString("account_loggedIn_noEmail", comment: "")).font(.headline).fontWeight(.semibold)
+                                
+                                // ** THIS IS THE CORRECTED CODE **
+                                // This new version is more reliable for localization in SwiftUI.
+                                if let creationDate = user.metadata.creationDate {
+                                    (Text("account_loggedIn_memberSinceLabel") + Text(creationDate, style: .date))
+                                        .font(.subheadline).foregroundColor(.secondary)
+                                } else {
+                                    Text("common_notAvailable")
+                                        .font(.subheadline).foregroundColor(.secondary)
+                                }
+                            }
+                            Spacer()
                         }
-                        Spacer()
-                    }
-                }.glassPanelStyle()
+                    }.glassPanelStyle()
                 
                 // --- Subscription Section ---
                 VStack(alignment: .leading, spacing: 15) {
-                    Text("Subscription").font(.title2.bold()).padding(.bottom, 5)
+                    Text("account_loggedIn_subscription_title").font(.title2.bold()).padding(.bottom, 5)
                     if storeManager.isSubscribed {
                         HStack {
-                            Label("Smashspeed Pro", systemImage: "checkmark.seal.fill")
+                            Label("account_loggedIn_subscription_proLabel", systemImage: "checkmark.seal.fill")
                                 .foregroundColor(.green)
                             Spacer()
-                            Text("Active")
+                            Text("account_loggedIn_subscription_proStatusActive")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -112,10 +121,10 @@ struct LoggedInView: View {
                                     .clipShape(Circle())
 
                                 VStack(alignment: .leading) {
-                                    Text("Upgrade to Smashspeed Pro")
+                                    Text("account_loggedIn_subscription_upgradeTitle")
                                         .fontWeight(.bold)
                                         .foregroundColor(.primary)
-                                    Text("Unlock all features")
+                                    Text("account_loggedIn_subscription_upgradeSubtitle")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }

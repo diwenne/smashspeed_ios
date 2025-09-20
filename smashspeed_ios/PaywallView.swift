@@ -64,20 +64,20 @@ struct PaywallView: View {
     private var headerAndFeaturesView: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("Upgrade to Pro")
+                Text("paywall_title")
                     .font(.largeTitle.bold())
                     .padding(.top, 40)
                 
-                Text("Unlock all features and smash your limits!")
+                Text("paywall_subtitle")
                     .font(.headline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                 
                 VStack(alignment: .leading, spacing: 15) {
-                    FeatureRow(icon: "camera.metering.unknown", title: "Unlimited Smashes", subtitle: "Analyze as many videos as you want.")
-                    FeatureRow(icon: "ruler.fill", title: "Precise Smash Angle", subtitle: "Unlock angle calculation for tactical insights.")
-                    FeatureRow(icon: "chart.bar.xaxis", title: "Full History", subtitle: "Track your progress over time.")
-                    FeatureRow(icon: "sparkles", title: "Priority Access", subtitle: "Get new features and AI models first.")
+                    FeatureRow(icon: "camera.metering.unknown", title: "paywall_feature_unlimited_title", subtitle: "paywall_feature_unlimited_subtitle")
+                    FeatureRow(icon: "ruler.fill", title: "paywall_feature_angle_title", subtitle: "paywall_feature_angle_subtitle")
+                    FeatureRow(icon: "chart.bar.xaxis", title: "paywall_feature_history_title", subtitle: "paywall_feature_history_subtitle")
+                    FeatureRow(icon: "sparkles", title: "paywall_feature_priority_title", subtitle: "paywall_feature_priority_subtitle")
                 }
                 .padding(30)
                 .background(GlassPanel())
@@ -99,7 +99,7 @@ struct PaywallView: View {
                 }
             }
             
-            Button("Restore Purchases") {
+            Button("paywall_restoreButton") {
                 Task { await storeManager.restorePurchases() }
             }
             .font(.footnote)
@@ -112,8 +112,12 @@ struct PaywallView: View {
         if purchasingProduct?.id == product.id {
             ProgressView().tint(.accentColor)
         } else {
+            // ** THIS IS THE FINAL, CORRECTED CODE **
             let isYearly = product.subscription?.subscriptionPeriod.unit == .year
-            Text(isYearly ? "Yearly - \(product.displayPrice)" : "Monthly - \(product.displayPrice)")
+            let periodKey: LocalizedStringKey = isYearly ? "paywall_yearly" : "paywall_monthly"
+            
+            // This combines the translated word (Part 1) with the price (Part 2)
+            (Text(periodKey) + Text(" - \(product.displayPrice)"))
                 .fontWeight(.bold)
         }
     }
@@ -153,8 +157,8 @@ struct PaywallView: View {
 // MARK: - Helper Structs
 struct FeatureRow: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     
     var body: some View {
         HStack(spacing: 15) {
@@ -171,21 +175,18 @@ struct FeatureRow: View {
     }
 }
 
-// --- THIS VIEW IS REDESIGNED ---
 struct LockedFeatureView: View {
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
     let onUpgrade: () -> Void
     
     var body: some View {
         ZStack {
-            // Background to match app aesthetic
             Color(.systemBackground).ignoresSafeArea()
             Circle().fill(Color.blue.opacity(0.8)).blur(radius: 150).offset(x: -150, y: -200)
             Circle().fill(Color.blue.opacity(0.5)).blur(radius: 180).offset(x: 150, y: 150)
             
             VStack(spacing: 28) {
-                // Glassy lock emblem
                 ZStack {
                     Circle()
                         .fill(.ultraThinMaterial)
@@ -200,7 +201,6 @@ struct LockedFeatureView: View {
                         .foregroundColor(.accentColor)
                 }
                 
-                // Title & description
                 VStack(spacing: 8) {
                     Text(title)
                         .font(.system(.title, design: .rounded).bold())
@@ -213,8 +213,7 @@ struct LockedFeatureView: View {
                         .padding(.horizontal)
                 }
                 
-                // CTA
-                Button("Upgrade to Pro", action: onUpgrade)
+                Button("paywall_upgradeButton", action: onUpgrade)
                     .buttonStyle(ProminentButtonStyle())
                     .controlSize(.large)
                     .padding(.top, 6)

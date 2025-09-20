@@ -1,231 +1,275 @@
-    // =================================================================
-    // English (en.lproj/Localizable.strings)
-    // =================================================================
+// =================================================================
+// English (en.lproj/Localizable.strings)
+// =================================================================
 
-    /* Account & Auth */
-    "account_alert_delete_message" = "Are you sure you want to delete your account? This action is permanent and cannot be undone.";
-    "account_alert_delete_title" = "Delete Account";
-    "account_alert_signOut_message" = "Are you sure you want to sign out?";
-    "account_loggedIn_accountActions" = "Account Actions";
-    "account_loggedIn_appearance" = "Appearance";
-    "account_loggedIn_appearanceDark" = "Dark";
-    "account_loggedIn_appearanceLight" = "Light";
-    "account_loggedIn_appearanceSystem" = "System";
-    "account_loggedIn_changePassword" = "Change Password";
-    "account_loggedIn_communitySupport" = "Community & Support";
-    "account_loggedIn_contactSupport" = "Contact Support";
-    "account_loggedIn_deleteAccount" = "Delete Account";
-    "account_loggedIn_followInstagram" = "Follow on Instagram";
-    "account_loggedIn_memberSinceFormat" = "Member since %@";
-    "account_loggedIn_noEmail" = "No email found";
-    "account_loggedIn_officialWebsite" = "Official Website";
-    "account_loggedIn_settingsTitle" = "Settings";
-    "account_loggedIn_signOut" = "Sign Out";
-    "account_loggedIn_viewTutorial" = "View Tutorial";
-    "account_menu_contact" = "Contact Us";
-    "account_menu_faq" = "FAQ";
-    "account_menu_privacy" = "Privacy Policy";
-    "account_menu_terms" = "Terms of Service";
-    "account_navTitle_myAccount" = "My Account";
-    "account_navTitle_welcome" = "Welcome";
-    "auth_alreadyHaveAccount" = "Already have an account? Sign In";
-    "auth_createAccountButton" = "Create Account";
-    "auth_createAccountTitle" = "Create an Account";
-    "auth_dontHaveAccount" = "Don't have an account? Sign Up";
-    "auth_forgotPassword" = "Forgot Password?";
-    "auth_orDivider" = "Or";
-    "auth_passwordMismatch" = "Passwords do not match.";
-    "auth_signInButton" = "Sign In";
-    "auth_signInPrompt" = "Sign in to access more features, customize settings, and track your progress over time.";
-    "auth_signInTitle" = "Sign In";
-    "auth_signInWithGoogle" = "Sign in with Google";
-    "auth_termsAgreement" = "I have read and agree to the [Terms of Service](https://smashspeed.ca/terms-of-service) and [Privacy Policy](https://smashspeed.ca/privacy-policy).";
-    "changePwd_cancelButton" = "Cancel";
-    "changePwd_confirmPwdField" = "Confirm New Password";
-    "changePwd_navTitle" = "Change Password";
-    "changePwd_newPwdField" = "New Password";
-    "changePwd_updateButton" = "Update Password";
-    "account_menu_changeLanguage" = "Change Language";
+/* Account & Auth */
+"account_alert_delete_message" = "Are you sure you want to delete your account? This action is permanent and cannot be undone.";
+"account_alert_delete_title" = "Delete Account";
+"account_alert_signOut_message" = "Are you sure you want to sign out?";
+"account_loggedIn_accountActions" = "Account Actions";
+"account_loggedIn_appearance" = "Appearance";
+"account_loggedIn_appearanceDark" = "Dark";
+"account_loggedIn_appearanceLight" = "Light";
+"account_loggedIn_appearanceSystem" = "System";
+"account_loggedIn_changePassword" = "Change Password";
+"account_loggedIn_communitySupport" = "Community & Support";
+"account_loggedIn_contactSupport" = "Contact Support";
+"account_loggedIn_deleteAccount" = "Delete Account";
+"account_loggedIn_followInstagram" = "Follow on Instagram";
+"account_loggedIn_memberSinceLabel" = "Member since ";
+"account_loggedIn_noEmail" = "No email found";
+"account_loggedIn_officialWebsite" = "Official Website";
+"account_loggedIn_settingsTitle" = "Settings";
+"account_loggedIn_signOut" = "Sign Out";
+"account_loggedIn_subscription_proLabel" = "Smashspeed Pro";
+"account_loggedIn_subscription_proStatusActive" = "Active";
+"account_loggedIn_subscription_title" = "Subscription";
+"account_loggedIn_subscription_upgradeSubtitle" = "Unlock all features";
+"account_loggedIn_subscription_upgradeTitle" = "Upgrade to Smashspeed Pro";
+"account_loggedIn_viewTutorial" = "View Tutorial";
+"account_menu_changeLanguage" = "Change Language";
+"account_menu_contact" = "Contact Us";
+"account_menu_faq" = "FAQ";
+"account_menu_privacy" = "Privacy Policy";
+"account_menu_terms" = "Terms of Service";
+"account_navTitle" = "Account";
+"account_navTitle_myAccount" = "My Account";
+"account_navTitle_welcome" = "Welcome";
+"appName" = "Smashspeed";
+"auth_alreadyHaveAccount" = "Already have an account? Sign In";
+"auth_createAccountButton" = "Create Account";
+"auth_createAccountTitle" = "Create an Account";
+"auth_dontHaveAccount" = "Don't have an account? Sign Up";
+"auth_forgotPassword" = "Forgot Password?";
+"auth_orDivider" = "Or";
+"auth_passwordMismatch" = "Passwords do not match.";
+"auth_passwordResetSent" = "If an account exists for this email, a reset link has been sent.";
+"auth_signInButton" = "Sign In";
+"auth_signInPrompt" = "Sign in to access more features, customize settings, and track your progress over time.";
+"auth_signInTitle" = "Sign In";
+"auth_signInWithGoogle" = "Sign in with Google";
+"auth_termsAgreement" = "I have read and agree to the [Terms of Service](https://smashspeed.ca/terms-of-service) and [Privacy Policy](https://smashspeed.ca/privacy-policy).";
 
-    /* Calibration */
-    "calib_instruction1" = "Place one point on the front service line and the other on the doubles long service (flick) line.";
-    "calib_instruction2" = "Tip: Drag from the area around a point to avoid covering it with your finger.";
-    "calib_refLengthDescription" = "Enter the real-world distance between the two points.";
-    "calib_refLengthLabel" = "Reference Length";
-    "calib_startButton" = "Start Analysis";
-    "calib_title" = "Calibration";
+/* Calibration */
+"calib_instruction1" = "Place one point on the front service line and the other on the doubles long service (flick) line.";
+"calib_instruction2" = "Tip: Drag from the area around a point to avoid covering it with your finger.";
+"calib_refLengthDescription" = "Enter the real-world distance between the two points.";
+"calib_refLengthLabel" = "Reference Length";
+"calib_startButton" = "Start Analysis";
+"calib_title" = "Calibration";
 
-    /* Common */
-    "common_cancel" = "Cancel";
-    "common_delete" = "Delete";
-    "common_done" = "Done";
-    "common_email" = "Email";
-    "common_error" = "Error";
-    "common_height" = "Height";
-    "common_kmh" = "km/h";
-    "common_meters" = "meters";
-    "common_notAvailable" = "N/A";
-    "common_ok" = "OK";
-    "common_password" = "Password";
-    "common_smashAngle" = "Smash Angle:";
-    "common_speed" = "Speed";
-    "common_tryAgain" = "Try Again";
-    "common_width" = "Width";
+/* Change Password */
+"changePwd_cancelButton" = "Cancel";
+"changePwd_confirmPwdField" = "Confirm New Password";
+"changePwd_navTitle" = "Change Password";
+"changePwd_newPwdField" = "New Password";
+"changePwd_successMessage" = "Password successfully updated!";
+"changePwd_updateButton" = "Update Password";
 
-    /* Errors */
-    "error_couldNotLoadVideo" = "Could not load the selected video.";
-    "error_genericVideoSelection" = "An error occurred while selecting the video.";
-    "error_recordLandscape" = "Please record in landscape mode. Portrait videos are not supported.";
-    "error_selectLandscape" = "Please select a landscape video. Portrait videos are not supported.";
+/* Common */
+"common_cancel" = "Cancel";
+"common_delete" = "Delete";
+"common_done" = "Done";
+"common_email" = "Email";
+"common_error" = "Error";
+"common_height" = "Height";
+"common_kmh" = "km/h";
+"common_meters" = "meters";
+"common_notAvailable" = "N/A";
+"common_ok" = "OK";
+"common_password" = "Password";
+"common_smashAngle" = "Smash Angle:";
+"common_speed" = "Speed";
+"common_tryAgain" = "Try Again";
+"common_width" = "Width";
 
-    /* History & Details */
-    "details_liveSpeed" = "Live Speed:";
-    "details_navTitle" = "Smash Details";
-    "details_peakSpeed" = "Peak Speed";
-    "details_speedHeader" = "Speed";
-    "details_timeHeader" = "Time";
-    "details_timestampTitle" = "Timestamp Data";
-    "history_alert_delete_message" = "Are you sure you want to delete this result? This action cannot be undone.";
-    "history_alert_delete_title" = "Confirm Deletion";
-    "history_chart_noData" = "Not enough data with current filters to draw a chart.";
-    "history_chart_selectedDataFormat" = "Top Speed on %@: %.1f km/h";
-    "history_chart_subtitleFormat" = "Top Speed per Day (%@)";
-    "history_chart_title" = "Progress Over Time";
-    "history_empty_message" = "Your analyzed smashes will appear here.";
-    "history_empty_title" = "No Results";
-    "history_filters_filterBySpeed" = "Filter by Speed";
-    "history_filters_minSpeed" = "Min Speed:";
-    "history_filters_timeRange" = "Time Range";
-    "history_filters_title" = "Filters";
-    "history_list_noResults" = "No results match your current filters.";
-    "history_list_title" = "History";
-    "history_loggedOut_message" = "Please sign in to view results.";
-    "history_loggedOut_title" = "Log In Required";
-    "history_navTitle" = "Results";
-    "history_range_all" = "All Time";
-    "history_range_month" = "Past Month";
-    "history_range_week" = "Past Week";
-    "history_stats_avgSpeed" = "Average Speed";
-    "history_stats_title" = "Filtered Stats";
-    "history_stats_topSpeed" = "Top Speed";
-    "history_stats_totalSmashes" = "Total Smashes";
+/* Errors */
+"error_appleTokenFetchFailed" = "Unable to fetch identity token from Apple.";
+"error_appleTokenSerializeFailed" = "Unable to serialize Apple token string.";
+"error_couldNotLoadVideo" = "Could not load the selected video.";
+"error_genericVideoSelection" = "An error occurred while selecting the video.";
+"error_googleNoViewController" = "Could not find a view controller to present from.";
+"error_googleTokenFetchFailed" = "Could not retrieve Google ID token.";
+"error_modelLoadFailed" = "Failed to load detection model.";
+"error_recordLandscape" = "Please record in landscape mode. Portrait videos are not supported.";
+"error_selectLandscape" = "Please select a landscape video. Portrait videos are not supported.";
+"error_videoUploadFailed_format" = "Failed to upload video. Please try again.\nError: %@";
 
-    /* Main & Input Selector */
-    "inputSelector_chooseLibraryButton" = "Choose from Library";
-    "inputSelector_landscapeOnlyWarning" = "Only landscape videos are supported.";
-    "inputSelector_recordNewButton" = "Record New Video";
-    "inputSelector_title" = "Analyze a Smash";
-    "mainView_howToRecordButton" = "How to Record";
-    "mainView_prompt" = "Select a video to begin";
+/* History & Details */
+"details_liveSpeed" = "Live Speed:";
+"details_navTitle" = "Smash Details";
+"details_peakSpeed" = "Peak Speed";
+"details_speedHeader" = "Speed";
+"details_timeHeader" = "Time";
+"details_timestampTitle" = "Timestamp Data";
+"history_alert_delete_message" = "Are you sure you want to delete this result? This action cannot be undone.";
+"history_alert_delete_title" = "Confirm Deletion";
+"history_chart_noData" = "Not enough data with current filters to draw a chart.";
+"history_chart_selectedDataFormat" = "Top Speed on %@: %.1f km/h";
+"history_chart_subtitleFormat" = "Top Speed per Day (%@)";
+"history_chart_title" = "Progress Over Time";
+"history_empty_message" = "Your analyzed smashes will appear here.";
+"history_empty_title" = "No Results";
+"history_filters_filterBySpeed" = "Filter by Speed";
+"history_filters_minSpeed" = "Min Speed:";
+"history_filters_timeRange" = "Time Range";
+"history_filters_title" = "Filters";
+"history_list_noResults" = "No results match your current filters.";
+"history_list_title" = "History";
+"history_locked_subtitle" = "Subscribe to Pro to view your full analysis history, track your stats, and see your progress over time.";
+"history_locked_title" = "Unlock Your History";
+"history_loggedOut_message" = "Please sign in to view results.";
+"history_loggedOut_title" = "Log In Required";
+"history_navTitle" = "Results";
+"history_range_all" = "All Time";
+"history_range_month" = "Past Month";
+"history_range_week" = "Past Week";
+"history_stats_avgSpeed" = "Average Speed";
+"history_stats_title" = "Filtered Stats";
+"history_stats_topSpeed" = "Top Speed";
+"history_stats_totalSmashes" = "Total Smashes";
 
-    /* Navigation Titles */
-    "navTitle_analysisResult" = "Analysis Result";
-    "navTitle_calibration" = "Calibration";
-    "navTitle_detect" = "Detect";
-    "navTitle_recordingGuide" = "Recording Guide";
-    "navTitle_reviewAdjust" = "Review & Adjust";
-    "navTitle_trimVideo" = "Trim Video";
+/* Main & Input Selector */
+"inputSelector_chooseLibraryButton" = "Choose from Library";
+"inputSelector_landscapeOnlyWarning" = "Only landscape videos are supported.";
+"inputSelector_recordNewButton" = "Record New Video";
+"inputSelector_title" = "Analyze a Smash";
+"limitReached_description" = "You've reached your limit of free analyses for the month. Upgrade to Pro for unlimited smashes.";
+"limitReached_title" = "Monthly Limit Reached";
+"mainView_howToRecordButton" = "How to Record";
+"mainView_prompt" = "Select a video to begin";
 
-    /* Onboarding */
-    "onboarding_getStartedButton" = "Get Started";
-    "onboarding_slide1_instruction1" = "Set the camera on the sideline, facing straight across. Court lines should look parallel to the frame.";
-    "onboarding_slide1_instruction2" = "Keep the shuttle visible — avoid glare or busy backgrounds.";
-    "onboarding_slide1_instruction3" = "Use regular video. Avoid Slo-Mo or filters.";
-    "onboarding_slide1_instruction4" = "Trim to just the smash — under 1 second (~10 frames).";
-    "onboarding_slide1_title" = "1. Record Your Smash";
-    "onboarding_slide2_instruction1" = "Mark the front service line and doubles service line — 3.87 m apart.";
-    "onboarding_slide2_instruction2" = "Place the line directly under the player.";
-    "onboarding_slide2_instruction3" = "Keep 3.87 m unless using different lines — changing it may reduce accuracy.";
-    "onboarding_slide2_title" = "2. Mark a Known Distance";
-    "onboarding_slide3_instruction1" = "Use the slider or arrow keys to move through each frame and view the shuttle speed.";
-    "onboarding_slide3_instruction2" = "Use the 'Interpolate' tool to automatically fill in gaps between good detections. This is highly recommended.";
-    "onboarding_slide3_instruction3" = "For fine-tuning, use the manual controls to move, resize, add, or remove a detection box.";
-    "onboarding_slide3_instruction4" = "If you make a mistake, use the undo/redo buttons in the top left.";
-    "onboarding_slide3_title" = "3. Review Detection";
-    "onboarding_swipePrompt" = "Swipe to get started";
-    "onboarding_welcome_brand" = "Smashspeed";
-    "onboarding_welcome_prompt" = "Wanna know how fast you really smash?";
-    "onboarding_welcome_title" = "Welcome to";
+/* Navigation Titles */
+"navTitle_analysisResult" = "Analysis Result";
+"navTitle_calibration" = "Calibration";
+"navTitle_detect" = "Detect";
+"navTitle_recordingGuide" = "Recording Guide";
+"navTitle_reviewAdjust" = "Review & Adjust";
+"navTitle_trimVideo" = "Trim Video";
 
-    /* Processing States */
-    "processing_analyzingVideo" = "Analyzing Video...";
-    "processing_preparingVideo" = "Preparing Video...";
-    "processing_trimmingVideo" = "Trimming Video...";
+/* Onboarding */
+"onboarding_getStartedButton" = "Get Started";
+"onboarding_slide1_instruction1" = "Set the camera on the sideline, facing straight across. Court lines should look parallel to the frame.";
+"onboarding_slide1_instruction2" = "Keep the shuttle visible — avoid glare or busy backgrounds.";
+"onboarding_slide1_instruction3" = "Use regular video. Avoid Slo-Mo or filters.";
+"onboarding_slide1_instruction4" = "Trim to just the smash — under 1 second (~10 frames).";
+"onboarding_slide1_title" = "1. Record Your Smash";
+"onboarding_slide2_instruction1" = "Mark the front service line and doubles service line — 3.87 m apart.";
+"onboarding_slide2_instruction2" = "Place the line directly under the player.";
+"onboarding_slide2_instruction3" = "Keep 3.87 m unless using different lines — changing it may reduce accuracy.";
+"onboarding_slide2_title" = "2. Mark a Known Distance";
+"onboarding_slide3_instruction1" = "Use the slider or arrow keys to move through each frame and view the shuttle speed.";
+"onboarding_slide3_instruction2" = "Use the 'Interpolate' tool to automatically fill in gaps between good detections. This is highly recommended.";
+"onboarding_slide3_instruction3" = "For fine-tuning, use the manual controls to move, resize, add, or remove a detection box.";
+"onboarding_slide3_instruction4" = "If you make a mistake, use the undo/redo buttons in the top left.";
+"onboarding_slide3_title" = "3. Review Detection";
+"onboarding_swipePrompt" = "Swipe to get started";
+"onboarding_welcome_brand" = "Smashspeed";
+"onboarding_welcome_prompt" = "Wanna know how fast you really smash?";
+"onboarding_welcome_title" = "Welcome to";
 
-    /* Recording Guide */
-    "recordingGuide_cameraTip" = "**Camera:** Use landscape mode with 0.5x zoom to keep the shuttle in frame.";
-    "recordingGuide_frameRateTip" = "**Frame Rate:** 30 FPS is fine, 60 FPS is better.";
-    "recordingGuide_recorderTip" = "**Player A (Recorder):** Stand in the side tram lines.";
-    "recordingGuide_smasherTip" = "**Player B (Smasher):** Smash from the opposite half of the court.";
-    "recordingGuide_title" = "How to Record for Best Results";
-    "recordingGuide_visitWebsite" = "For a video tutorial, visit smashspeed.ca";
+/* Paywall */
+"paywall_feature_angle_subtitle" = "Unlock angle calculation for tactical insights.";
+"paywall_feature_angle_title" = "Precise Smash Angle";
+"paywall_feature_history_subtitle" = "Track your progress over time.";
+"paywall_feature_history_title" = "Full History";
+"paywall_feature_priority_subtitle" = "Get new features and AI models first.";
+"paywall_feature_priority_title" = "Priority Access";
+"paywall_feature_unlimited_subtitle" = "Analyze as many videos as you want.";
+"paywall_feature_unlimited_title" = "Unlimited Smashes";
+"paywall_restoreButton" = "Restore Purchases";
+"paywall_subtitle" = "Unlock all features and smash your limits!";
+"paywall_title" = "Upgrade to Pro";
+"paywall_upgradeButton" = "Upgrade to Pro";
+"paywall_monthly" = "Monthly";
+"paywall_yearly" = "Yearly";
 
-    /* Result View */
-    "resultView_analyzeAnotherButton" = "Analyze Another Video";
-    "resultView_angleFormat" = "%.0f° downward";
-    "resultView_angleNotCalculated" = "Angle Not Calculated";
-    "resultView_angleUnlockInfo" = "Smash faster than 100 km/h to unlock angle analysis.";
-    "resultView_maxSpeedTitle" = "Maximum Speed";
-    "resultView_signInPrompt" = "Want to save your result? Sign In";
-    "resultView_smashAngleLabel" = "Smash Angle:";
-    "resultView_speedUnit" = "km/h";
+/* Processing States */
+"processing_analyzingVideo" = "Analyzing Video...";
+"processing_preparingVideo" = "Preparing Video...";
+"processing_trimmingVideo" = "Trimming Video...";
 
-    /* Review */
-    "review_alert_interpolation_message" = "Interpolation automatically fills in missing bounding boxes. If you have a frame with a box, then a gap of frames with no box, followed by another frame with a box, this tool will draw a straight line to fill in the gap.";
-    "review_alert_interpolation_title" = "What is Interpolation?";
-    "review_alert_manual_message" = "Use these controls to fix errors made by the AI. You can add a box if the AI missed the shuttle, remove a box if the detection is wrong, or nudge/resize an existing box for better accuracy.";
-    "review_alert_manual_title" = "Manual Adjustment";
-    "review_alert_speedCalc_message" = "Speed is calculated using the distance the shuttlecock travels between frames, combined with the video's frame rate (fps).\n\n1. The AI tracks the shuttle's center point in pixels.\n2. The distance moved (in pixels) is multiplied by the frame rate to get pixels/second.\n3. A scale factor (meters/pixel), determined from the court's known dimensions, converts this to meters/second.\n4. The result is converted to km/h.";
-    "review_alert_speedCalc_title" = "How is Speed Calculated?";
-    "review_box_addButton" = "Add Box";
-    "review_box_nudgePicker" = "Nudge";
-    "review_box_removeButton" = "Remove Box";
-    "review_box_resizePicker" = "Resize";
-    "review_finishButton" = "Finish & Save Analysis";
-    "review_guidance_dontShowAgain" = "Don't show this again";
-    "review_guidance_message" = "Use the slider to review the detection on each frame. Adjust boxes as needed for best accuracy.";
-    "review_guidance_title" = "Tip: Check All Frames";
-    "review_interp_gapWarning_message" = "Use 'Interpolate' to ensure accurate speed results.";
-    "review_interp_gapWarning_title" = "Gaps Detected in Tracking";
-    "review_interp_interpolateButton" = "Interpolate Missing Frames";
-    "review_interp_whatIsButton" = "What is Interpolation?";
-    "review_manual_sectionTitle" = "MANUAL ADJUSTMENT";
-    "review_nav_aiWarning" = "AI detection is early-stage, manual tuning is often needed.";
-    "review_nav_hideManualControls" = "Hide Manual Controls";
-    "review_nav_sectionTitle" = "FRAME NAVIGATION";
-    "review_nav_showManualControls" = "Show Manual Controls";
-    "review_nav_speedLabel" = "Speed at this frame:";
-    "review_recalibrateButton" = "Recalibrate Distance";
-    "review_topBar_frameCountFormat" = "Frame %d of %d";
-    "review_topBar_noFrames" = "No Frames";
-    "review_speedWithUnitFormat" = "%.1f km/h";
+/* Recording Guide */
+"recordingGuide_cameraTip" = "**Camera:** Use landscape mode with 0.5x zoom to keep the shuttle in frame.";
+"recordingGuide_frameRateTip" = "**Frame Rate:** 30 FPS is fine, 60 FPS is better.";
+"recordingGuide_recorderTip" = "**Player A (Recorder):** Stand in the side tram lines.";
+"recordingGuide_smasherTip" = "**Player B (Smasher):** Smash from the opposite half of the court.";
+"recordingGuide_title" = "How to Record for Best Results";
+"recordingGuide_visitWebsite" = "For a video tutorial, visit smashspeed.ca";
 
-    /* Sharing Components */
-    "share_image_angleFormat" = "%.0f° downward";
-    "share_image_generatedBy" = "Generated by Smashspeed";
-    "share_image_smashAngleLabel" = "Smash Angle";
-    "share_image_socialHandle" = "@smashspeedai";
-    "share_preview_shareButton" = "Share Now";
-    "share_preview_title" = "Shareable Image Preview";
+/* Result View */
+"resultView_analyzeAnotherButton" = "Analyze Another Video";
+"resultView_angleFormat" = "%.0f°";
+"resultView_angleNotCalculated" = "Angle Not Calculated";
+"resultView_angleUnlockInfo" = "Smash faster than 100 km/h to unlock angle analysis.";
+"resultView_maxSpeedTitle" = "Maximum Speed";
+"resultView_revealButton" = "Reveal";
+"resultView_signInPrompt" = "Want to save your result? Sign In";
+"resultView_smashAngleLabel" = "Smash Angle:";
+"resultView_speedUnit" = "km/h";
+"resultView_angleDirection" = "downward";
+"common_angle_downward" = "downward";
 
-    /* Trim View */
-    "trimView_alert_tooLong_message" = "Trim the clip to under 0.8s (~%d frames), showing only the smash. The shuttle should be visible in every frame.";
-    "trimView_alert_tooLong_title" = "Clip Too Long";
-    "trimView_confirmButton" = "Confirm Trim";
-    "trimView_description" = "Isolate the moment of impact. The final clip should be very short (~0.25 seconds), and the birdie should be clearly visible in each frame.";
-    "trimView_durationFormat" = "Selected Duration: %.2fs";
-    "trimView_timeFormat" = "%.2fs";
-    "trimView_title" = "Trim to the Smash";
+/* Review */
+"review_alert_interpolation_message" = "Interpolation automatically fills in missing bounding boxes. If you have a frame with a box, then a gap of frames with no box, followed by another frame with a box, this tool will draw a straight line to fill in the gap.";
+"review_alert_interpolation_title" = "What is Interpolation?";
+"review_alert_manual_message" = "Use these controls to fix errors made by the AI. You can add a box if the AI missed the shuttle, remove a box if the detection is wrong, or nudge/resize an existing box for better accuracy.";
+"review_alert_manual_title" = "Manual Adjustment";
+"review_alert_speedCalc_message" = "Speed is calculated using the distance the shuttlecock travels between frames, combined with the video's frame rate (fps).\n\n1. The AI tracks the shuttle's center point in pixels.\n2. The distance moved (in pixels) is multiplied by the frame rate to get pixels/second.\n3. A scale factor (meters/pixel), determined from the court's known dimensions, converts this to meters/second.\n4. The result is converted to km/h.";
+"review_alert_speedCalc_title" = "How is Speed Calculated?";
+"review_box_addButton" = "Add Box";
+"review_box_nudgePicker" = "Nudge";
+"review_box_removeButton" = "Remove Box";
+"review_box_resizePicker" = "Resize";
+"review_finishButton" = "Finish & Save Analysis";
+"review_guidance_dontShowAgain" = "Don't show this again";
+"review_guidance_message" = "Use the slider to review the detection on each frame. Adjust boxes as needed for best accuracy.";
+"review_guidance_title" = "Tip: Check All Frames";
+"review_interp_gapWarning_message" = "Use 'Interpolate' to ensure accurate speed results.";
+"review_interp_gapWarning_title" = "Gaps Detected in Tracking";
+"review_interp_interpolateButton" = "Interpolate Missing Frames";
+"review_interp_whatIsButton" = "What is Interpolation?";
+"review_manual_sectionTitle" = "MANUAL ADJUSTMENT";
+"review_nav_aiWarning" = "AI detection is early-stage, manual tuning is often needed.";
+"review_nav_hideManualControls" = "Hide Manual Controls";
+"review_nav_sectionTitle" = "FRAME NAVIGATION";
+"review_nav_showManualControls" = "Show Manual Controls";
+"review_nav_speedLabel" = "Speed at this frame:";
+"review_recalibrateButton" = "Recalibrate Distance";
+"review_speedWithUnitFormat" = "%.1f km/h";
+"review_topBar_frameCountFormat" = "Frame %d of %d";
+"review_topBar_noFrames" = "No Frames";
 
-    /* App & Tab Bar */
-    "appName" = "Smashspeed";
-    "tab_account" = "Account";
-    "tab_detect" = "Detect";
-    "tab_results" = "Results";
-    "account_navTitle" = "Account";
+/* Sharing Components */
+"share_image_angleFormat" = "%.0f°";
+"share_image_generatedBy" = "Generated by Smashspeed";
+"share_image_smashAngleLabel" = "Smash Angle";
+"share_image_socialHandle" = "@smashspeedai";
+"share_preview_shareButton" = "Share Now";
+"share_preview_title" = "Shareable Image Preview";
 
-    /* Update Alert */
-    "updateAlert_button" = "Update Now";
-    "updateAlert_message" = "A new version of the app is available. Please update to continue using the app.";
-    "updateAlert_title" = "Update Required";
+/* Smashes Left Text */
+"smashesLeft_loading" = "Loading your data...";
+"smashesLeft_prefix" = "You have ";
+"smashesLeft_suffix" = " free analyses left this month.";
+"smashesLeft_one" = "You have 1 free analysis left this month.";
+"smashesLeft_unlimited" = "You have unlimited smashes with Pro.";
 
+/* Tab Bar */
+"tab_account" = "Account";
+"tab_detect" = "Detect";
+"tab_results" = "Results";
+
+/* Trim View */
+"trimView_alert_tooLong_message" = "Trim the clip to under 0.8s (~%d frames), showing only the smash. The shuttle should be visible in every frame.";
+"trimView_alert_tooLong_title" = "Clip Too Long";
+"trimView_confirmButton" = "Confirm Trim";
+"trimView_description" = "Isolate the moment of impact. The final clip should be very short (~0.25 seconds), and the birdie should be clearly visible in each frame.";
+"trimView_durationFormat" = "Selected Duration: %.2fs";
+"trimView_timeFormat" = "%.2fs";
+"trimView_title" = "Trim to the Smash";
+
+/* Update Alert */
+"updateAlert_button" = "Update Now";
+"updateAlert_message" = "A new version of the app is available. Please update to continue using the app.";
+"updateAlert_title" = "Update Required";

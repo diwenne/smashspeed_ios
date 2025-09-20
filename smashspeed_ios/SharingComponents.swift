@@ -53,7 +53,6 @@ struct ShareableView: View {
                     Text(String(format: "%.1f", speed))
                         .font(.system(size: 80, weight: .heavy, design: .rounded))
                         .foregroundColor(.accentColor)
-                    // LOCALIZED
                     Text("common_kmh")
                         .font(.title2)
                         .fontWeight(.medium)
@@ -63,15 +62,19 @@ struct ShareableView: View {
                         VStack {
                             Divider().padding(.vertical, 4)
                             HStack {
-                                // LOCALIZED
-                                Text("share_image_smashAngleLabel")
+                                Text("resultView_smashAngleLabel")
                                     .font(.headline)
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                // LOCALIZED
-                                Text(String(format: NSLocalizedString("share_image_angleFormat", comment: ""), angle))
-                                    .font(.headline.bold())
-                                    .foregroundColor(.primary)
+                                
+                                // ** THIS IS THE CORRECTED CODE **
+                                (
+                                    Text(angle, format: .number.precision(.fractionLength(0))) +
+                                    Text("° ") +
+                                    Text("common_angle_downward") // Now uses the merged key
+                                )
+                                .font(.headline.bold())
+                                .foregroundColor(.primary)
                             }
                         }
                         .padding(.horizontal, 15)
@@ -83,12 +86,10 @@ struct ShareableView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
 
                 VStack(spacing: 1) {
-                    // LOCALIZED
                     Text("share_image_generatedBy")
                         .font(.caption2)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary.opacity(0.8))
-                    // LOCALIZED
                     Text("share_image_socialHandle")
                         .font(.caption2)
                         .fontWeight(.medium)

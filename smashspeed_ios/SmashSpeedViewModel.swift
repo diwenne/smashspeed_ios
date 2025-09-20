@@ -8,7 +8,8 @@ class SmashSpeedViewModel: ObservableObject {
     
     private let monthlySmashLimit = 5
 
-    @Published var smashesLeftText: String = ""
+    @Published var smashesLeftCount: Int? = nil
+    
     @Published var canPerformSmash: Bool = true
 
     enum AppState {
@@ -29,24 +30,19 @@ class SmashSpeedViewModel: ObservableObject {
     
     func updateUserState(userRecord: UserRecord?, isSubscribed: Bool) {
         if isSubscribed {
-            smashesLeftText = "You have unlimited smashes with Pro."
+            self.smashesLeftCount = nil // For subscribers, nil means unlimited.
             canPerformSmash = true
             return
         }
         
         guard let record = userRecord else {
-            smashesLeftText = "Loading your data..."
+            self.smashesLeftCount = nil // For non-subscribers, nil means loading.
             canPerformSmash = false
             return
         }
         
         let remaining = max(0, monthlySmashLimit - record.smashCount)
-        if remaining == 1 {
-            smashesLeftText = "You have 1 free analysis left this month."
-        } else {
-            smashesLeftText = "You have \(remaining) free analyses left this month."
-        }
-        
+        self.smashesLeftCount = remaining
         canPerformSmash = remaining > 0
     }
 
@@ -69,7 +65,7 @@ class SmashSpeedViewModel: ObservableObject {
         Task {
             do {
                 guard let modelHandler = try? YOLOv5ModelHandler() else {
-                    appState = .error("Failed to load detection model.")
+                    appState = .error(NSLocalizedString("error_modelLoadFailed", comment: ""))
                     return
                 }
                 
@@ -125,7 +121,7 @@ class SmashSpeedViewModel: ObservableObject {
                     
                     appState = .completed(speed: maxSpeed, angle: angle)
                 } catch {
-                    let errorMessage = "Failed to upload video. Please try again.\nError: \(error.localizedDescription)"
+                    let errorMessage = String(format: NSLocalizedString("error_videoUploadFailed_format", comment: ""), error.localizedDescription)
                     appState = .error(errorMessage)
                 }
             }
